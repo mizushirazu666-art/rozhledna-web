@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import NewsletterCTA from '../../components/NewsletterCTA.astro';
+import taxonomie from '../../data/taxonomie.json';
+import { getClanky } from '../../lib/clanky';
+
+export function getStaticPaths() {
+  return taxonomie.rubriky.map((r) => ({ params: { slug: r.slug }, props: { rubrika: r } }));
+}
+
+const { rubrika } = Astro.props as { rubrika: (typeof taxonomie.rubriky)[number] };
+const articlesData = await getClanky();
+const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika === rubrika.slug);
+---
+<BaseLayout title={rubrika.nazev} description={`Zprávy z rubriky ${rubrika.nazev} – Rozhledna, Chrudimsko.`}>
+  <div class="container rubrika-hlavicka">
+    <span class="kicker kicker--zelena">Rubrika</span>
+    <h1>{rubrika.nazev}</h1>
+  </div>
+
+  <section class="container novinky">
+    {clanky.length > 0 ? (
+      <div class="novinky__mrizka">
+        {clanky.map((c) => <StoryCard clanek={c} barva={rubrika.barva === 'zelena' ? 'zelena' : 'terakota'} />)}
+      </div>
+    ) : (
+      <p class="prazdno">V této rubrice zatím nejsou žádné publikované články.</p>
+    )}
+  </section>
+
+  <div class="container">
+    <NewsletterCTA />
+  </div>
+</BaseLayout>
+
+<style>
+  .rubrika-hlavicka {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .rubrika-hlavicka h1 { font-size: 34px; }
+  .novinky { padding-top: 40px; padding-bottom: 48px; }
+  .novinky__mrizka {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 36px;
+  }
+  .prazdno { color: var(--barva-text-tlumena); }
+
+  @media (max-width: 900px) {
+    .rubrika-hlavicka { padding-top: 24px; padding-bottom: 20px; }
+    .rubrika-hlavicka h1 { font-size: 24px; }
+    .novinky { padding-top: 22px; }
+    .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+export interface Props {
+  nadpis?: string;
+  podnadpis?: string;
+}
+const {
+  nadpis = 'Přehled týdne z Chrudimska do vašeho e-mailu',
+  podnadpis = 'Jednou týdně, zdarma. Odhlásíte se kdykoliv jedním kliknutím.',
+} = Astro.props;
+---
+<section class="newsletter-cta" id="newsletter">
+  <div class="newsletter-cta__text">
+    <h2>{nadpis}</h2>
+    <span>{podnadpis}</span>
+  </div>
+  <form class="newsletter-cta__form">
+    <label class="sr-only" for="newsletter-email">E-mail</label>
+    <input id="newsletter-email" type="email" name="email" placeholder="vas@email.cz" required />
+    <button type="submit">Přihlásit se</button>
+  </form>
+</section>
+
+<style>
+  .newsletter-cta {
+    background: var(--barva-zelena);
+    padding: 44px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .newsletter-cta__text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .newsletter-cta__text h2 {
+    color: var(--barva-pozadi);
+    font-size: 24px;
+  }
+  .newsletter-cta__text span {
+    color: #C9D3CB;
+    font-size: 14px;
+  }
+  .newsletter-cta__form {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .newsletter-cta__form input {
+    padding: 12px 16px;
+    border: none;
+    font-size: 14px;
+    width: 240px;
+    font-family: var(--font-tělo);
+  }
+  .newsletter-cta__form button {
+    background: var(--barva-terakota);
+    color: var(--barva-pozadi);
+    border: none;
+    padding: 12px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    .newsletter-cta { padding: 26px 22px; flex-direction: column; align-items: stretch; }
+    .newsletter-cta__form { flex-direction: column; }
+    .newsletter-cta__form input { width: 100%; }
+  }
+</style>

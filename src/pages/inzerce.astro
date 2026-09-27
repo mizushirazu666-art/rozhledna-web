@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const urovneInzerce = [
+  { nazev: 'Zmínka', popis: 'Krátký textový odkaz/PR věta', cena: '300–500 Kč' },
+  { nazev: 'Blok', popis: 'Vizuální banner v newsletteru + web', cena: '800–1 200 Kč' },
+  { nazev: 'Sponzor vydání', popis: 'Prominentní umístění, jeden sponzor/vydání', cena: '2 000–3 000 Kč' },
+  { nazev: 'Pop-up', popis: 'Vyskakovací okno na webu, jen web (ne e-mail)', cena: '1 500–2 500 Kč/týden' },
+];
+
+const obsahoveProdukty = [
+  { nazev: 'Oznámení o otevření/uzavření podniku', popis: 'Placené redakční oznámení nové provozovny', cena: '500–1 000 Kč / jednorázově' },
+  { nazev: 'Řádek v přehledu nemovitostí', popis: 'Záznam v pravidelném přehledu nabídek prodeje/pronájmu', cena: '200–400 Kč / záznam / týden' },
+];
+---
+<BaseLayout title="Inzerce" description="Ceník inzerce a sponzoringu na webu a v newsletteru Rozhledna.">
+  <div class="container stranka">
+    <h1>Inzerce</h1>
+    <p>Ceny jsou orientační, bez DPH, a budou upřesněny podle reálné návštěvnosti po prvních týdnech provozu.</p>
+
+    <h2>Inzerce a sponzoring</h2>
+    <div class="tabulka">
+      {urovneInzerce.map((u) => (
+        <div class="tabulka__radek">
+          <div class="tabulka__nazev">{u.nazev}</div>
+          <div class="tabulka__popis">{u.popis}</div>
+          <div class="tabulka__cena">{u.cena}</div>
+        </div>
+      ))}
+    </div>
+
+    <h2>Placený redakční/obsahový inzerát</h2>
+    <div class="tabulka">
+      {obsahoveProdukty.map((u) => (
+        <div class="tabulka__radek">
+          <div class="tabulka__nazev">{u.nazev}</div>
+          <div class="tabulka__popis">{u.popis}</div>
+          <div class="tabulka__cena">{u.cena}</div>
+        </div>
+      ))}
+    </div>
+
+    <p>Zájem o inzerci? Napište na inzerce@rozhledna-chrudimsko.cz.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .stranka {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .stranka h1 { font-size: 34px; }
+  .stranka h2 { font-size: 20px; margin-top: 12px; }
+  .stranka p { font-size: 16px; line-height: 1.65; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+  .tabulka {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--barva-ramecek);
+  }
+  .tabulka__radek {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--barva-ramecek);
+    align-items: baseline;
+  }
+  .tabulka__nazev { font-weight: 600; }
+  .tabulka__popis { color: var(--barva-text-tlumena-tmavsi); font-size: 15px; }
+  .tabulka__cena { font-weight: 600; color: var(--barva-terakota); white-space: nowrap; }
+
+  @media (max-width: 900px) {
+    .tabulka__radek { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>

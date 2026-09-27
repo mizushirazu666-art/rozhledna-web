@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import NewsletterCTA from '../../components/NewsletterCTA.astro';
+import taxonomie from '../../data/taxonomie.json';
+import { getClanky } from '../../lib/clanky';
+
+export function getStaticPaths() {
+  return taxonomie.obce.map((o) => ({ params: { slug: o.slug }, props: { obec: o } }));
+}
+
+const { obec } = Astro.props as { obec: (typeof taxonomie.obce)[number] };
+const articlesData = await getClanky();
+const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec === obec.slug);
+---
+<BaseLayout title={obec.nazev} description={`Zprávy z obce ${obec.nazev} – Rozhledna, Chrudimsko.`}>
+  <div class="container obec-hlavicka">
+    <span class="kicker kicker--zelena">Obec</span>
+    <h1>{obec.nazev}</h1>
+    <span class="obec-hlavicka__meta">{obec.obyvatel.toLocaleString('cs-CZ')} obyvatel · vlna {obec.vlna}</span>
+  </div>
+
+  <section class="container novinky">
+    {clanky.length > 0 ? (
+      <div class="novinky__mrizka">
+        {clanky.map((c) => <StoryCard clanek={c} />)}
+      </div>
+    ) : (
+      <p class="prazdno">Z této obce zatím nejsou žádné publikované zprávy.</p>
+    )}
+  </section>
+
+  <div class="container">
+    <NewsletterCTA />
+  </div>
+</BaseLayout>
+
+<style>
+  .obec-hlavicka {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .obec-hlavicka h1 { font-size: 34px; }
+  .obec-hlavicka__meta { font-size: 14px; color: var(--barva-text-tlumena); }
+  .novinky { padding-top: 40px; padding-bottom: 48px; }
+  .novinky__mrizka {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 36px;
+  }
+  .prazdno { color: var(--barva-text-tlumena); }
+
+  @media (max-width: 900px) {
+    .obec-hlavicka { padding-top: 24px; padding-bottom: 20px; }
+    .obec-hlavicka h1 { font-size: 24px; }
+    .novinky { padding-top: 22px; }
+    .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }
+  }
+</style>

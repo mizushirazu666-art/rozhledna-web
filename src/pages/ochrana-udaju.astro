@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Ochrana údajů" description="GDPR a redakční poznámka k práci s AI podle AI Act.">
+  <div class="container stranka">
+    <h1>Ochrana údajů</h1>
+
+    <h2>Zpracování osobních údajů</h2>
+    <p>
+      Jména volených zástupců uvádíme bez omezení. Jména běžných občanů zveřejňujeme jen tehdy,
+      je-li to nutné pro srozumitelnost zprávy. Adresy ani rodná čísla nezveřejňujeme nikdy. U nehod
+      a mimořádných událostí nikdy neuvádíme jména ani fotografie obětí a vycházíme výhradně z ověřených
+      faktů, bez spekulací.
+    </p>
+
+    <h2>Redakční proces a AI</h2>
+    <p>
+      Část obsahu vzniká s pomocí AI v procesu: sběr dat (AI) → návrh textu (AI) → věcný přezkum
+      (člověk) → redakční odpovědnost (jmenovitě) → log přezkumu. Newsletter v elektronické podobě
+      se podle stanoviska Ministerstva kultury ČR nepovažuje za periodický tisk, a evidence tisku se
+      tedy netýká.
+    </p>
+
+    <h2>Odhlášení z newsletteru</h2>
+    <p>Odběr newsletteru můžete kdykoliv zrušit jedním kliknutím v patičce každého vydání.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .stranka {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .stranka h1 { font-size: 34px; }
+  .stranka h2 { font-size: 20px; margin-top: 12px; }
+  .stranka p { font-size: 16px; line-height: 1.65; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+
+  @media (max-width: 900px) {
+    .stranka { padding-top: 24px; padding-bottom: 40px; gap: 14px; }
+    .stranka h1 { font-size: 26px; }
+    .stranka h2 { font-size: 18px; }
+  }
+</style>

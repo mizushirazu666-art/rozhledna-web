@@ -1,0 +1,16 @@
+{
+  "rubriky": [
+    { "slug": "verejna-sprava", "nazev": "Veřejná správa", "barva": "zelena" },
+    { "slug": "doprava", "nazev": "Doprava", "barva": "terakota" },
+    { "slug": "sport", "nazev": "Sport", "barva": "zelena" },
+    { "slug": "bezpecnost", "nazev": "Bezpečnost", "barva": "terakota" },
+    { "slug": "kultura", "nazev": "Kultura", "barva": "zelena" },
+    { "slug": "bazarek", "nazev": "Bazárek", "barva": "terakota" }
+  ],
+  "obce": [
+    { "slug": "slatinany", "nazev": "Slatiňany", "obyvatel": 4074, "vlna": 1 },
+    { "slug": "orel", "nazev": "Orel", "obyvatel": 786, "vlna": 1 },
+    { "slug": "tunechody", "nazev": "Tuněchody", "obyvatel": 621, "vlna": 1 },
+    { "slug": "rabstejnska-lhota", "nazev": "Rabštejnská Lhota", "obyvatel": 866, "vlna": 1 }
+  ]
+}

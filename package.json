@@ -1,0 +1,18 @@
+{
+  "name": "rozhledna-web",
+  "version": "1.0.0",
+  "description": "Rozhledna – Chrudimsko: web postavený na Astro, obsah z Airtable (viz README).",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "astro": "^7.3.2"
+  }
+}

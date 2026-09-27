@@ -1,0 +1,21 @@
+---
+// Rozhledna – logo, Varianta 1 "Plná silueta" (odsouhlaseno v Kroku 2, doplnění).
+export interface Props {
+  size?: number;
+  fill?: string;
+  accent?: string;
+}
+const { size = 30, fill = '#33513F', accent = '#C1622D' } = Astro.props;
+// Unikátní id masky, ať se při více výskytech loga na jedné stránce (hlavička + patička) nekříží.
+const maskId = `rozhledna-logo-mask-${Math.random().toString(36).slice(2, 10)}`;
+---
+<svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+  <mask id={maskId} maskUnits="userSpaceOnUse">
+    <rect x="0" y="0" width="32" height="32" fill="#ffffff" />
+    <rect x="10.1" y="16.1" width="11.8" height="1.8" fill="#000000" />
+    <rect x="7.8" y="21.1" width="16.4" height="1.8" fill="#000000" />
+    <rect x="14" y="24.2" width="4" height="3.8" fill="#000000" />
+  </mask>
+  <path d="M16 4 L27 28 L5 28 Z" fill={fill} mask={`url(#${maskId})`} />
+  <circle cx="16" cy="4" r="2" fill={accent} />
+</svg>

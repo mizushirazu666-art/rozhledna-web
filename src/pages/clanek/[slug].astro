@@ -1,0 +1,238 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import NewsletterCTA from '../../components/NewsletterCTA.astro';
+import taxonomie from '../../data/taxonomie.json';
+import { getClanky } from '../../lib/clanky';
+
+export async function getStaticPaths() {
+  const articlesData = await getClanky();
+  return articlesData
+    .filter((c) => c.stav === 'Publikováno')
+    .map((clanek) => ({ params: { slug: clanek.slug }, props: { clanek, vsechnyClanky: articlesData } }));
+}
+
+const { clanek, vsechnyClanky } = Astro.props as {
+  clanek: Awaited<ReturnType<typeof getClanky>>[number];
+  vsechnyClanky: Awaited<ReturnType<typeof getClanky>>;
+};
+
+const rubrikaInfo = taxonomie.rubriky.find((r) => r.slug === clanek.rubrika);
+const obecInfo = taxonomie.obce.find((o) => o.slug === clanek.obec);
+const souvisejici = (clanek.souvisejiciClanky ?? [])
+  .map((slug) => vsechnyClanky.find((c) => c.slug === slug))
+  .filter((c): c is (typeof vsechnyClanky)[number] => Boolean(c) && c!.stav === 'Publikováno');
+---
+<BaseLayout title={clanek.nadpis} description={clanek.perex}>
+  <div class="container drobeckova">
+    <a href="/">Domů</a>
+    <span>/</span>
+    <a href={`/rubrika/${rubrikaInfo?.slug}/`}>{rubrikaInfo?.nazev}</a>
+    <span>/</span>
+    <span class="drobeckova__aktualni">{obecInfo?.nazev}</span>
+  </div>
+
+  <div class="container clanek-layout">
+    <article class="clanek">
+      <header class="clanek__header">
+        <span class="kicker kicker--zelena">{rubrikaInfo?.nazev} · {obecInfo?.nazev}</span>
+        <h1 class="clanek__nadpis">{clanek.nadpis}</h1>
+        <p class="clanek__perex">{clanek.perex}</p>
+        <div class="clanek__byline">
+          <div class="clanek__avatar">RR</div>
+          <div>
+            <div class="clanek__autor">{clanek.autor}</div>
+            <div class="clanek__meta">{new Date(clanek.datumPublikace).toLocaleDateString('cs-CZ')} · {clanek.casCteniMin} min čtení</div>
+          </div>
+        </div>
+      </header>
+
+      {clanek.obrazekAlt && (
+        <>
+          <div class="clanek__obrazek obrazek-placeholder" aria-hidden="true">[ILUSTRAČNÍ FOTO]</div>
+          <span class="clanek__obrazek-popisek">{clanek.obrazekAlt}</span>
+        </>
+      )}
+
+      <div class="clanek__telo">
+        {clanek.telo.map((odstavec: string) => <p>{odstavec}</p>)}
+      </div>
+
+      {clanek.ukazkovyObsah && (
+        <div class="clanek__upozorneni">
+          Text je ukázkový obsah pro demonstraci rozvržení stránky, nejde o skutečnou zprávu.
+        </div>
+      )}
+
+      {clanek.stitky?.length > 0 && (
+        <div class="clanek__stitky">
+          {clanek.stitky.map((s: string) => <span>#{s.replace(/\s+/g, '')}</span>)}
+        </div>
+      )}
+    </article>
+
+    <aside class="postranni">
+      {souvisejici.length > 0 && (
+        <div class="postranni__blok postranni__blok--souvisejici">
+          <h2>Související články</h2>
+          {souvisejici.map((c) => <StoryCard clanek={c!} />)}
+        </div>
+      )}
+
+      <div class="postranni__blok postranni__blok--newsletter">
+        <h2>Přehled týdne do e-mailu</h2>
+        <span>Jednou týdně, zdarma. Odhlásíte se kdykoliv jedním kliknutím.</span>
+        <form>
+          <label class="sr-only" for="sidebar-email">E-mail</label>
+          <input id="sidebar-email" type="email" name="email" placeholder="vas@email.cz" required />
+          <button type="submit">Přihlásit se k odběru</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+
+  <div class="container">
+    <NewsletterCTA />
+  </div>
+</BaseLayout>
+
+<style>
+  .drobeckova {
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+  }
+  .drobeckova a { color: var(--barva-text-tlumena); }
+  .drobeckova__aktualni { color: var(--barva-zelena); }
+
+  .clanek-layout {
+    display: flex;
+    gap: 64px;
+    padding-top: 24px;
+    align-items: flex-start;
+  }
+  .clanek {
+    flex: 2.2;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+  }
+  .clanek__header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 26px;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .clanek__nadpis {
+    font-size: 38px;
+    line-height: 1.22;
+    font-weight: 700;
+    max-width: 760px;
+  }
+  .clanek__perex {
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--barva-text-tlumena-tmavsi);
+    margin: 0;
+    max-width: 760px;
+  }
+  .clanek__byline {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .clanek__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--barva-obrazek-placeholder);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--barva-text-tlumena);
+  }
+  .clanek__autor { font-size: 14px; font-weight: 600; }
+  .clanek__meta { font-size: 13px; color: var(--barva-text-tlumena); }
+
+  .clanek__obrazek { min-height: 420px; }
+  .clanek__obrazek-popisek { font-size: 13px; color: var(--barva-text-tlumena); margin-top: -14px; }
+
+  .clanek__telo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 17px;
+    line-height: 1.75;
+    max-width: 760px;
+  }
+  .clanek__telo p { margin: 0; }
+
+  .clanek__upozorneni {
+    padding: 20px 24px;
+    background: var(--barva-obrazek-placeholder);
+    border-left: 3px solid var(--barva-zelena);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--barva-text-tlumena-tmavsi);
+  }
+
+  .clanek__stitky {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .clanek__stitky span {
+    font-size: 13px;
+    padding: 6px 14px;
+    border: 1px solid var(--barva-ramecek);
+    color: var(--barva-text-tlumena-tmavsi);
+  }
+
+  .postranni {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    position: sticky;
+    top: 24px;
+  }
+  .postranni__blok {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px;
+  }
+  .postranni__blok--souvisejici {
+    background: var(--barva-obrazek-placeholder);
+  }
+  .postranni__blok h2 { font-size: 16px; font-weight: 600; }
+  .postranni__blok--newsletter {
+    background: var(--barva-zelena);
+    gap: 12px;
+  }
+  .postranni__blok--newsletter h2 { color: var(--barva-pozadi); font-size: 17px; }
+  .postranni__blok--newsletter span { color: #C9D3CB; font-size: 13px; line-height: 1.5; }
+  .postranni__blok--newsletter form { display: flex; flex-direction: column; gap: 10px; }
+  .postranni__blok--newsletter input {
+    padding: 11px 14px; border: none; font-size: 14px; font-family: var(--font-tělo); width: 100%;
+  }
+  .postranni__blok--newsletter button {
+    background: var(--barva-terakota); color: var(--barva-pozadi); border: none;
+    padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    .clanek-layout { flex-direction: column; gap: 32px; padding-top: 16px; }
+    .clanek__nadpis { font-size: 26px; }
+    .clanek__perex { font-size: 15px; }
+    .clanek__obrazek { min-height: 200px; }
+    .clanek__telo { font-size: 16px; }
+    .postranni { position: static; width: 100%; }
+  }
+</style>

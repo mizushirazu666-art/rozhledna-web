@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StoryCard from '../components/StoryCard.astro';
+import NewsletterCTA from '../components/NewsletterCTA.astro';
+import taxonomie from '../data/taxonomie.json';
+import { getClanky } from '../lib/clanky';
+
+const articlesData = await getClanky();
+const clanky = articlesData.filter((c) => c.stav === 'Publikováno');
+const hlavniZprava = clanky.find((c) => c.hlavniZprava) ?? clanky[0];
+const ostatni = hlavniZprava ? clanky.filter((c) => c.slug !== hlavniZprava.slug).slice(0, 6) : [];
+
+const rubrikaHlavni = hlavniZprava ? taxonomie.rubriky.find((r) => r.slug === hlavniZprava.rubrika) : undefined;
+const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZprava.obec) : undefined;
+---
+<BaseLayout title="Domů" description="Nejnovější zprávy z Chrudimska – Slatiňany, Orel, Tuněchody, Rabštejnská Lhota.">
+  {hlavniZprava ? (
+    <>
+      <section class="hero">
+        <div class="container hero__inner">
+          <div class="hero__text">
+            <span class="kicker kicker--zelena">{rubrikaHlavni?.nazev} · {obecHlavni?.nazev}</span>
+            <h1 class="hero__title"><a href={`/clanek/${hlavniZprava.slug}/`}>{hlavniZprava.nadpis}</a></h1>
+            <p class="hero__perex">{hlavniZprava.perex}</p>
+            <span class="hero__meta">{new Date(hlavniZprava.datumPublikace).toLocaleDateString('cs-CZ')} · {hlavniZprava.casCteniMin} min čtení</span>
+          </div>
+          <div class="hero__image obrazek-placeholder" aria-hidden="true">[ILUSTRAČNÍ FOTO]</div>
+        </div>
+      </section>
+
+      <section class="container novinky">
+        <h2 class="novinky__nadpis">Nejnovější z okolí</h2>
+        <div class="novinky__mrizka">
+          {ostatni.map((c) => (
+            <StoryCard clanek={c} />
+          ))}
+        </div>
+      </section>
+    </>
+  ) : (
+    <section class="container prazdno-hp">
+      <h1>Rozhledna se právě rozkoukává</h1>
+      <p>První publikované články se tu objeví, jakmile je redakce schválí. Zatím se zastavte za pár dní.</p>
+    </section>
+  )}
+
+  <div class="container">
+    <NewsletterCTA />
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .hero__inner {
+    display: flex;
+    gap: 56px;
+    padding-top: 56px;
+    padding-bottom: 48px;
+  }
+  .hero__text {
+    flex: 1.3;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    justify-content: center;
+  }
+  .hero__title {
+    font-size: 42px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .hero__title a { color: var(--barva-text); }
+  .hero__title a:hover { color: var(--barva-terakota); }
+  .hero__perex {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--barva-text-tlumena-tmavsi);
+    margin: 0;
+  }
+  .hero__meta {
+    font-size: 14px;
+    color: var(--barva-text-tlumena);
+  }
+  .hero__image {
+    flex: 1;
+    min-height: 280px;
+  }
+
+  .novinky {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+  .novinky__nadpis {
+    font-size: 20px;
+    margin-bottom: 26px;
+  }
+  .novinky__mrizka {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 36px;
+  }
+
+  .prazdno-hp {
+    padding-top: 64px;
+    padding-bottom: 64px;
+    max-width: 640px;
+  }
+  .prazdno-hp h1 { font-size: 32px; margin-bottom: 12px; }
+  .prazdno-hp p { color: var(--barva-text-tlumena-tmavsi); font-size: 16px; line-height: 1.6; }
+
+  @media (max-width: 900px) {
+    .hero__inner { flex-direction: column-reverse; padding-top: 24px; padding-bottom: 24px; gap: 20px; }
+    .hero__title { font-size: 25px; }
+    .hero__perex { font-size: 15px; }
+    .hero__image { min-height: 160px; }
+    .novinky { padding-top: 22px; padding-bottom: 24px; }
+    .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }
+  }
+</style>

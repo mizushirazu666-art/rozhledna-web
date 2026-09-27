@@ -1,0 +1,49 @@
+---
+import taxonomie from '../data/taxonomie.json';
+
+export interface Props {
+  clanek: {
+    slug: string;
+    rubrika: string;
+    obec: string;
+    nadpis: string;
+    perex: string;
+  };
+  barva?: 'zelena' | 'terakota';
+}
+
+const { clanek, barva } = Astro.props;
+const rubrikaInfo = taxonomie.rubriky.find((r) => r.slug === clanek.rubrika);
+const obecInfo = taxonomie.obce.find((o) => o.slug === clanek.obec);
+const barvaFinal = barva ?? rubrikaInfo?.barva ?? 'zelena';
+---
+<a href={`/clanek/${clanek.slug}/`} class={`story-card story-card--${barvaFinal}`}>
+  <span class={`kicker kicker--${barvaFinal}`}>{rubrikaInfo?.nazev} · {obecInfo?.nazev}</span>
+  <h3 class="story-card__title">{clanek.nadpis}</h3>
+  {clanek.perex && <span class="story-card__perex">{clanek.perex}</span>}
+</a>
+
+<style>
+  .story-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 2px solid var(--barva-zelena);
+    color: var(--barva-text);
+  }
+  .story-card--terakota {
+    border-top-color: var(--barva-terakota);
+  }
+  .story-card:hover { color: var(--barva-text); }
+  .story-card:hover .story-card__title { color: var(--barva-terakota); }
+  .story-card__title {
+    font-size: 19px;
+    line-height: 1.35;
+    font-weight: 600;
+  }
+  .story-card__perex {
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+  }
+</style>

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Archiv newsletteru" description="Starší vydání týdenního newsletteru Rozhledna.">
+  <div class="container stranka">
+    <h1>Archiv newsletteru</h1>
+    <p>
+      Archiv se naplní po prvním vydání newsletteru (viz Krok 4, bod 6 – Newsletter nástroj a šablona).
+      Zatím zde nejsou žádná publikovaná vydání.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .stranka {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stranka h1 { font-size: 34px; }
+  .stranka p { font-size: 16px; line-height: 1.65; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+
+  @media (max-width: 900px) {
+    .stranka { padding-top: 24px; padding-bottom: 40px; }
+    .stranka h1 { font-size: 26px; }
+  }
+</style>

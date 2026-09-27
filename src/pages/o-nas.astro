@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="O nás" description="Kdo stojí za Rozhlednou a jak pracujeme s AI v redakci.">
+  <div class="container stranka">
+    <h1>O nás</h1>
+    <p>
+      Rozhledna přináší nezávislé hyperlokální zpravodajství pro obce Chrudimska, které velká
+      regionální média obvykle nepokrývají – zastupitelstva, uzavírky, odstávky, sportovní výsledky
+      i drobné lidské příběhy ze sousedství.
+    </p>
+
+    <h2>Jak pracujeme s umělou inteligencí</h2>
+    <p>
+      Část obsahu vzniká s pomocí AI – shrnujeme veřejně dostupná data z obecních webů a otevřených
+      zdrojů. Žádný text ale nejde ven bez redakčního přezkumu: AI připraví návrh, redakce ověří
+      fakta a schválí publikaci. Za obsah neseme redakční odpovědnost jmenovitě.
+    </p>
+
+    <h2>Kontakt</h2>
+    <p>Pro dotazy k obsahu, tipy na zprávy nebo spolupráci nás kontaktujte na redakce@rozhledna-chrudimsko.cz.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .stranka {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .stranka h1 { font-size: 34px; }
+  .stranka h2 { font-size: 22px; margin-top: 12px; }
+  .stranka p { font-size: 16px; line-height: 1.65; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+
+  @media (max-width: 900px) {
+    .stranka { padding-top: 24px; padding-bottom: 40px; gap: 14px; }
+    .stranka h1 { font-size: 26px; }
+    .stranka h2 { font-size: 19px; }
+  }
+</style>

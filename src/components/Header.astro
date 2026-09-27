@@ -1,0 +1,106 @@
+---
+import Logo from './Logo.astro';
+import taxonomie from '../data/taxonomie.json';
+const { rubriky } = taxonomie;
+---
+<header class="header">
+  <div class="container header__inner">
+    <a href="/" class="header__brand">
+      <Logo size={28} />
+      <span class="header__wordmark">ROZHLEDNA</span>
+      <span class="header__tag">Chrudimsko</span>
+    </a>
+
+    <nav class="header__nav" aria-label="Hlavní navigace">
+      {rubriky.map((r) => (
+        <a href={`/rubrika/${r.slug}/`}>{r.nazev}</a>
+      ))}
+    </nav>
+
+    <a href="/#newsletter" class="header__cta">Odebírat newsletter</a>
+  </div>
+
+  <nav class="header__mobile-nav" aria-label="Mobilní navigace">
+    <a href="/" class="chip chip--active">Vše</a>
+    {rubriky.map((r) => (
+      <a href={`/rubrika/${r.slug}/`} class="chip">{r.nazev}</a>
+    ))}
+  </nav>
+</header>
+
+<style>
+  .header {
+    border-bottom: 1px solid var(--barva-ramecek);
+    background: var(--barva-pozadi);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+  }
+  .header__brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    color: var(--barva-text);
+  }
+  .header__brand:hover { color: var(--barva-text); }
+  .header__brand svg { align-self: center; margin-right: 4px; }
+  .header__wordmark {
+    font-family: var(--font-nadpisy);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .header__tag {
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+    letter-spacing: 0.5px;
+  }
+  .header__nav {
+    display: flex;
+    gap: 30px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .header__nav a { color: var(--barva-text); }
+  .header__nav a:hover { color: var(--barva-terakota); }
+  .header__cta {
+    background: var(--barva-zelena);
+    color: var(--barva-pozadi) !important;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .header__mobile-nav {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .header__nav, .header__cta { display: none; }
+    .header__mobile-nav {
+      display: flex;
+      gap: 10px;
+      padding: 14px 20px;
+      overflow-x: auto;
+      border-top: 1px solid var(--barva-ramecek);
+    }
+    .chip {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--barva-text-tlumena-tmavsi);
+      padding: 6px 12px;
+      white-space: nowrap;
+      background: transparent;
+    }
+    .chip--active {
+      font-weight: 600;
+      color: var(--barva-pozadi);
+      background: var(--barva-zelena);
+    }
+  }
+</style>

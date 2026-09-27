@@ -1,0 +1,175 @@
+[
+  {
+    "id": "rec_001",
+    "slug": "zastupitelstvo-slatinany-schvalilo-opravu-hriste",
+    "stav": "Publikováno",
+    "rubrika": "verejna-sprava",
+    "obec": "slatinany",
+    "nadpis": "Zastupitelstvo Slatiňan schválilo opravu hřiště u základní školy",
+    "perex": "Rekonstrukce má začít na jaře příštího roku, část nákladů pokryje krajská dotace. Přinášíme přehled hlasování a co se změní pro rodiny s dětmi.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-07",
+    "casCteniMin": 4,
+    "obrazekAlt": "Hřiště u základní školy ve Slatiňanech, které čeká rekonstrukce. Ilustrační foto.",
+    "telo": [
+      "Zastupitelstvo Slatiňan na svém posledním zasedání schválilo finanční prostředky na opravu školního hřiště, které roky slouží jak dětem ze základní školy, tak veřejnosti v odpoledních hodinách. Rekonstrukce má podle schváleného plánu začít na jaře příštího roku a potrvá přibližně dva měsíce.",
+      "Součástí oprav bude nový povrch víceúčelového hřiště, výměna basketbalových košů a oprava oplocení. Část nákladů pokryje dotace z Pardubického kraje, zbytek uhradí obec z vlastního rozpočtu. Podle vyjádření starosty by měla oprava umožnit i večerní osvětlení pro sportovní kroužky.",
+      "Hlasování zastupitelstva proběhlo bez větších rozporů — pro návrh hlasovalo devět ze dvanácti přítomných zastupitelů, tři se zdrželi s odkazem na to, že by rádi viděli i opravu přístupové cesty k hřišti v rámci stejné zakázky. Vedení obce slíbilo, že se touto připomínkou bude zabývat v příštím rozpočtovém období.",
+      "Pro rodiny s dětmi bude nejcitelnější dopad omezení provozu hřiště po dobu stavebních prací — škola připravuje náhradní program pro tělesnou výchovu v tělocvičně a na sousedním pozemku."
+    ],
+    "stitky": ["zastupitelstvo", "školy", "Slatiňany"],
+    "hlavniZprava": true,
+    "souvisejiciClanky": [
+      "uzavirka-silnice-orel-tunechody",
+      "podzimni-jarmark-slatinany",
+      "pozar-stohu-rabstejnska-lhota"
+    ],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_002",
+    "slug": "uzavirka-silnice-orel-tunechody",
+    "stav": "Publikováno",
+    "rubrika": "doprava",
+    "obec": "orel",
+    "nadpis": "Uzavírka silnice mezi Orlem a Tuněchody potrvá do konce měsíce",
+    "perex": "Objízdná trasa vede přes Rabštejnskou Lhotu.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-08",
+    "casCteniMin": 2,
+    "obrazekAlt": "Dopravní značení uzavírky na silnici mezi Orlem a Tuněchody. Ilustrační foto.",
+    "telo": [
+      "Silnice mezi Orlem a Tuněchody je od pondělí uzavřená kvůli opravě povrchu. Uzavírka má podle harmonogramu potrvat do konce měsíce.",
+      "Objízdná trasa vede přes Rabštejnskou Lhotu, řidiči by měli počítat s prodloužením cesty o několik minut. Autobusová doprava jezdí po objízdné trase beze změny zastávek."
+    ],
+    "stitky": ["uzavírka", "silnice"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": ["odstavka-elektriny-tunechody", "zastupitelstvo-slatinany-schvalilo-opravu-hriste"],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_003",
+    "slug": "tj-sokol-orel-remiza-tunechody",
+    "stav": "Publikováno",
+    "rubrika": "sport",
+    "obec": "orel",
+    "nadpis": "TJ Sokol Orel remizoval v derby s Tuněchody 2:2",
+    "perex": "Přehled výsledků okresního přeboru.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-08",
+    "casCteniMin": 2,
+    "obrazekAlt": "Fotbalisté TJ Sokol Orel na hřišti. Ilustrační foto.",
+    "telo": [
+      "Místní derby mezi TJ Sokol Orel a Tuněchody skončilo remízou 2:2. Domácí vedli po první půli 2:0, hosté ale ve druhém poločase srovnali.",
+      "Orel tak zůstává na čtvrtém místě tabulky okresního přeboru, Tuněchody bodem posunuly na šesté místo."
+    ],
+    "stitky": ["fotbal", "derby"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": ["uzavirka-silnice-orel-tunechody"],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_004",
+    "slug": "pozar-stohu-rabstejnska-lhota",
+    "stav": "Publikováno",
+    "rubrika": "bezpecnost",
+    "obec": "rabstejnska-lhota",
+    "nadpis": "Hasiči zasahovali u požáru stohu, nikdo se nezranil",
+    "perex": "Zásah trval necelé dvě hodiny.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-06",
+    "casCteniMin": 2,
+    "obrazekAlt": "Hasičská technika u zásahu v Rabštejnské Lhotě. Ilustrační foto.",
+    "telo": [
+      "V neděli odpoledne vyjížděli hasiči k požáru stohu slámy na okraji Rabštejnské Lhoty. Na místě zasahovaly dvě jednotky, oheň se podařilo dostat pod kontrolu do necelé hodiny.",
+      "Nikdo nebyl zraněn, příčinu vzniku požáru vyšetřují hasiči jako možné samovznícení."
+    ],
+    "stitky": ["hasiči", "požár"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": ["zastupitelstvo-slatinany-schvalilo-opravu-hriste"],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_005",
+    "slug": "podzimni-jarmark-slatinany",
+    "stav": "Publikováno",
+    "rubrika": "kultura",
+    "obec": "slatinany",
+    "nadpis": "Podzimní jarmark nabídne řemesla i dětský koutek",
+    "perex": "Zámecký park, sobota od 9 hodin.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-05",
+    "casCteniMin": 2,
+    "obrazekAlt": "Stánky na podzimním jarmarku ve Slatiňanech. Ilustrační foto.",
+    "telo": [
+      "Slatiňanský zámecký park ožije v sobotu tradičním podzimním jarmarkem. Návštěvníci se mohou těšit na řemeslné stánky, ochutnávku místních produktů a dětský koutek s programem po celý den.",
+      "Akce začíná v 9 hodin a potrvá do podvečera, vstup je zdarma."
+    ],
+    "stitky": ["jarmark", "Slatiňany"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": ["zastupitelstvo-slatinany-schvalilo-opravu-hriste"],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_006",
+    "slug": "odstavka-elektriny-tunechody",
+    "stav": "Publikováno",
+    "rubrika": "doprava",
+    "obec": "tunechody",
+    "nadpis": "Plánovaná odstávka elektřiny ve čtvrtek od 8 do 14 hodin",
+    "perex": "Týká se ulic V Zahrádkách a Polní.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-08",
+    "casCteniMin": 1,
+    "obrazekAlt": "Elektrický sloup v ulici V Zahrádkách, Tuněchody. Ilustrační foto.",
+    "telo": [
+      "ČEZ Distribuce oznámila plánovanou odstávku elektřiny v Tuněchodech ve čtvrtek od 8 do 14 hodin. Odstávka se týká ulic V Zahrádkách a Polní kvůli plánované údržbě sítě.",
+      "Obyvatelé dotčených ulic byli informováni prostřednictvím obecního rozhlasu a webu obce."
+    ],
+    "stitky": ["odstávka", "ČEZ Distribuce"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": ["uzavirka-silnice-orel-tunechody"],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_007",
+    "slug": "bazarek-detske-kolo-tunechody",
+    "stav": "Publikováno",
+    "rubrika": "bazarek",
+    "obec": "tunechody",
+    "nadpis": "Prodám dětské kolo a zahradní nářadí",
+    "perex": "Nová inzerce v rubrice Bazárek.",
+    "autor": "Bazárek (řádková inzerce)",
+    "datumPublikace": "2026-09-09",
+    "casCteniMin": 1,
+    "obrazekAlt": null,
+    "telo": [
+      "Prodám zachovalé dětské kolo (16\", vhodné cca 4–6 let) a sadu zahradního nářadí. Cena dohodou, možnost osobního odběru v Tuněchodech."
+    ],
+    "stitky": ["bazárek", "Tuněchody"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": [],
+    "ukazkovyObsah": true
+  },
+  {
+    "id": "rec_008",
+    "slug": "rodacka-slatinany-zelenina",
+    "stav": "Publikováno",
+    "rubrika": "kultura",
+    "obec": "slatinany",
+    "nadpis": "Devadesátiletá rodačka ze Slatiňan si stále sama pěstuje zeleninu pro celou ulici",
+    "perex": "Krátký portrét sousedky, na kterou se ve Slatiňanech chodí pro rady do zahrady.",
+    "autor": "Redakce Rozhledny",
+    "datumPublikace": "2026-09-04",
+    "casCteniMin": 3,
+    "obrazekAlt": "Zahrada se zeleninou ve Slatiňanech. Ilustrační foto.",
+    "telo": [
+      "Paní Anna ze Slatiňan letos oslavila devadesáté narozeniny a stále sama obdělává svou zahradu, ze které zásobuje zeleninou půl ulice. Sousedé k ní chodí nejen pro úrodu, ale i pro rady, jak si poradit se škůdci nebo kdy sázet co.",
+      "Její zahrada je podle sousedů malou místní institucí — a inspirací pro to, že se zahradničení dá dělat i v pozdním věku s radostí a bez spěchu."
+    ],
+    "stitky": ["lidský příběh týdne", "Slatiňany"],
+    "hlavniZprava": false,
+    "souvisejiciClanky": ["podzimni-jarmark-slatinany"],
+    "ukazkovyObsah": true
+  }
+]

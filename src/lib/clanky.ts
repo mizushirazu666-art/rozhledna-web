@@ -155,8 +155,12 @@ function temataClanku(c: Clanek): string[] {
     bezpecnost: ['Hasiči'],
     kultura: ['Kultura a akce', 'Památky'],
   };
-  return [...t, ...(podleRubriky[c.rubrika] ?? []), 'Obec obecně', 'Památky', 'Příroda'];
+  return [...t, ...(podleRubriky[c.rubrika] ?? [])];
 }
+
+// Záložní témata jen pro fotky konkrétní obce (náves, zámek, okolí) – obecná
+// fotka "nějaké vesnice" nebo "nějakého lesa" by u článku jinak mátla.
+const ZALOZNI_TEMATA_OBCE = ['Obec obecně', 'Památky', 'Příroda'];
 
 function hash(text: string): number {
   let h = 0;
@@ -171,11 +175,11 @@ function hash(text: string): number {
 function vyberIlustraci(c: Clanek, banka: FotkaBanky[]): Obrazek | undefined {
   if (c.rubrika === 'bazarek') return undefined;
   const temata = temataClanku(c);
-  const obecne = new Set(['Obec obecně', 'Památky', 'Příroda']);
-  for (const tema of temata) {
+  const vlastni = new Set(temata);
+  for (const tema of [...temata, ...ZALOZNI_TEMATA_OBCE.filter((z) => !vlastni.has(z))]) {
     for (const zObce of [true, false]) {
-      // Obecnou fotku (bez obce) jen ke konkrétnímu tématu – "náves" jiné obce by mátla.
-      if (!zObce && obecne.has(tema)) continue;
+      // Obecnou fotku (bez obce) jen k tématu, o kterém článek opravdu je.
+      if (!zObce && !vlastni.has(tema)) continue;
       const kandidati = banka.filter((f) => (zObce ? f.obec === c.obec : f.obec === '') && f.temata.includes(tema));
       if (kandidati.length) return kandidati[hash(c.slug) % kandidati.length].obrazek;
     }

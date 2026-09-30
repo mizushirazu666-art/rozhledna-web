@@ -89,10 +89,13 @@ zprávy** – stejné upozornění, jaké bylo použito v design canvasu.
 
 - **Hlavní zpráva** (`vyberHlavniZpravu` v `src/lib/clanky.ts`): nejnovější článek se
   zaškrtnutým `HlavniZprava` (nejvýš 7 dní starý), jinak nejnovější článek z rubrik
-  Veřejná správa / Doprava / Bezpečnost z posledních 3 dnů (přednost má ten s fotkou),
+  Veřejná správa / Doprava / Bezpečnost z posledních 3 dnů (přednost má ten s vlastní fotkou),
   jinak nejnovější článek.
 - **Fotky**: pole `Obrazek` v Airtable (první příloha), `ObrazekPopis` (alt + popisek),
   `ObrazekAutor` (kredit). Jen fotky, ke kterým máme práva.
+- **Ilustrační fotky**: článek bez vlastní fotky dostane schválenou fotku z tabulky
+  `Fotobanka` (stejná obec + téma podle rubriky a textu, jinak obecná fotka k tématu),
+  s popiskem „Ilustrační foto“. Bazárek ilustrace nedostává.
 
 ## Sport
 

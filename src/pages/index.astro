@@ -39,7 +39,9 @@ const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZp
                   loading="eager"
                 />
               </a>
-              {hlavniZprava.obrazek.autor && <figcaption>{hlavniZprava.obrazek.autor}</figcaption>}
+              {(hlavniZprava.obrazek.ilustracni || hlavniZprava.obrazek.autor) && (
+                <figcaption>{[hlavniZprava.obrazek.ilustracni && 'Ilustrační foto', hlavniZprava.obrazek.autor].filter(Boolean).join(' · ')}</figcaption>
+              )}
             </figure>
           )}
         </div>

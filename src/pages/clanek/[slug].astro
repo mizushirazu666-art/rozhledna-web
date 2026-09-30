@@ -60,7 +60,7 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
             loading="eager"
           />
           <figcaption class="clanek__obrazek-popisek">
-            {clanek.obrazek.popis}{clanek.obrazek.autor && <span class="clanek__obrazek-autor"> · {clanek.obrazek.autor}</span>}
+            {clanek.obrazek.ilustracni && 'Ilustrační foto: '}{clanek.obrazek.popis}{clanek.obrazek.autor && <span class="clanek__obrazek-autor"> · {clanek.obrazek.autor}</span>}
           </figcaption>
         </figure>
       )}

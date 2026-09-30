@@ -50,6 +50,8 @@ export interface Obrazek {
   vyska: number;
   popis: string;
   autor?: string;
+  /** Fotka z Fotobanky, ne přímo z článku – na webu s popiskem "Ilustrační foto". */
+  ilustracni?: boolean;
 }
 
 // Server-only proměnné (build-time), záměrně přes process.env, ne import.meta.env
@@ -96,6 +98,87 @@ function obrazekZPoli(f: Record<string, any>): Obrazek | undefined {
     popis: String(f.ObrazekPopis || f.Nadpis || ''),
     autor: f.ObrazekAutor ? String(f.ObrazekAutor) : undefined,
   };
+}
+
+// --- Ilustrační fotky (Airtable tabulka Fotobanka) ---------------------------
+
+interface FotkaBanky {
+  obrazek: Obrazek;
+  obec: string; // slug, nebo '' = obecná fotka
+  temata: string[];
+}
+
+async function nacistFotobanku(): Promise<FotkaBanky[]> {
+  const zaklad = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Fotobanka`;
+  const fotky: FotkaBanky[] = [];
+  let offset: string | undefined;
+  do {
+    const params = new URLSearchParams({ filterByFormula: '{Schvaleno}', pageSize: '100' });
+    if (offset) params.set('offset', offset);
+    const resp = await fetch(`${zaklad}?${params}`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
+    if (!resp.ok) throw new Error(`Airtable Fotobanka vrátila ${resp.status}: ${await resp.text()}`);
+    const data = (await resp.json()) as { records: AirtableRecord[]; offset?: string };
+    for (const rec of data.records) {
+      const f = rec.fields as Record<string, any>;
+      const obrazek = obrazekZPoli({ Obrazek: f.Obrazek, ObrazekPopis: f.Popis, ObrazekAutor: f.Autor });
+      if (!obrazek) continue;
+      fotky.push({
+        obrazek: { ...obrazek, ilustracni: true },
+        obec: f.Obec === 'Obecné' ? '' : (obecSlugZNazvu(f.Obec) ?? ''),
+        temata: Array.isArray(f.Temata) ? f.Temata.map(String) : [],
+      });
+    }
+    offset = data.offset;
+  } while (offset);
+  return fotky;
+}
+
+/** Témata Fotobanky, která se k článku hodí, od nejvhodnějšího. */
+function temataClanku(c: Clanek): string[] {
+  const text = `${c.nadpis} ${c.perex} ${c.stitky.join(' ')}`.toLowerCase();
+  const t: string[] = [];
+  const kdyz = (re: RegExp, tema: string) => { if (re.test(text)) t.push(tema); };
+  kdyz(/fotbal/, 'Fotbal');
+  kdyz(/volejbal/, 'Volejbal');
+  kdyz(/hasič|požár/, 'Hasiči');
+  kdyz(/volb|kandid|volič/, 'Volby');
+  kdyz(/škol|žák/, 'Škola');
+  kdyz(/uzavír|uzavřen|silnic|objížď|doprav|autobus/, 'Doprava a silnice');
+  kdyz(/zastupitel|úřad|rozpoč|vyhlášk|aukc|pozem|pacht/, 'Úřad a zastupitelstvo');
+  kdyz(/les|příro|rybník|hub/, 'Příroda');
+  const podleRubriky: Record<string, string[]> = {
+    sport: ['Sport obecně'],
+    doprava: ['Doprava a silnice'],
+    'verejna-sprava': ['Úřad a zastupitelstvo'],
+    bezpecnost: ['Hasiči'],
+    kultura: ['Kultura a akce', 'Památky'],
+  };
+  return [...t, ...(podleRubriky[c.rubrika] ?? []), 'Obec obecně', 'Památky', 'Příroda'];
+}
+
+function hash(text: string): number {
+  let h = 0;
+  for (const z of text) h = (h * 31 + z.charCodeAt(0)) >>> 0;
+  return h;
+}
+
+/** Vybere k článku bez vlastní fotky ilustrační: nejdřív fotka z dané obce k
+ * nejvhodnějšímu tématu, pak obecná fotka k tématu. Mezi rovnocennými se
+ * vybírá podle slugu – stejný článek má vždy stejnou fotku, různé články se
+ * střídají. Bazárek fotky nedostává. */
+function vyberIlustraci(c: Clanek, banka: FotkaBanky[]): Obrazek | undefined {
+  if (c.rubrika === 'bazarek') return undefined;
+  const temata = temataClanku(c);
+  const obecne = new Set(['Obec obecně', 'Památky', 'Příroda']);
+  for (const tema of temata) {
+    for (const zObce of [true, false]) {
+      // Obecnou fotku (bez obce) jen ke konkrétnímu tématu – "náves" jiné obce by mátla.
+      if (!zObce && obecne.has(tema)) continue;
+      const kandidati = banka.filter((f) => (zObce ? f.obec === c.obec : f.obec === '') && f.temata.includes(tema));
+      if (kandidati.length) return kandidati[hash(c.slug) % kandidati.length].obrazek;
+    }
+  }
+  return undefined;
 }
 
 interface AirtableRecord {
@@ -169,6 +252,16 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       souvisejiciClanky: [],
       ukazkovyObsah: false,
     });
+  }
+
+  let banka: FotkaBanky[] = [];
+  try {
+    banka = await nacistFotobanku();
+  } catch (err) {
+    console.warn('[clanky] Fotobanku se nepodařilo načíst, články bez fotky zůstanou bez obrázku:', err);
+  }
+  for (const c of clanky) {
+    if (!c.obrazek) c.obrazek = vyberIlustraci(c, banka);
   }
 
   // Fotku astro:assets stahuje až při generování stránek a chyba stažení by
@@ -260,6 +353,6 @@ export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Cl
   const kandidati = clanky.filter(
     (c) => RUBRIKY_PRO_HLAVNI_ZPRAVU.includes(c.rubrika) && staryDni(c, dnes) <= AUTOMATICKA_HLAVNI_ZPRAVA_DNU,
   );
-  const sFotkou = kandidati.find((c) => c.obrazek);
+  const sFotkou = kandidati.find((c) => c.obrazek && !c.obrazek.ilustracni);
   return sFotkou ?? kandidati[0] ?? clanky[0];
 }

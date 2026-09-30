@@ -65,7 +65,7 @@ npm run preview   # náhled produkčního buildu
   | `rubrika`, `obec` | Linked record | Vazba na tabulky Rubriky / Obce |
   | `nadpis`, `perex`, `telo` | Text pole | `telo` bude v Airtable long text, zde rozdělené na odstavce |
   | `autor` | Text | Pevně "Redakce Rozhledny", u bazárku "Bazárek (řádková inzerce)" |
-  | `obrazekAlt` | Attachment + alt text | Zatím jen textový placeholder, žádné skutečné foto |
+  | `obrazek` | Obrazek (příloha) + ObrazekPopis + ObrazekAutor | Fotka se při buildu stáhne a zmenší (astro:assets); bez fotky se článek zobrazí bez obrázku |
   | `ukazkovyObsah` | – | Interní příznak, že jde o ukázkový obsah pro demo rozvržení – u reálných článků se nebude nastavovat |
 
 Všechny texty v `articles.json` jsou **ukázkový obsah pro demonstraci rozvržení, ne skutečné
@@ -84,4 +84,18 @@ zprávy** – stejné upozornění, jaké bylo použito v design canvasu.
   není založené, web zatím běží jen lokálně/jako zip.
 - Formuláře pro newsletter (hero, article sidebar) zatím nikam neodesílají – čekají na výběr
   a napojení e-mailového nástroje (bod 6).
-- Skutečné fotografie místo `[ILUSTRAČNÍ FOTO]` placeholderů.
+
+## Hlavní zpráva a fotky
+
+- **Hlavní zpráva** (`vyberHlavniZpravu` v `src/lib/clanky.ts`): nejnovější článek se
+  zaškrtnutým `HlavniZprava` (nejvýš 7 dní starý), jinak nejnovější článek z rubrik
+  Veřejná správa / Doprava / Bezpečnost z posledních 3 dnů (přednost má ten s fotkou),
+  jinak nejnovější článek.
+- **Fotky**: pole `Obrazek` v Airtable (první příloha), `ObrazekPopis` (alt + popisek),
+  `ObrazekAutor` (kredit). Jen fotky, ke kterým máme práva.
+
+## Sport
+
+`src/lib/sport.ts` + `src/components/SportPrehled.astro`: program, výsledky a tabulky
+z Airtable tabulek `Zapasy` a `Tabulky` (plní je rozhledna-pipeline). Zobrazuje se na
+homepage (kompaktně), v rubrice Sport a na stránkách obcí. Bez dat se blok nevykreslí.

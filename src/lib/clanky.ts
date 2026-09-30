@@ -32,11 +32,24 @@ export interface Clanek {
   datumPublikace: string;
   casCteniMin: number;
   obrazekAlt?: string;
+  /** Fotka z Airtable (pole Obrazek + ObrazekPopis + ObrazekAutor). Bez ní se
+   * článek zobrazí bez obrázku – žádné šedé placeholdery. */
+  obrazek?: Obrazek;
   telo: string[];
   stitky: string[];
   hlavniZprava: boolean;
   souvisejiciClanky: string[];
   ukazkovyObsah?: boolean;
+}
+
+export interface Obrazek {
+  /** URL přílohy v Airtable – platí jen pár hodin, proto ji web stahuje a
+   * zpracovává při buildu (astro:assets), nikdy ji nedává přímo do HTML. */
+  url: string;
+  sirka: number;
+  vyska: number;
+  popis: string;
+  autor?: string;
 }
 
 // Server-only proměnné (build-time), záměrně přes process.env, ne import.meta.env
@@ -69,6 +82,20 @@ function odhadniCasCteni(telo: string[]): number {
 function normalizujAutora(autor: string | undefined): string {
   if (!autor || autor.includes('AI návrh')) return 'Redakce Rozhledny';
   return autor;
+}
+
+function obrazekZPoli(f: Record<string, any>): Obrazek | undefined {
+  const priloha = Array.isArray(f.Obrazek) ? f.Obrazek.find((p: any) => String(p?.type ?? '').startsWith('image/')) : undefined;
+  if (!priloha?.url) return undefined;
+  // Velký náhled stačí (max. ~1000 px) a je menší než originál z mobilu.
+  const zdroj = priloha.thumbnails?.large ?? priloha;
+  return {
+    url: String(zdroj.url),
+    sirka: Number(zdroj.width || priloha.width || 1200),
+    vyska: Number(zdroj.height || priloha.height || 800),
+    popis: String(f.ObrazekPopis || f.Nadpis || ''),
+    autor: f.ObrazekAutor ? String(f.ObrazekAutor) : undefined,
+  };
 }
 
 interface AirtableRecord {
@@ -132,6 +159,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       datumPublikace: String(f.DatumPublikace || f.DatumZdroje || rec.createdTime.slice(0, 10)),
       casCteniMin: odhadniCasCteni(telo),
       obrazekAlt: undefined,
+      obrazek: obrazekZPoli(f),
       telo,
       stitky: String(f.Stitky || '')
         .split(',')
@@ -142,6 +170,23 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       ukazkovyObsah: false,
     });
   }
+
+  // Fotku astro:assets stahuje až při generování stránek a chyba stažení by
+  // shodila celý build. Proto se tu každá ověří předem a nedostupná se jen
+  // vynechá (článek se zobrazí bez fotky).
+  await Promise.all(
+    clanky
+      .filter((c) => c.obrazek)
+      .map(async (c) => {
+        try {
+          const resp = await fetch(c.obrazek!.url, { method: 'HEAD' });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        } catch (err) {
+          console.warn(`[clanky] Fotku k "${c.nadpis}" se nepodařilo stáhnout (${err}) - článek bude bez fotky.`);
+          c.obrazek = undefined;
+        }
+      }),
+  );
 
   // Nejnovější nahoře.
   clanky.sort((a, b) => (a.datumPublikace < b.datumPublikace ? 1 : -1));
@@ -183,4 +228,38 @@ export function getClanky(): Promise<Clanek[]> {
     return articlesJsonFallback as Clanek[];
   });
   return cache;
+}
+
+// Rubriky, které se hodí na hlavní zprávu, když ji redakce nevybrala ručně –
+// věci, které se týkají hodně lidí (úřad, silnice, bezpečnost). Sport, kultura
+// a bazárek jdou nahoru jen ručně zaškrtnutým polem HlavniZprava.
+const RUBRIKY_PRO_HLAVNI_ZPRAVU = ['verejna-sprava', 'doprava', 'bezpecnost'];
+// Ručně vybraná hlavní zpráva vydrží nahoře nejvýš tolik dní, pak ji
+// vystřídá automatický výběr – zapomenuté zaškrtnutí tak nezůstane navěky.
+const RUCNI_HLAVNI_ZPRAVA_DNU = 7;
+// Automatický výběr bere z preferovaných rubrik jen dost čerstvé články;
+// starší důležitá zpráva nemá přebít novější článek z jiné rubriky.
+const AUTOMATICKA_HLAVNI_ZPRAVA_DNU = 3;
+
+function staryDni(clanek: Clanek, dnes: Date): number {
+  return (dnes.getTime() - new Date(clanek.datumPublikace).getTime()) / 86_400_000;
+}
+
+/**
+ * Vybere hlavní zprávu na homepage z publikovaných článků seřazených od
+ * nejnovějšího:
+ *   1. nejnovější článek se zaškrtnutým HlavniZprava, pokud není starší než 7 dní,
+ *   2. jinak nejnovější článek z rubrik veřejná správa/doprava/bezpečnost
+ *      z posledních 3 dnů (když jich je víc, dostane přednost ten s fotkou),
+ *   3. jinak prostě nejnovější článek.
+ */
+export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Clanek | undefined {
+  const rucne = clanky.find((c) => c.hlavniZprava && staryDni(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_DNU);
+  if (rucne) return rucne;
+
+  const kandidati = clanky.filter(
+    (c) => RUBRIKY_PRO_HLAVNI_ZPRAVU.includes(c.rubrika) && staryDni(c, dnes) <= AUTOMATICKA_HLAVNI_ZPRAVA_DNU,
+  );
+  const sFotkou = kandidati.find((c) => c.obrazek);
+  return sFotkou ?? kandidati[0] ?? clanky[0];
 }

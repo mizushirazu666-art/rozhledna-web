@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
+import SportPrehled from '../../components/SportPrehled.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -29,6 +30,10 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
       <p class="prazdno">Z této obce zatím nejsou žádné publikované zprávy.</p>
     )}
   </section>
+
+  <div class="container">
+    <SportPrehled obec={obec.slug} nadpis={`Sport – ${obec.nazev}`} />
+  </div>
 
   <div class="container">
     <NewsletterCTA />

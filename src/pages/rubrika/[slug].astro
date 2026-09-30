@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
+import SportPrehled from '../../components/SportPrehled.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -18,6 +19,12 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
     <span class="kicker kicker--zelena">Rubrika</span>
     <h1>{rubrika.nazev}</h1>
   </div>
+
+  {rubrika.slug === 'sport' && (
+    <div class="container">
+      <SportPrehled nadpis="Zápasy, výsledky a tabulky" cara={false} />
+    </div>
+  )}
 
   <section class="container novinky">
     {clanky.length > 0 ? (

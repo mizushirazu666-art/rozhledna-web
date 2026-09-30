@@ -1,0 +1,198 @@
+---
+/**
+ * Sportovní přehled: program nejbližších dní, poslední výsledky dospělých a
+ * tabulky soutěží. Data z Airtable (src/lib/sport.ts). Bez dat se nevykreslí.
+ *   obec    – jen zápasy dané obce (slug), jinak všech obcí
+ *   kompakt – úzká verze pro homepage (bez tabulek, max. 6 zápasů)
+ */
+import { getSport, vyberZapasy, seraditTabulky, formatZacatek, nazevObce, kategorieIndex } from '../lib/sport';
+
+export interface Props {
+  obec?: string;
+  kompakt?: boolean;
+  nadpis?: string;
+  /** Čára nad blokem – na stránce rubriky ji už kreslí hlavička. */
+  cara?: boolean;
+}
+
+const { obec, kompakt = false, nadpis = 'Sport v okolí', cara = true } = Astro.props;
+const { zapasy, tabulky } = await getSport();
+const { program, vysledky } = vyberZapasy(zapasy, obec);
+const limit = kompakt ? 6 : 40;
+// V programu dospělí napřed, v rámci kategorie podle času.
+const programVyber = [...program]
+  .sort((a, b) => a.zacatek.localeCompare(b.zacatek) || kategorieIndex(a.kategorie) - kategorieIndex(b.kategorie))
+  .slice(0, limit);
+const vysledkyVyber = vysledky.slice(0, kompakt ? 4 : 20);
+const tabulkyVyber = kompakt ? [] : seraditTabulky(tabulky, obec);
+const nicNeni = programVyber.length === 0 && vysledkyVyber.length === 0 && tabulkyVyber.length === 0;
+const zobrazObec = !obec;
+
+function vysledekTridy(z: { skore: string; domaNas: boolean }): string {
+  const m = z.skore.match(/(\d+)\s*:\s*(\d+)/);
+  if (!m) return '';
+  const [doma, venku] = [Number(m[1]), Number(m[2])];
+  const nase = z.domaNas ? doma : venku;
+  const jejich = z.domaNas ? venku : doma;
+  return nase > jejich ? 'vyhra' : nase < jejich ? 'prohra' : 'remiza';
+}
+---
+{!nicNeni && (
+  <section class={`sport${kompakt ? ' sport--kompakt' : ''}${cara ? '' : ' sport--bez-cary'}`} aria-labelledby="sport-nadpis">
+    <div class="sport__hlavicka">
+      <h2 id="sport-nadpis" class="sport__nadpis">{nadpis}</h2>
+      {kompakt && <a class="sport__vse" href="/rubrika/sport/">Celý program a tabulky →</a>}
+    </div>
+
+    <div class="sport__sloupce">
+      {programVyber.length > 0 && (
+        <div class="sport__blok">
+          <h3>Program</h3>
+          <ul class="sport__seznam">
+            {programVyber.map((z) => (
+              <li class={`zapas${z.domaNas ? ' zapas--doma' : ''}`}>
+                <span class="zapas__cas">{formatZacatek(z.zacatek)}</span>
+                <span class="zapas__tymy">{z.domaci} – {z.hoste}</span>
+                <span class="zapas__meta">
+                  {z.sport} · {z.soutez}{zobrazObec && ` · ${nazevObce(z.obec)}`}
+                  {z.domaNas ? ` · doma${z.misto ? ` (${z.misto})` : ''}` : z.misto ? ` · ${z.misto}` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {vysledkyVyber.length > 0 && (
+        <div class="sport__blok">
+          <h3>Výsledky</h3>
+          <ul class="sport__seznam">
+            {vysledkyVyber.map((z) => (
+              <li class={`zapas zapas--${vysledekTridy(z)}`}>
+                <span class="zapas__cas">{formatZacatek(z.zacatek)}</span>
+                <span class="zapas__tymy">
+                  {z.domaci} – {z.hoste} <strong class="zapas__skore">{z.skore}</strong>
+                </span>
+                <span class="zapas__meta">{z.sport} · {z.soutez}{zobrazObec && ` · ${nazevObce(z.obec)}`}</span>
+                {!kompakt && z.strelci && <span class="zapas__strelci">{z.strelci.split('\n').join(' · ')}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+
+    {tabulkyVyber.length > 0 && (
+      <div class="sport__tabulky">
+        {tabulkyVyber.map((t) => (
+          <details class="tabulka" open={tabulkyVyber.length <= 2}>
+            <summary>
+              <span class="tabulka__nazev">{t.soutez}</span>
+              <span class="tabulka__nas">{t.tym}{t.poradi ? ` – ${t.poradi}. místo` : ''}</span>
+            </summary>
+            <div class="tabulka__obal">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="vlevo">Tým</th>
+                    {t.radky[0]?.z !== undefined && <><th>Z</th><th>V</th><th>R</th><th>P</th><th>Skóre</th></>}
+                    <th>Body</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {t.radky.map((r) => (
+                    <tr class={r.nas ? 'nas' : ''}>
+                      <td class="vlevo">{r.poradi}. {r.tym}</td>
+                      {t.radky[0]?.z !== undefined && <><td>{r.z}</td><td>{r.v}</td><td>{r.r}</td><td>{r.p}</td><td>{r.skore}</td></>}
+                      <td><strong>{r.body}</strong></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        ))}
+      </div>
+    )}
+  </section>
+)}
+
+<style>
+  .sport {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    border-top: 1px solid var(--barva-ramecek);
+  }
+  .sport__hlavicka {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .sport__nadpis { font-size: 20px; }
+  .sport__vse { font-size: 14px; font-weight: 600; }
+  .sport__sloupce {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px;
+  }
+  .sport__blok h3 {
+    font-family: var(--font-tělo);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--barva-zelena);
+    margin-bottom: 10px;
+  }
+  .sport__seznam { list-style: none; margin: 0; padding: 0; }
+  .zapas {
+    display: grid;
+    grid-template-columns: 118px 1fr;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 10px 0 10px 10px;
+    border-bottom: 1px solid var(--barva-ramecek);
+    border-left: 3px solid transparent;
+  }
+  .zapas--doma { border-left-color: var(--barva-zelena); }
+  .zapas--vyhra { border-left-color: var(--barva-zelena); }
+  .zapas--prohra { border-left-color: var(--barva-terakota); }
+  .zapas--remiza { border-left-color: var(--barva-text-tlumena); }
+  .zapas__cas { font-size: 13px; color: var(--barva-text-tlumena); grid-row: span 2; padding-top: 2px; }
+  .zapas__tymy { font-weight: 600; font-size: 15px; }
+  .zapas__skore { margin-left: 6px; }
+  .zapas__meta, .zapas__strelci { font-size: 13px; color: var(--barva-text-tlumena); grid-column: 2; }
+  .zapas__strelci { font-size: 12px; }
+
+  .sport__tabulky { margin-top: 32px; display: flex; flex-direction: column; gap: 12px; }
+  .tabulka { border: 1px solid var(--barva-ramecek); border-radius: 6px; background: #fff; }
+  .tabulka summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+  }
+  .tabulka__nas { color: var(--barva-zelena); font-size: 14px; }
+  .tabulka__obal { overflow-x: auto; padding: 0 16px 12px; }
+  .tabulka table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .tabulka th, .tabulka td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--barva-ramecek); white-space: nowrap; }
+  .tabulka th { font-size: 12px; color: var(--barva-text-tlumena); font-weight: 600; }
+  .tabulka .vlevo { text-align: left; }
+  .tabulka tr.nas td { background: #EEF3EE; font-weight: 600; }
+
+  .sport--kompakt .zapas__strelci { display: none; }
+  .sport--bez-cary { border-top: none; }
+
+  @media (max-width: 900px) {
+    .sport { padding-top: 24px; padding-bottom: 24px; }
+    .sport__sloupce { grid-template-columns: 1fr; gap: 24px; }
+    .sport__hlavicka { flex-direction: column; gap: 6px; }
+    .zapas { grid-template-columns: 1fr; }
+    .zapas__cas { grid-row: auto; }
+    .zapas__meta, .zapas__strelci { grid-column: 1; }
+  }
+</style>

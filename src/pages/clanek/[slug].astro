@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import taxonomie from '../../data/taxonomie.json';
+import { Image } from 'astro:assets';
 import { getClanky } from '../../lib/clanky';
 
 export async function getStaticPaths() {
@@ -47,11 +48,21 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
         </div>
       </header>
 
-      {clanek.obrazekAlt && (
-        <>
-          <div class="clanek__obrazek obrazek-placeholder" aria-hidden="true">[ILUSTRAČNÍ FOTO]</div>
-          <span class="clanek__obrazek-popisek">{clanek.obrazekAlt}</span>
-        </>
+      {clanek.obrazek && (
+        <figure class="clanek__foto">
+          <Image
+            src={clanek.obrazek.url}
+            width={clanek.obrazek.sirka}
+            height={clanek.obrazek.vyska}
+            widths={[480, 800, 1100]}
+            sizes="(max-width: 900px) 100vw, 720px"
+            alt={clanek.obrazek.popis}
+            loading="eager"
+          />
+          <figcaption class="clanek__obrazek-popisek">
+            {clanek.obrazek.popis}{clanek.obrazek.autor && <span class="clanek__obrazek-autor"> · {clanek.obrazek.autor}</span>}
+          </figcaption>
+        </figure>
       )}
 
       <div class="clanek__telo">
@@ -160,8 +171,9 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
   .clanek__autor { font-size: 14px; font-weight: 600; }
   .clanek__meta { font-size: 13px; color: var(--barva-text-tlumena); }
 
-  .clanek__obrazek { min-height: 420px; }
-  .clanek__obrazek-popisek { font-size: 13px; color: var(--barva-text-tlumena); margin-top: -14px; }
+  .clanek__foto { margin: 0; display: flex; flex-direction: column; gap: 22px; }
+  .clanek__foto img { width: 100%; height: auto; display: block; }
+  .clanek__obrazek-popisek { font-size: 13px; color: var(--barva-text-tlumena); margin-top: -12px; }
 
   .clanek__telo {
     display: flex;
@@ -231,7 +243,7 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
     .clanek-layout { flex-direction: column; gap: 32px; padding-top: 16px; }
     .clanek__nadpis { font-size: 26px; }
     .clanek__perex { font-size: 15px; }
-    .clanek__obrazek { min-height: 200px; }
+    .clanek__foto { gap: 18px; }
     .clanek__telo { font-size: 16px; }
     .postranni { position: static; width: 100%; }
   }

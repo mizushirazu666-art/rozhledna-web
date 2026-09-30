@@ -7,8 +7,10 @@ const { rubriky } = taxonomie;
   <div class="container header__inner">
     <a href="/" class="header__brand">
       <Logo size={28} />
-      <span class="header__wordmark">ROZHLEDNA</span>
-      <span class="header__tag">Chrudimsko</span>
+      <span class="header__nazev">
+        <span class="header__wordmark">ROZHLEDNA</span>
+        <span class="header__tag">Chrudimsko</span>
+      </span>
     </a>
 
     <nav class="header__nav" aria-label="Hlavní navigace">
@@ -43,9 +45,15 @@ const { rubriky } = taxonomie;
   }
   .header__brand {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 10px;
     color: var(--barva-text);
+  }
+  /* "Chrudimsko" menším písmem pod názvem, zarovnané na šířku názvu. */
+  .header__nazev {
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 1;
   }
   .header__brand:hover { color: var(--barva-text); }
   .header__brand svg { align-self: center; margin-right: 4px; }
@@ -56,9 +64,13 @@ const { rubriky } = taxonomie;
     letter-spacing: 0.5px;
   }
   .header__tag {
-    font-size: 13px;
+    margin-top: 5px;
+    font-size: 10.5px;
+    font-weight: 500;
     color: var(--barva-text-tlumena);
-    letter-spacing: 0.5px;
+    letter-spacing: 3.1px;
+    text-transform: uppercase;
+    text-align: center;
   }
   .header__nav {
     flex: 1;
@@ -89,7 +101,6 @@ const { rubriky } = taxonomie;
   @media (max-width: 1200px) and (min-width: 901px) {
     .header__inner { gap: 16px; }
     .header__nav { gap: 18px; font-size: 14px; }
-    .header__tag { display: none; }
   }
 
   @media (max-width: 900px) {

@@ -61,12 +61,17 @@ const { rubriky } = taxonomie;
     letter-spacing: 0.5px;
   }
   .header__nav {
+    flex: 1;
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 30px;
     font-size: 15px;
     font-weight: 500;
   }
-  .header__nav a { color: var(--barva-text); }
+  /* Rubriky vždy na jednom řádku ("Veřejná správa" se nezalomí) a svisle
+     na středu vůči logu a tlačítku newsletteru. */
+  .header__nav a { color: var(--barva-text); white-space: nowrap; }
   .header__nav a:hover { color: var(--barva-terakota); }
   .header__cta {
     background: var(--barva-zelena);
@@ -78,6 +83,13 @@ const { rubriky } = taxonomie;
   }
   .header__mobile-nav {
     display: none;
+  }
+
+  /* Užší notebooky: menší mezery, ať se menu vejde bez zalomení. */
+  @media (max-width: 1200px) and (min-width: 901px) {
+    .header__inner { gap: 16px; }
+    .header__nav { gap: 18px; font-size: 14px; }
+    .header__tag { display: none; }
   }
 
   @media (max-width: 900px) {

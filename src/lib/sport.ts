@@ -17,7 +17,8 @@ export interface Zapas {
   zacatek: string; // ISO
   domaci: string;
   hoste: string;
-  domaNas: boolean;
+  domaNas: boolean; // náš tým je v rozpisu domácí (strana skóre)
+  vObci: boolean; // hraje se v naší obci – "doma" pro fanoušky
   misto: string;
   skore: string;
   strelci: string;
@@ -96,6 +97,8 @@ export function getSport(): Promise<{ zapasy: Zapas[]; tabulky: Tabulka[] }> {
         domaci: String(f.Domaci ?? ''),
         hoste: String(f.Hoste ?? ''),
         domaNas: Boolean(f.DomaNas),
+        // Nezaškrtnutý checkbox Airtable v odpovědi vůbec nevrací.
+        vObci: Boolean(f.VObci),
         misto: String(f.Misto ?? ''),
         skore: String(f.Skore ?? ''),
         strelci: String(f.Strelci ?? ''),

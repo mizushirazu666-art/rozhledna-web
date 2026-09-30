@@ -50,12 +50,12 @@ function vysledekTridy(z: { skore: string; domaNas: boolean }): string {
           <h3>Program</h3>
           <ul class="sport__seznam">
             {programVyber.map((z) => (
-              <li class={`zapas${z.domaNas ? ' zapas--doma' : ''}`}>
+              <li class={`zapas${z.vObci ? ' zapas--doma' : ''}`}>
                 <span class="zapas__cas">{formatZacatek(z.zacatek)}</span>
                 <span class="zapas__tymy">{z.domaci} – {z.hoste}</span>
                 <span class="zapas__meta">
                   {z.sport} · {z.soutez}{zobrazObec && ` · ${nazevObce(z.obec)}`}
-                  {z.domaNas ? ` · doma${z.misto ? ` (${z.misto})` : ''}` : z.misto ? ` · ${z.misto}` : ''}
+                  {z.vObci ? ` · doma${z.misto ? ` (${z.misto})` : ''}` : z.misto ? ` · ${z.misto}` : ''}
                 </span>
               </li>
             ))}

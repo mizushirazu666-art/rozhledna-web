@@ -120,7 +120,9 @@ async function nacistFotobanku(): Promise<FotkaBanky[]> {
     const data = (await resp.json()) as { records: AirtableRecord[]; offset?: string };
     for (const rec of data.records) {
       const f = rec.fields as Record<string, any>;
-      const obrazek = obrazekZPoli({ Obrazek: f.Obrazek, ObrazekPopis: f.Popis, ObrazekAutor: f.Autor });
+      // Licence CC BY(-SA) vyžadují u fotky uvést autora i licenci.
+      const autor = [f.Autor, f.Licence && !/vlastní/i.test(String(f.Licence)) ? f.Licence : ''].filter(Boolean).join(', ');
+      const obrazek = obrazekZPoli({ Obrazek: f.Obrazek, ObrazekPopis: f.Popis, ObrazekAutor: autor });
       if (!obrazek) continue;
       fotky.push({
         obrazek: { ...obrazek, ilustracni: true },

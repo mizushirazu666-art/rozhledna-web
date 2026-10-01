@@ -113,7 +113,7 @@ async function nacistFotobanku(): Promise<FotkaBanky[]> {
   const fotky: FotkaBanky[] = [];
   let offset: string | undefined;
   do {
-    const params = new URLSearchParams({ filterByFormula: '{Schvaleno}', pageSize: '100' });
+    const params = new URLSearchParams({ filterByFormula: 'AND({Schvaleno}, NOT({Neschvaleno}))', pageSize: '100' });
     if (offset) params.set('offset', offset);
     const resp = await fetch(`${zaklad}?${params}`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
     if (!resp.ok) throw new Error(`Airtable Fotobanka vrátila ${resp.status}: ${await resp.text()}`);

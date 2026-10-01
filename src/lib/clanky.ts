@@ -135,10 +135,64 @@ async function nacistFotobanku(): Promise<FotkaBanky[]> {
   return fotky;
 }
 
-/** Témata Fotobanky, která se k článku hodí, od nejvhodnějšího. */
+// Podtémata ilustračních fotek (názvy musí sedět s config/ilustrace.json v
+// rozhledna-pipeline-v2). Pozná se z nadpisu, perexu a štítků článku; pořadí
+// rozhoduje, které se zkusí dřív.
+const PODTEMATA: [RegExp, string][] = [
+  [/volb|volič|kandid/, 'Volební místnost'],
+  [/fotbal/, 'Fotbalový zápas'],
+  [/volejbal/, 'Volejbalový zápas'],
+  [/florbal/, 'Florbal'],
+  [/stolní tenis/, 'Stolní tenis'],
+  [/tenis/, 'Tenis'],
+  [/běh|běžeck|maraton/, 'Běh'],
+  [/cyklo|cyklist/, 'Cyklistika'],
+  [/požární (útok|sport)|hasičsk.{0,20}(soutěž|lig)/, 'Hasičská soutěž'],
+  [/zásah|požár|hořel|výjezd/, 'Hasičský zásah'],
+  [/hasičsk.{0,12}(auto|vůz|technik|zbrojnic)|cistern/, 'Hasičská technika'],
+  [/polic|krádež|nehod|vloupán/, 'Policie'],
+  [/uzavír|uzavřen|objížď|výluk/, 'Uzavírka'],
+  [/zimní údržb|sníh|náledí|posyp/, 'Zimní údržba'],
+  [/silnic|vozovk|komunikac|asfalt/, 'Oprava silnice'],
+  [/chodník|přechod pro/, 'Chodník'],
+  [/autobus|zastávk|jízdní řád/, 'Autobus'],
+  [/vlak|železni|nádraž|trať/, 'Vlak'],
+  [/parkov/, 'Parkování'],
+  [/odstávka vody|vodovod|kanalizac|pitn|vodné|stočné|čistírn/, 'Voda a kanalizace'],
+  [/elektř|přerušení dodávky|egd|čez/, 'Odstávka elektřiny'],
+  [/odpad|popelnic|svoz|kontejner|sběrn/, 'Odpady'],
+  [/rozpoč|financ|závěrečný účet|úvěr/, 'Rozpočet a finance'],
+  [/dotac|grant/, 'Dotace'],
+  [/územn/, 'Územní plán'],
+  [/osvětlení|lamp/, 'Veřejné osvětlení'],
+  [/stavb|rekonstruk|výstavb|oprav/, 'Stavba a rekonstrukce'],
+  [/pozem|pronáj|pacht|nemovit|aukc|prodej/, 'Pozemky a nemovitosti'],
+  [/zasedání|zastupitel/, 'Zasedání zastupitelstva'],
+  [/lékař|ordinac|zdravot|očkov|nemocn|záchran/, 'Zdraví'],
+  [/mateřsk|školk/, 'Školka'],
+  [/škol|žák|výuk/, 'Výuka'],
+  [/knihovn|knih|beseda|čtení/, 'Knihovna'],
+  [/pouť|posvícen|kolotoč/, 'Pouť'],
+  [/mikuláš|čert|rozsvícení/, 'Mikuláš'],
+  [/advent|vánoc|vánoční|jarmark/, 'Advent a Vánoce'],
+  [/masopust|maškar/, 'Masopust'],
+  [/koncert|kapel|hudb|zpěv|sbor/, 'Koncert'],
+  [/divadl|představení|loutk/, 'Divadlo'],
+  [/výstav|muze|galeri|vernisáž/, 'Výstava'],
+  [/ples|taneční|zábav/, 'Ples'],
+  [/senior|důchod/, 'Senioři'],
+  [/dět/, 'Akce pro děti'],
+  [/počas|bouř|povod|vichřic|mráz|vedr|meteo|výstrah/, 'Počasí'],
+  [/rybník|výlov|rybář/, 'Rybník'],
+  [/strom|zeleň|alej|výsadb|kácen|\bpark\b/, 'Stromy a zeleň'],
+  [/\bles|lesní|kůrov|těžb|dřev/, 'Les'],
+];
+
+/** Témata Fotobanky, která se k článku hodí, od nejvhodnějšího: nejdřív
+ * konkrétní podtémata (svoz odpadu → popelnice), pak hlavní témata. */
 function temataClanku(c: Clanek): string[] {
   const text = `${c.nadpis} ${c.perex} ${c.stitky.join(' ')}`.toLowerCase();
-  const t: string[] = [];
+  const t: string[] = PODTEMATA.filter(([re]) => re.test(text)).map(([, tema]) => tema);
   const kdyz = (re: RegExp, tema: string) => { if (re.test(text)) t.push(tema); };
   kdyz(/fotbal/, 'Fotbal');
   kdyz(/volejbal/, 'Volejbal');
@@ -155,12 +209,15 @@ function temataClanku(c: Clanek): string[] {
     bezpecnost: ['Hasiči'],
     kultura: ['Kultura a akce', 'Památky'],
   };
-  return [...t, ...(podleRubriky[c.rubrika] ?? [])];
+  return [...new Set([...t, ...(podleRubriky[c.rubrika] ?? [])])];
 }
 
 // Záložní témata jen pro fotky konkrétní obce (náves, zámek, okolí) – obecná
 // fotka "nějaké vesnice" nebo "nějakého lesa" by u článku jinak mátla.
 const ZALOZNI_TEMATA_OBCE = ['Obec obecně', 'Památky', 'Příroda'];
+
+/** Kolik sousedních článků (podle data) nesmí mít stejnou ilustrační fotku. */
+const OKNO_BEZ_OPAKOVANI = 12;
 
 function hash(text: string): number {
   let h = 0;
@@ -168,23 +225,46 @@ function hash(text: string): number {
   return h;
 }
 
-/** Vybere k článku bez vlastní fotky ilustrační: nejdřív fotka z dané obce k
- * nejvhodnějšímu tématu, pak obecná fotka k tématu. Mezi rovnocennými se
- * vybírá podle slugu – stejný článek má vždy stejnou fotku, různé články se
- * střídají. Bazárek fotky nedostává. */
-function vyberIlustraci(c: Clanek, banka: FotkaBanky[]): Obrazek | undefined {
-  if (c.rubrika === 'bazarek') return undefined;
-  const temata = temataClanku(c);
-  const vlastni = new Set(temata);
-  for (const tema of [...temata, ...ZALOZNI_TEMATA_OBCE.filter((z) => !vlastni.has(z))]) {
-    for (const zObce of [true, false]) {
-      // Obecnou fotku (bez obce) jen k tématu, o kterém článek opravdu je.
-      if (!zObce && !vlastni.has(tema)) continue;
-      const kandidati = banka.filter((f) => (zObce ? f.obec === c.obec : f.obec === '') && f.temata.includes(tema));
-      if (kandidati.length) return kandidati[hash(c.slug) % kandidati.length].obrazek;
+/** Rozdá ilustrační fotky článkům bez vlastní fotky. Články se procházejí od
+ * nejstaršího, takže starší článek si fotku drží i po přidání nových.
+ *
+ * U každého článku se zkoušejí témata od nejvhodnějšího (podtéma → hlavní
+ * téma → záložní témata obce). V rámci tématu se fotky obce a obecné fotky
+ * míchají: přednost má fotka, která se zatím použila nejméně; při shodě fotka
+ * z obce. Fotka použitá u některého z posledních OKNO_BEZ_OPAKOVANI článků se
+ * přeskočí – když už k článku žádná jiná není, zůstane bez fotky (lepší než
+ * pořád táž). Bazárek fotky nedostává. */
+function rozdejIlustrace(clanky: Clanek[], banka: FotkaBanky[]): void {
+  const pouziti = new Map<string, number>();
+  const posledni: string[] = [];
+  const poradi = [...clanky].sort((a, b) => a.datumPublikace.localeCompare(b.datumPublikace));
+  for (const c of poradi) {
+    if (c.obrazek || c.rubrika === 'bazarek') continue;
+    const temata = temataClanku(c);
+    const vlastni = new Set(temata);
+    let vybrana: FotkaBanky | undefined;
+    for (const tema of [...temata, ...ZALOZNI_TEMATA_OBCE.filter((z) => !vlastni.has(z))]) {
+      const kandidati = banka.filter(
+        (f) =>
+          f.temata.includes(tema) &&
+          ((c.obec && f.obec === c.obec) || (f.obec === '' && vlastni.has(tema))) &&
+          !posledni.includes(f.obrazek.url),
+      );
+      if (!kandidati.length) continue;
+      const klic = (f: FotkaBanky) => [pouziti.get(f.obrazek.url) ?? 0, f.obec ? 0 : 1, hash(c.slug + f.obrazek.url)];
+      kandidati.sort((x, y) => {
+        const [a, b] = [klic(x), klic(y)];
+        return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+      });
+      vybrana = kandidati[0];
+      break;
     }
+    if (!vybrana) continue;
+    c.obrazek = vybrana.obrazek;
+    pouziti.set(vybrana.obrazek.url, (pouziti.get(vybrana.obrazek.url) ?? 0) + 1);
+    posledni.push(vybrana.obrazek.url);
+    if (posledni.length > OKNO_BEZ_OPAKOVANI) posledni.shift();
   }
-  return undefined;
 }
 
 interface AirtableRecord {
@@ -266,9 +346,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
   } catch (err) {
     console.warn('[clanky] Fotobanku se nepodařilo načíst, články bez fotky zůstanou bez obrázku:', err);
   }
-  for (const c of clanky) {
-    if (!c.obrazek) c.obrazek = vyberIlustraci(c, banka);
-  }
+  rozdejIlustrace(clanky, banka);
 
   // Fotku astro:assets stahuje až při generování stránek a chyba stažení by
   // shodila celý build. Proto se tu každá ověří předem a nedostupná se jen

@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import StoryCard from '../components/StoryCard.astro';
 import NewsletterCTA from '../components/NewsletterCTA.astro';
 import SportPrehled from '../components/SportPrehled.astro';
+import HlaseniIzs from '../components/HlaseniIzs.astro';
 import taxonomie from '../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import { getClanky, vyberHlavniZpravu } from '../lib/clanky';
@@ -47,14 +48,19 @@ const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZp
         </div>
       </section>
 
-      <section class="container novinky">
-        <h2 class="novinky__nadpis">Nejnovější z okolí</h2>
-        <div class="novinky__mrizka">
-          {ostatni.map((c) => (
-            <StoryCard clanek={c} />
-          ))}
-        </div>
-      </section>
+      <div class="container novinky">
+        <section class="novinky__clanky">
+          <h2 class="novinky__nadpis">Nejnovější z okolí</h2>
+          <div class="novinky__mrizka">
+            {ostatni.map((c) => (
+              <StoryCard clanek={c} />
+            ))}
+          </div>
+        </section>
+        <aside class="novinky__bok">
+          <HlaseniIzs kompakt />
+        </aside>
+      </div>
 
       <div class="container">
         <SportPrehled kompakt nadpis="Sport tento týden" />
@@ -131,6 +137,10 @@ const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZp
   .novinky {
     padding-top: 48px;
     padding-bottom: 48px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 48px;
+    align-items: start;
   }
   .novinky__nadpis {
     font-size: 20px;
@@ -138,7 +148,7 @@ const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZp
   }
   .novinky__mrizka {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 36px;
   }
 
@@ -156,7 +166,7 @@ const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZp
     .hero__perex { font-size: 15px; }
     .hero__image img { max-height: 240px; }
     .hero__inner--bez-fotky .hero__title { font-size: 27px; }
-    .novinky { padding-top: 22px; padding-bottom: 24px; }
+    .novinky { padding-top: 22px; padding-bottom: 24px; grid-template-columns: 1fr; gap: 32px; }
     .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }
   }
 </style>

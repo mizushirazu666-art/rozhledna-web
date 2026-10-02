@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import SportPrehled from '../../components/SportPrehled.astro';
+import HlaseniIzs from '../../components/HlaseniIzs.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -35,6 +36,10 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
     <SportPrehled obec={obec.slug} nadpis={`Sport – ${obec.nazev}`} />
   </div>
 
+  <div class="container izs-obec">
+    <HlaseniIzs obec={obec.slug} nadpis={`Výjezdy hasičů – ${obec.nazev}`} />
+  </div>
+
   <div class="container">
     <NewsletterCTA />
   </div>
@@ -65,4 +70,5 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
     .novinky { padding-top: 22px; }
     .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }
   }
+  .izs-obec { padding-bottom: 32px; }
 </style>

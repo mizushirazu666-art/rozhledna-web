@@ -3,6 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import SportPrehled from '../../components/SportPrehled.astro';
+import HlaseniIzs from '../../components/HlaseniIzs.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -26,7 +27,14 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
     </div>
   )}
 
+  {rubrika.slug === 'bezpecnost' && (
+    <div class="container izs-rubrika">
+      <HlaseniIzs nadpis="Výjezdy hasičů v našich obcích (posledních 30 dní)" />
+    </div>
+  )}
+
   <section class="container novinky">
+    {rubrika.slug === 'bezpecnost' && <h2 class="novinky__nadpis">Články</h2>}
     {clanky.length > 0 ? (
       <div class="novinky__mrizka">
         {clanky.map((c) => <StoryCard clanek={c} barva={rubrika.barva === 'zelena' ? 'zelena' : 'terakota'} />)}
@@ -58,6 +66,8 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
     gap: 36px;
   }
   .prazdno { color: var(--barva-text-tlumena); }
+  .izs-rubrika { padding-top: 32px; }
+  .novinky__nadpis { font-size: 18px; margin-bottom: 20px; }
 
   @media (max-width: 900px) {
     .rubrika-hlavicka { padding-top: 24px; padding-bottom: 20px; }

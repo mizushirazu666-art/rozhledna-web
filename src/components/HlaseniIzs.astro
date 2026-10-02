@@ -1,0 +1,125 @@
+---
+/**
+ * Hlášení IZS – výjezdy hasičů v našich obcích (src/lib/hlaseni.ts).
+ *   kompakt – sloupec na hlavní stránce: posledních pár hlášení za týden,
+ *             odkaz do rubriky Bezpečnost; když nic není, krátká věta.
+ *   obec    – jen hlášení dané obce (slug)
+ * Bez kompakt a bez hlášení se blok nevykreslí.
+ */
+import { getHlaseni, formatCas } from '../lib/hlaseni';
+import taxonomie from '../data/taxonomie.json';
+
+export interface Props {
+  kompakt?: boolean;
+  obec?: string;
+  nadpis?: string;
+}
+
+const { kompakt = false, obec, nadpis = 'Výjezdy hasičů' } = Astro.props;
+const vsechna = (await getHlaseni()).filter((h) => !obec || h.obec === obec);
+const tyden = Date.now() - 7 * 86_400_000;
+const hlaseni = kompakt ? vsechna.filter((h) => new Date(h.cas).getTime() >= tyden).slice(0, 6) : vsechna;
+const zobrazObec = !obec;
+const nazevObce = (slug: string) => taxonomie.obce.find((o) => o.slug === slug)?.nazev ?? slug;
+---
+{(kompakt || hlaseni.length > 0) && (
+  <section class={`izs${kompakt ? ' izs--kompakt' : ''}`} aria-labelledby="izs-nadpis">
+    <h2 id="izs-nadpis" class="izs__nadpis">{nadpis}</h2>
+    {hlaseni.length > 0 ? (
+      <ul class="izs__seznam">
+        {hlaseni.map((h) => (
+          <li class={`izs__polozka${h.probiha ? ' izs__polozka--probiha' : ''}`}>
+            <span class="izs__cas">
+              {formatCas(h.cas)}
+              {h.probiha && <span class="izs__stitek">probíhá</span>}
+            </span>
+            <span class="izs__druh">{h.druh}</span>
+            <span class="izs__misto">
+              {h.misto}{zobrazObec && !h.misto.startsWith(nazevObce(h.obec)) && ` (${nazevObce(h.obec)})`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="izs__prazdno">Za poslední týden hasiči v našich obcích nevyjížděli.</p>
+    )}
+    <p class="izs__zdroj">
+      <span>Zdroj: <a href="https://www.hzspa.cz/vyjezdy/aktualni-vyjezdy.php" rel="noopener" target="_blank">HZS Pardubického kraje</a></span>
+      {kompakt && <a class="izs__vse" href="/rubrika/bezpecnost/">Vše z Bezpečnosti →</a>}
+    </p>
+  </section>
+)}
+
+<style>
+  .izs {
+    border-top: 3px solid var(--barva-terakota);
+    padding-top: 14px;
+  }
+  .izs__nadpis {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .izs__seznam {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .izs:not(.izs--kompakt) .izs__seznam {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 36px;
+  }
+  .izs__polozka {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .izs__cas {
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .izs__stitek {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--barva-terakota);
+    border-radius: 3px;
+    padding: 1px 6px;
+  }
+  .izs__druh {
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .izs__misto {
+    font-size: 14px;
+    color: var(--barva-text-tlumena-tmavsi);
+  }
+  .izs__prazdno {
+    font-size: 14px;
+    color: var(--barva-text-tlumena);
+    margin: 0 0 8px;
+  }
+  .izs__zdroj {
+    font-size: 12px;
+    color: var(--barva-text-tlumena);
+    margin: 12px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .izs__zdroj a { color: inherit; text-decoration: underline; }
+  .izs__zdroj .izs__vse { font-size: 14px; font-weight: 700; color: var(--barva-terakota); text-decoration: none; }
+
+  @media (max-width: 900px) {
+    .izs:not(.izs--kompakt) .izs__seznam { grid-template-columns: 1fr; }
+  }
+</style>

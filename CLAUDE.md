@@ -42,11 +42,15 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
 - `src/lib/sport.ts`, `src/components/SportPrehled.astro` – zápasy a
   tabulky z Airtable (Zapasy, Tabulky); „doma“ = `VObci`
   (`Boolean(f.VObci)` – Airtable nevyplněné checkboxy vynechává).
-- `src/lib/hlaseni.ts`, `src/components/HlaseniIzs.astro` – výjezdy hasičů
-  v našich obcích z Airtable tabulky Hlaseni (plní pipeline `scrapers/izs.py`
-  každé 2 h, bez schvalování; `Skryto` = nezobrazit, za posledních 30 dní).
-  `kompakt` = sloupec vedle „Nejnovější z okolí“ na hlavní stránce (max. 6
-  za týden); plný seznam v rubrice Bezpečnost (nad články) a na stránce obce.
+- `src/lib/hlaseni.ts`, `src/components/HlaseniIzs.astro` – „Bezpečnost
+  v okolí“: krátká hlášení z Airtable tabulky Hlaseni (bez schvalování,
+  `Skryto` = nezobrazit, za posledních 30 dní) – Typ „Výjezd“ (výjezdy
+  hasičů v okolí Chrudimi, `scrapers/izs.py`) a „Zpráva“ (nadpis + odkaz na
+  zprávu policie/hasičů/Chrudimského deníku, `scrapers/bezpecnost.py`).
+  Obec je vyplněná jen u našich obcí (zelená tečka), Lokalita u všech.
+  `kompakt` = podbarvený sloupec vedle „Nejnovější z okolí“ na hlavní stránce
+  (nadpis na úrovni nadpisu článků, max. 7 za týden); plný seznam v rubrice
+  Bezpečnost (nad články) a na stránce obce (jen její hlášení).
 - `src/pages/` – `index.astro` (hero s fotkou nebo varianta bez fotky,
   sportovní blok), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]`.
 - `src/components/Header.astro` – logo ROZHLEDNA s podtitulem „Chrudimsko“,

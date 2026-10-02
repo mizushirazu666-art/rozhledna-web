@@ -1,6 +1,8 @@
 /**
- * Krátká hlášení IZS (výjezdy hasičů v našich obcích) z Airtable tabulky
- * Hlaseni – plní ji rozhledna-pipeline (scrapers/izs.py) každé 2 hodiny.
+ * Krátká hlášení z Chrudimska z Airtable tabulky Hlaseni – výjezdy hasičů
+ * (Typ "Výjezd", scrapers/izs.py) a krátké zprávy policie, hasičů a Deníku
+ * (Typ "Zpráva", scrapers/bezpecnost.py); plní je rozhledna-pipeline každé
+ * 2 hodiny. Obec je vyplněná jen u našich obcí, Lokalita u všech.
  * Úřední hlášení se ukazují bez schvalování; redakce je může jen skrýt
  * (Skryto). Bez Airtable (lokální vývoj) vrací prázdný seznam a bloky
  * s hlášeními se na webu nezobrazí.
@@ -9,8 +11,11 @@ import taxonomie from '../data/taxonomie.json';
 
 export interface Hlaseni {
   id: string;
+  typ: 'vyjezd' | 'zprava';
   cas: string; // ISO
-  obec: string; // slug
+  obec: string; // slug naší obce, jinak ''
+  lokalita: string;
+  nadpis: string;
   misto: string;
   druh: string;
   probiha: boolean;
@@ -44,12 +49,15 @@ export function getHlaseni(): Promise<Hlaseni[]> {
       if (!resp.ok) throw new Error(`Airtable Hlaseni vrátila ${resp.status}: ${await resp.text()}`);
       const data = (await resp.json()) as { records: { id: string; fields: Record<string, any> }[]; offset?: string };
       for (const { id, fields: f } of data.records) {
-        const obec = taxonomie.obce.find((o) => o.nazev === f.Obec)?.slug;
-        if (!obec || !f.Cas) continue;
+        if (!f.Cas) continue;
+        const obec = taxonomie.obce.find((o) => o.nazev === f.Obec)?.slug ?? '';
         vysledek.push({
           id: String(f.HlaseniId ?? id),
+          typ: f.Typ === 'Zpráva' ? 'zprava' : 'vyjezd',
           cas: String(f.Cas),
           obec,
+          lokalita: String(f.Lokalita || f.Obec || ''),
+          nadpis: String(f.Nadpis ?? ''),
           misto: String(f.Misto ?? ''),
           druh: String(f.Druh ?? ''),
           probiha: f.Stav === 'Probíhá',
@@ -73,13 +81,14 @@ function denKlic(d: Date): string {
   return d.toLocaleDateString('sv-SE', { timeZone: PRAHA });
 }
 
-/** "Dnes 18:41", "Včera 9:04", jinak "Po 28. 9. 14:10" (český čas). */
-export function formatCas(iso: string, ted = new Date()): string {
+/** "Dnes 18:41", "Včera 9:04", jinak "Po 28. 9. 14:10" (český čas).
+ * jenDen – bez času (u zpráv je čas jen okamžik, kdy je sběr našel). */
+export function formatCas(iso: string, jenDen = false, ted = new Date()): string {
   const d = new Date(iso);
-  const cas = d.toLocaleTimeString('cs-CZ', { timeZone: PRAHA, hour: 'numeric', minute: '2-digit' });
+  const cas = jenDen ? '' : ` ${d.toLocaleTimeString('cs-CZ', { timeZone: PRAHA, hour: 'numeric', minute: '2-digit' })}`;
   const vcera = new Date(ted.getTime() - 86_400_000);
-  if (denKlic(d) === denKlic(ted)) return `Dnes ${cas}`;
-  if (denKlic(d) === denKlic(vcera)) return `Včera ${cas}`;
+  if (denKlic(d) === denKlic(ted)) return `Dnes${cas}`;
+  if (denKlic(d) === denKlic(vcera)) return `Včera${cas}`;
   const den = d.toLocaleDateString('cs-CZ', { timeZone: PRAHA, weekday: 'short', day: 'numeric', month: 'numeric' });
-  return `${den.charAt(0).toUpperCase()}${den.slice(1)} ${cas}`;
+  return `${den.charAt(0).toUpperCase()}${den.slice(1)}${cas}`;
 }

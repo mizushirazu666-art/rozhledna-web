@@ -1,13 +1,13 @@
 ---
 /**
- * Hlášení IZS – výjezdy hasičů v našich obcích (src/lib/hlaseni.ts).
- *   kompakt – sloupec na hlavní stránce: posledních pár hlášení za týden,
- *             odkaz do rubriky Bezpečnost; když nic není, krátká věta.
- *   obec    – jen hlášení dané obce (slug)
+ * Bezpečnost v okolí – krátká hlášení z Chrudimska (src/lib/hlaseni.ts):
+ * výjezdy hasičů a krátké zprávy policie, hasičů a Chrudimského deníku.
+ *   kompakt – sloupec na hlavní stránce: posledních pár hlášení za týden
+ *             v podbarveném rámečku, odkaz do rubriky Bezpečnost
+ *   obec    – jen hlášení dané obce (slug), jinak celé Chrudimsko
  * Bez kompakt a bez hlášení se blok nevykreslí.
  */
-import { getHlaseni, formatCas } from '../lib/hlaseni';
-import taxonomie from '../data/taxonomie.json';
+import { getHlaseni, formatCas, type Hlaseni } from '../lib/hlaseni';
 
 export interface Props {
   kompakt?: boolean;
@@ -15,56 +15,72 @@ export interface Props {
   nadpis?: string;
 }
 
-const { kompakt = false, obec, nadpis = 'Výjezdy hasičů' } = Astro.props;
+const { kompakt = false, obec, nadpis = 'Bezpečnost v okolí' } = Astro.props;
 const vsechna = (await getHlaseni()).filter((h) => !obec || h.obec === obec);
 const tyden = Date.now() - 7 * 86_400_000;
-const hlaseni = kompakt ? vsechna.filter((h) => new Date(h.cas).getTime() >= tyden).slice(0, 6) : vsechna;
-const zobrazObec = !obec;
-const nazevObce = (slug: string) => taxonomie.obce.find((o) => o.slug === slug)?.nazev ?? slug;
+const hlaseni = kompakt ? vsechna.filter((h) => new Date(h.cas).getTime() >= tyden).slice(0, 7) : vsechna;
+
+function stitek(h: Hlaseni): string {
+  if (h.typ === 'vyjezd') return 'Hasiči · výjezd';
+  if (/policie/i.test(h.zdroj)) return 'Policie';
+  if (/deník/i.test(h.zdroj)) return 'Chrudimský deník';
+  return 'Hasiči';
+}
 ---
 {(kompakt || hlaseni.length > 0) && (
-  <section class={`izs${kompakt ? ' izs--kompakt' : ''}`} aria-labelledby="izs-nadpis">
-    <h2 id="izs-nadpis" class="izs__nadpis">{nadpis}</h2>
-    {hlaseni.length > 0 ? (
-      <ul class="izs__seznam">
-        {hlaseni.map((h) => (
-          <li class={`izs__polozka${h.probiha ? ' izs__polozka--probiha' : ''}`}>
-            <span class="izs__cas">
-              {formatCas(h.cas)}
-              {h.probiha && <span class="izs__stitek">probíhá</span>}
-            </span>
-            <span class="izs__druh">{h.druh}</span>
-            <span class="izs__misto">
-              {h.misto}{zobrazObec && !h.misto.startsWith(nazevObce(h.obec)) && ` (${nazevObce(h.obec)})`}
-            </span>
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p class="izs__prazdno">Za poslední týden hasiči v našich obcích nevyjížděli.</p>
-    )}
-    <p class="izs__zdroj">
-      <span>Zdroj: <a href="https://www.hzspa.cz/vyjezdy/aktualni-vyjezdy.php" rel="noopener" target="_blank">HZS Pardubického kraje</a></span>
+  <section class={`izs${kompakt ? ' izs--kompakt' : ''}`} aria-labelledby={`izs-nadpis${obec ? `-${obec}` : ''}`}>
+    <h2 id={`izs-nadpis${obec ? `-${obec}` : ''}`} class="izs__nadpis">{nadpis}</h2>
+    <div class="izs__ramecek">
+      {hlaseni.length > 0 ? (
+        <ul class="izs__seznam">
+          {hlaseni.map((h) => (
+            <li class={`izs__polozka${h.obec ? ' izs__polozka--nase' : ''}`}>
+              <span class="izs__meta">
+                <span class="izs__stitek">{stitek(h)}</span>
+                <span>{formatCas(h.cas, h.typ === 'zprava')}</span>
+                {h.probiha && <span class="izs__probiha">probíhá</span>}
+              </span>
+              {h.typ === 'zprava' ? (
+                <a class="izs__hlavni" href={h.zdrojUrl} rel="noopener" target="_blank">{h.nadpis}</a>
+              ) : (
+                <span class="izs__hlavni">{h.druh}</span>
+              )}
+              {(h.typ === 'vyjezd' ? h.misto : h.lokalita) && (
+                <span class="izs__misto">{h.typ === 'vyjezd' ? h.misto : h.lokalita}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="izs__prazdno">Za poslední týden na Chrudimsku žádná hlášení.</p>
+      )}
+      <p class="izs__zdroj">
+        Zdroje: <a href="https://www.hzspa.cz/vyjezdy/aktualni-vyjezdy.php" rel="noopener" target="_blank">HZS Pk</a>{', '}
+        <a href="https://policie.gov.cz/pardubicky-kraj/zpravodajstvi" rel="noopener" target="_blank">Policie ČR</a>{', '}
+        <a href="https://chrudimsky.denik.cz/nehody/" rel="noopener" target="_blank">Chrudimský deník</a>
+      </p>
       {kompakt && <a class="izs__vse" href="/rubrika/bezpecnost/">Vše z Bezpečnosti →</a>}
-    </p>
+    </div>
   </section>
 )}
 
 <style>
-  .izs {
-    border-top: 3px solid var(--barva-terakota);
-    padding-top: 14px;
-  }
+  /* Nadpis stejně jako „Nejnovější z okolí", rámeček začíná na úrovni
+     horní čáry prvních článků – sloupec je zarovnaný s mřížkou. */
   .izs__nadpis {
-    font-size: 18px;
-    margin-bottom: 12px;
+    font-size: 20px;
+    margin-bottom: 26px;
+  }
+  .izs__ramecek {
+    background: var(--barva-izs-pozadi, #F1E7D8);
+    border-top: 3px solid var(--barva-terakota);
+    padding: 6px 20px 18px;
   }
   .izs__seznam {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 0;
   }
   .izs:not(.izs--kompakt) .izs__seznam {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -73,18 +89,25 @@ const nazevObce = (slug: string) => taxonomie.obce.find((o) => o.slug === slug)?
   .izs__polozka {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 10px 0;
+    gap: 3px;
+    padding: 12px 0;
     border-bottom: 1px solid var(--barva-ramecek);
   }
-  .izs__cas {
-    font-size: 13px;
-    color: var(--barva-text-tlumena);
+  .izs__meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 4px 10px;
+    font-size: 12px;
+    color: var(--barva-text-tlumena);
   }
   .izs__stitek {
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--barva-terakota);
+  }
+  .izs__probiha {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
@@ -94,32 +117,49 @@ const nazevObce = (slug: string) => taxonomie.obce.find((o) => o.slug === slug)?
     border-radius: 3px;
     padding: 1px 6px;
   }
-  .izs__druh {
+  .izs__hlavni {
     font-weight: 700;
     font-size: 15px;
+    line-height: 1.35;
+    color: var(--barva-text);
   }
+  a.izs__hlavni:hover { color: var(--barva-terakota); }
   .izs__misto {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--barva-text-tlumena-tmavsi);
+  }
+  /* Naše obce zvýrazněné zelenou tečkou. */
+  .izs__polozka--nase .izs__misto::before {
+    content: '';
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--barva-zelena);
+    margin-right: 6px;
+    vertical-align: 1px;
   }
   .izs__prazdno {
     font-size: 14px;
     color: var(--barva-text-tlumena);
-    margin: 0 0 8px;
+    margin: 12px 0 4px;
   }
   .izs__zdroj {
     font-size: 12px;
     color: var(--barva-text-tlumena);
-    margin: 12px 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px;
+    margin: 14px 0 0;
   }
   .izs__zdroj a { color: inherit; text-decoration: underline; }
-  .izs__zdroj .izs__vse { font-size: 14px; font-weight: 700; color: var(--barva-terakota); text-decoration: none; }
+  .izs__vse {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--barva-terakota);
+  }
 
   @media (max-width: 900px) {
+    .izs__nadpis { margin-bottom: 16px; }
     .izs:not(.izs--kompakt) .izs__seznam { grid-template-columns: 1fr; }
   }
 </style>

@@ -4,6 +4,7 @@ import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import SportPrehled from '../../components/SportPrehled.astro';
 import HlaseniIzs from '../../components/HlaseniIzs.astro';
+import MapaObci from '../../components/MapaObci.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -17,9 +18,16 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
 ---
 <BaseLayout title={obec.nazev} description={`Zprávy z obce ${obec.nazev} – Rozhledna, Chrudimsko.`}>
   <div class="container obec-hlavicka">
-    <span class="kicker kicker--zelena">Obec</span>
-    <h1>{obec.nazev}</h1>
-    <span class="obec-hlavicka__meta">{obec.obyvatel.toLocaleString('cs-CZ')} obyvatel · vlna {obec.vlna}</span>
+    <div class="obec-hlavicka__text">
+      <span class="kicker kicker--zelena">Obec</span>
+      <h1>{obec.nazev}</h1>
+      <span class="obec-hlavicka__meta">{obec.obyvatel.toLocaleString('cs-CZ')} obyvatel</span>
+    </div>
+    <aside class="obec-mapa">
+      <span class="obec-mapa__nadpis">Kde leží {obec.nazev}</span>
+      <MapaObci vybrana={obec.slug} popisky={false} />
+      <a class="obec-mapa__vse" href="/obce/">Všechny obce →</a>
+    </aside>
   </div>
 
   <section class="container novinky">
@@ -48,13 +56,27 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
 <style>
   .obec-hlavicka {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
     padding-top: 40px;
     padding-bottom: 32px;
     border-bottom: 1px solid var(--barva-ramecek);
   }
+  .obec-hlavicka__text { display: flex; flex-direction: column; gap: 8px; }
   .obec-hlavicka h1 { font-size: 34px; }
+  .obec-mapa {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #F1E7D8;
+    border-top: 3px solid var(--barva-zelena);
+    padding: 14px 18px 16px;
+  }
+  .obec-mapa__nadpis { font-family: var(--font-nadpisy); font-size: 16px; font-weight: 700; }
+  .obec-mapa__vse { font-size: 13px; font-weight: 600; }
   .obec-hlavicka__meta { font-size: 14px; color: var(--barva-text-tlumena); }
   .novinky { padding-top: 40px; padding-bottom: 48px; }
   .novinky__mrizka {
@@ -65,7 +87,8 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
   .prazdno { color: var(--barva-text-tlumena); }
 
   @media (max-width: 900px) {
-    .obec-hlavicka { padding-top: 24px; padding-bottom: 20px; }
+    .obec-hlavicka { padding-top: 24px; padding-bottom: 20px; flex-direction: column; gap: 20px; }
+    .obec-mapa { width: 100%; box-sizing: border-box; }
     .obec-hlavicka h1 { font-size: 24px; }
     .novinky { padding-top: 22px; }
     .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }

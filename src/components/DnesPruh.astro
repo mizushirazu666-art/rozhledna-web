@@ -1,0 +1,143 @@
+---
+/**
+ * Pruh pod záhlavím „na dnešek“: datum, státní svátek / významný den, kdo má
+ * svátek, počasí a probíhající
+ * zásah hasičů (nebo počet dnešních hlášení) – bez opakování názvu regionu.
+ * Vpravo vodoznak obrysu mikroregionu. Web je statický a přestavuje se
+ * přes den každé 2 h, proto datum, svátek a počasí na dnešek dopočítá
+ * prohlížeč (svátky i předpověď na 3 dny jsou v datech stránky) a starý
+ * „probíhající“ zásah po 4 hodinách skryje.
+ */
+import svatky from '../data/svatky.json';
+import mapa from '../data/mapa-regionu.json';
+import region from '../data/region.json';
+import { getPocasi } from '../lib/pocasi';
+import { getHlaseni } from '../lib/hlaseni';
+
+const PRAHA = 'Europe/Prague';
+const ted = new Date();
+const klic = (d: Date) => d.toLocaleDateString('sv-SE', { timeZone: PRAHA }); // YYYY-MM-DD
+const dnes = klic(ted);
+const datumText = (d: Date) => {
+  const t = d.toLocaleDateString('cs-CZ', { timeZone: PRAHA, weekday: 'long', day: 'numeric', month: 'long' });
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+const jmena = svatky.jmena as Record<string, string>;
+const dny = svatky.dny as Record<string, string>;
+const svatek = jmena[dnes.slice(5)] ?? '';
+const den = dny[dnes.slice(5)] ?? '';
+
+const pocasi = await getPocasi();
+const pocasiDnes = pocasi.find((p) => p.datum === dnes);
+
+const hlaseni = await getHlaseni();
+const zasah = hlaseni.find((h) => h.typ === 'vyjezd' && h.probiha && ted.getTime() - new Date(h.cas).getTime() < 4 * 3600_000);
+const dnesnich = hlaseni.filter((h) => klic(new Date(h.cas)) === dnes).length;
+---
+<div class="dnes" data-pocasi={JSON.stringify(pocasi)} data-svatky={JSON.stringify({ jmena, dny })}>
+  <div class="container dnes__inner">
+    <span class="dnes__datum" data-dnes-datum>{datumText(ted)}</span>
+    <span class="dnes__den" data-dnes-den hidden={!den}>{den}</span>
+    <span class="dnes__svatek" data-dnes-svatek hidden={!svatek}>Svátek má {svatek}</span>
+    <span class="dnes__pocasi" data-dnes-pocasi data-misto={region.pocasi.misto} hidden={!pocasiDnes}>
+      {pocasiDnes && `${region.pocasi.misto}: ${pocasiDnes.popis}, ${pocasiDnes.max} / ${pocasiDnes.min} °C`}
+    </span>
+    {zasah ? (
+      <a class="dnes__zasah" href={`/hlaseni/${zasah.slug}/`} data-cas={zasah.cas}>
+        <span class="dnes__probiha">probíhá</span> Zásah hasičů: {zasah.druh}, {zasah.lokalita || zasah.misto} →
+      </a>
+    ) : dnesnich > 0 ? (
+      <a class="dnes__zasah" href="/rubrika/bezpecnost/">Dnes v okolí {dnesnich} hlášení →</a>
+    ) : null}
+    <svg class="dnes__obrys" viewBox={`-1 -1 ${mapa.sirka + 2} ${mapa.vyska + 2}`} aria-hidden="true">
+      <path d={mapa.obrys} />
+    </svg>
+  </div>
+</div>
+
+<script>
+  // Dnešek podle hodin čtenáře (stránka mohla vzniknout včera večer).
+  const pruh = document.querySelector<HTMLElement>('.dnes');
+  if (pruh) {
+    const PRAHA = 'Europe/Prague';
+    const ted = new Date();
+    const dnes = ted.toLocaleDateString('sv-SE', { timeZone: PRAHA });
+    const datum = ted.toLocaleDateString('cs-CZ', { timeZone: PRAHA, weekday: 'long', day: 'numeric', month: 'long' });
+    const elDatum = pruh.querySelector<HTMLElement>('[data-dnes-datum]');
+    if (elDatum) elDatum.textContent = datum.charAt(0).toUpperCase() + datum.slice(1);
+    try {
+      const svatky = JSON.parse(pruh.dataset.svatky || '{}') as { jmena: Record<string, string>; dny: Record<string, string> };
+      const elSvatek = pruh.querySelector<HTMLElement>('[data-dnes-svatek]');
+      const jmeno = svatky.jmena?.[dnes.slice(5)];
+      if (elSvatek) { elSvatek.hidden = !jmeno; if (jmeno) elSvatek.textContent = `Svátek má ${jmeno}`; }
+      const elDen = pruh.querySelector<HTMLElement>('[data-dnes-den]');
+      const den = svatky.dny?.[dnes.slice(5)];
+      if (elDen) { elDen.hidden = !den; if (den) elDen.textContent = den; }
+      const pocasi = JSON.parse(pruh.dataset.pocasi || '[]') as { datum: string; popis: string; max: number; min: number }[];
+      const p = pocasi.find((x) => x.datum === dnes);
+      const elPocasi = pruh.querySelector<HTMLElement>('[data-dnes-pocasi]');
+      if (elPocasi) {
+        elPocasi.hidden = !p;
+        if (p) elPocasi.textContent = `${elPocasi.dataset.misto}: ${p.popis}, ${p.max} / ${p.min} °C`;
+      }
+    } catch { /* data pruhu poškozená – zůstane verze z buildu */ }
+    const zasah = pruh.querySelector<HTMLElement>('[data-cas]');
+    if (zasah && Date.now() - new Date(zasah.dataset.cas!).getTime() > 4 * 3600_000) zasah.hidden = true;
+  }
+</script>
+
+<style>
+  .dnes {
+    background: var(--barva-zelena);
+    color: var(--barva-pozadi);
+    overflow: hidden;
+  }
+  .dnes__inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px 28px;
+    flex-wrap: wrap;
+    min-height: 52px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 140px !important;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+  .dnes__datum, .dnes__den { font-weight: 600; }
+  .dnes__svatek, .dnes__pocasi { opacity: 0.88; }
+  .dnes__zasah { color: var(--barva-pozadi); opacity: 0.95; }
+  .dnes__zasah:hover { color: var(--barva-pozadi); text-decoration: underline; }
+  .dnes__probiha {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--barva-terakota);
+    color: #fff;
+    border-radius: 3px;
+    padding: 1px 6px;
+    margin-right: 4px;
+  }
+  /* Vodoznak obrysu mikroregionu – celý, uvnitř pruhu. */
+  .dnes__obrys {
+    position: absolute;
+    right: 64px;
+    top: 4px;
+    height: 44px;
+    width: auto;
+    aspect-ratio: 102 / 81.6;
+    fill: var(--barva-pozadi);
+    opacity: 0.22;
+    pointer-events: none;
+  }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 900px) {
+    .dnes__inner { font-size: 13px; gap: 4px 16px; padding-right: 76px !important; }
+    .dnes__obrys { right: 20px; }
+    .dnes__pocasi { display: none; }
+  }
+</style>

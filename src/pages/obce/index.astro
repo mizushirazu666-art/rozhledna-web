@@ -1,0 +1,59 @@
+---
+/**
+ * Přehled obcí – mapka mikroregionu a seznam obcí, ze kterých píšeme
+ * (na mobilu sem vede štítek „Obce“, na počítači stejná nabídka v záhlaví).
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MapaObci from '../../components/MapaObci.astro';
+import taxonomie from '../../data/taxonomie.json';
+import region from '../../data/region.json';
+---
+<BaseLayout title="Obce" description={`Obce, ze kterých Rozhledna píše – ${region.mikroregion}.`}>
+  <div class="container obce">
+    <div class="obce__text">
+      <span class="kicker kicker--zelena">{region.mikroregion}</span>
+      <h1>Obce</h1>
+      <ul class="obce__seznam">
+        {taxonomie.obce.map((o) => (
+          <li>
+            <a href={`/obec/${o.slug}/`}>{o.nazev}</a>
+            <span>{o.obyvatel.toLocaleString('cs-CZ')} obyvatel</span>
+          </li>
+        ))}
+      </ul>
+      <p class="obce__pozn">Další obce mikroregionu (v mapce šedě) postupně přidáváme.</p>
+    </div>
+    <div class="obce__mapa"><MapaObci /></div>
+  </div>
+</BaseLayout>
+
+<style>
+  .obce {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 56px;
+    padding-top: 48px;
+    padding-bottom: 56px;
+    align-items: start;
+  }
+  .obce__text { display: flex; flex-direction: column; gap: 16px; }
+  .obce h1 { font-size: 34px; }
+  .obce__seznam { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .obce__seznam li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .obce__seznam a { font-family: var(--font-nadpisy); font-size: 20px; font-weight: 600; color: var(--barva-text); }
+  .obce__seznam a:hover { color: var(--barva-terakota); }
+  .obce__seznam span { font-size: 13px; color: var(--barva-text-tlumena); }
+  .obce__pozn { margin: 0; font-size: 13px; color: var(--barva-text-tlumena); }
+
+  @media (max-width: 900px) {
+    .obce { grid-template-columns: 1fr; gap: 28px; padding-top: 24px; padding-bottom: 32px; }
+    .obce h1 { font-size: 26px; }
+  }
+</style>

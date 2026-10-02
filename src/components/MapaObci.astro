@@ -1,0 +1,66 @@
+---
+/**
+ * Mapka obcí mikroregionu (src/data/mapa-regionu.json – hranice obcí
+ * z OpenStreetMap, zjednodušené). Obce, ze kterých už píšeme
+ * (taxonomie.obce), jsou barevné a vedou na stránku obce; ostatní jsou
+ * šedé („připravujeme“).
+ *   vybrana – slug obce, která se zvýrazní (stránka obce)
+ *   popisky – názvy našich obcí v mapce (a Chrudim pro orientaci)
+ */
+import mapa from '../data/mapa-regionu.json';
+import taxonomie from '../data/taxonomie.json';
+import region from '../data/region.json';
+
+export interface Props {
+  vybrana?: string;
+  popisky?: boolean;
+}
+
+const { vybrana, popisky = true } = Astro.props;
+const nase = new Map(taxonomie.obce.map((o) => [o.nazev, o.slug]));
+const obce = mapa.obce.map((o) => ({ ...o, slug: nase.get(o.nazev) }));
+---
+<svg class="mapa" viewBox={`-1 -1 ${mapa.sirka + 2} ${mapa.vyska + 2}`} role="img" aria-label={`Mapa obcí – ${region.mikroregion}`}>
+  {obce.map((o) =>
+    o.slug ? (
+      <a href={`/obec/${o.slug}/`}>
+        <path d={o.d} class={`mapa__obec mapa__obec--nase${o.slug === vybrana ? ' mapa__obec--vybrana' : ''}`}><title>{o.nazev}</title></path>
+      </a>
+    ) : (
+      <path d={o.d} class="mapa__obec"><title>{`${o.nazev} – připravujeme`}</title></path>
+    )
+  )}
+  {popisky && obce.filter((o) => o.slug || o.nazev === region.centrum.nazev).map((o) => (
+    <text x={o.x} y={o.y} class={`mapa__popisek${o.slug ? '' : ' mapa__popisek--centrum'}`}>{o.nazev}</text>
+  ))}
+  {!popisky && vybrana && obce.filter((o) => o.slug === vybrana).map((o) => (
+    <circle cx={o.x} cy={o.y} r="1.4" class="mapa__bod" />
+  ))}
+</svg>
+
+<style>
+  .mapa { display: block; width: 100%; height: auto; }
+  .mapa__obec {
+    fill: var(--barva-ramecek);
+    stroke: var(--barva-pozadi);
+    stroke-width: 0.35;
+    stroke-linejoin: round;
+  }
+  .mapa__obec--nase { fill: var(--barva-zelena); fill-opacity: 0.6; transition: fill-opacity 0.15s; }
+  a:hover .mapa__obec--nase, a:focus .mapa__obec--nase { fill-opacity: 0.8; }
+  .mapa__obec--vybrana { fill-opacity: 1; }
+  .mapa__popisek {
+    font-family: var(--font-tělo);
+    font-size: 2.2px;
+    font-weight: 600;
+    fill: var(--barva-text);
+    text-anchor: middle;
+    dominant-baseline: middle;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--barva-pozadi);
+    stroke-width: 0.6px;
+  }
+  .mapa__popisek--centrum { font-weight: 500; fill: var(--barva-text-tlumena); }
+  .mapa__bod { fill: var(--barva-terakota); stroke: var(--barva-pozadi); stroke-width: 0.4; }
+</style>

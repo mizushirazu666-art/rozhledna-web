@@ -1,0 +1,7 @@
+{
+  "nazev": "Chrudimsko",
+  "mikroregion": "Mikroregion Chrudimsko",
+  "centrum": { "slug": "chrudim", "nazev": "Chrudim" },
+  "limitCentraNaHlavni": 1,
+  "pocasi": { "misto": "Chrudimsko", "lat": 49.94, "lon": 15.8 }
+}

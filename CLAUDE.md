@@ -68,7 +68,21 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   v BaseLayout, bez cookies); zapnout v projektu na Vercelu → Analytics.
   Čtení přes Vercel MCP `aggregate_pageviews`.
 - `src/pages/` – `index.astro` (hero s fotkou nebo varianta bez fotky,
-  sportovní blok), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]`.
+  sportovní blok; ze centrálního města nejvýš `limitCentraNaHlavni`
+  zpráv), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]` (s mapkou
+  „Kde leží …“), `obce/` (mapka + seznam; na mobilu štítek „Obce“).
+- `src/data/region.json` – nastavení regionu (název mikroregionu, centrum
+  + limit zpráv z něj na hlavní stránce, místo pro počasí). Připraveno pro
+  další regiony (Hlinecko – jiná barva, viz CLAUDE.md pipeline).
+- `src/data/mapa-regionu.json` – hranice obcí mikroregionu z OSM
+  (zjednodušené, SVG souřadnice 0–100) + obrys; `MapaObci.astro` kreslí
+  naše obce (taxonomie) barevně s odkazem, ostatní šedě („připravujeme“).
+- `src/components/DnesPruh.astro` – pruh pod záhlavím: datum, svátek
+  (`src/data/svatky.json`, MM-DD → jméno), počasí (`src/lib/pocasi.ts`,
+  Open-Meteo při buildu, 3 dny), probíhající zásah hasičů / počet dnešních
+  hlášení a vodoznak obrysu regionu. Dnešek dopočítá prohlížeč (web se
+  v noci nepřestavuje), „probíhá“ skryje po 4 h.
+- Záhlaví: „Obce ▾“ (`<details>`) rozbalí mapku a seznam obcí.
 - `src/components/Header.astro` – logo ROZHLEDNA s podtitulem „Chrudimsko“,
   navigace vycentrovaná mezi logem a CTA (zúžená mezera 901–1200 px).
 - `astro.config.mjs` – `image.remotePatterns` pro `**.airtableusercontent.com`

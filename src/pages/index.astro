@@ -6,12 +6,23 @@ import SportPrehled from '../components/SportPrehled.astro';
 import HlaseniIzs from '../components/HlaseniIzs.astro';
 import taxonomie from '../data/taxonomie.json';
 import { Image } from 'astro:assets';
+import region from '../data/region.json';
 import { getClanky, vyberHlavniZpravu } from '../lib/clanky';
 
 const articlesData = await getClanky();
 const clanky = articlesData.filter((c) => c.stav === 'Publikováno');
+// Ze silného centrálního města (Chrudim) nejvýš limitCentraNaHlavni zpráv na
+// celé hlavní stránce (hlavní zpráva + nejnovější) – rozhodnutí redakce, ať
+// město nepřehluší malé obce.
+const zCentra = (c: { obec: string }) => c.obec === region.centrum.slug;
 const hlavniZprava = vyberHlavniZpravu(clanky);
-const ostatni = hlavniZprava ? clanky.filter((c) => c.slug !== hlavniZprava.slug).slice(0, 6) : [];
+let zbyvaCentrum = region.limitCentraNaHlavni - (hlavniZprava && zCentra(hlavniZprava) ? 1 : 0);
+const ostatni = hlavniZprava
+  ? clanky
+      .filter((c) => c.slug !== hlavniZprava.slug)
+      .filter((c) => !zCentra(c) || zbyvaCentrum-- > 0)
+      .slice(0, 6)
+  : [];
 
 const rubrikaHlavni = hlavniZprava ? taxonomie.rubriky.find((r) => r.slug === hlavniZprava.rubrika) : undefined;
 const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZprava.obec) : undefined;

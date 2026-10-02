@@ -1,7 +1,10 @@
 ---
 import Logo from './Logo.astro';
+import MapaObci from './MapaObci.astro';
+import DnesPruh from './DnesPruh.astro';
 import taxonomie from '../data/taxonomie.json';
-const { rubriky } = taxonomie;
+import region from '../data/region.json';
+const { rubriky, obce } = taxonomie;
 ---
 <header class="header">
   <div class="container header__inner">
@@ -14,6 +17,24 @@ const { rubriky } = taxonomie;
     </a>
 
     <nav class="header__nav" aria-label="Hlavní navigace">
+      <details class="obce-menu">
+        <summary>Obce</summary>
+        <div class="obce-menu__panel">
+          <div class="container obce-menu__inner">
+            <div class="obce-menu__mapa"><MapaObci /></div>
+            <div class="obce-menu__seznam">
+              <span class="obce-menu__nadpis">{region.mikroregion}</span>
+              <ul>
+                {obce.map((o) => (
+                  <li><a href={`/obec/${o.slug}/`}>{o.nazev}</a></li>
+                ))}
+              </ul>
+              <p class="obce-menu__pozn">Další obce mikroregionu (v mapce šedě) postupně přidáváme.</p>
+              <a class="obce-menu__vse" href="/obce/">Všechny obce →</a>
+            </div>
+          </div>
+        </div>
+      </details>
       {rubriky.map((r) => (
         <a href={`/rubrika/${r.slug}/`}>{r.nazev}</a>
       ))}
@@ -24,17 +45,95 @@ const { rubriky } = taxonomie;
 
   <nav class="header__mobile-nav" aria-label="Mobilní navigace">
     <a href="/" class="chip chip--active">Vše</a>
+    <a href="/obce/" class="chip">Obce</a>
     {rubriky.map((r) => (
       <a href={`/rubrika/${r.slug}/`} class="chip">{r.nazev}</a>
     ))}
   </nav>
 </header>
+<DnesPruh />
+
+<script>
+  // Rozbalovací „Obce“: zavřít kliknutím mimo nabídku nebo klávesou Esc.
+  const menu = document.querySelector<HTMLDetailsElement>('.obce-menu');
+  if (menu) {
+    document.addEventListener('click', (e) => {
+      if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary')?.focus(); }
+    });
+  }
+</script>
 
 <style>
   .header {
+    position: relative;
+    z-index: 20;
     border-bottom: 1px solid var(--barva-ramecek);
     background: var(--barva-pozadi);
   }
+  /* „Obce ▾“ – rozbalí mapku obcí a seznam přes celou šířku pod záhlavím. */
+  .obce-menu summary {
+    list-style: none;
+    cursor: pointer;
+    color: var(--barva-text);
+    white-space: nowrap;
+  }
+  .obce-menu summary::-webkit-details-marker { display: none; }
+  .obce-menu summary::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-3px) rotate(45deg);
+  }
+  .obce-menu summary:hover, .obce-menu[open] summary { color: var(--barva-terakota); }
+  .obce-menu[open] summary::after { transform: translateY(0) rotate(-135deg); }
+  .obce-menu__panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--barva-pozadi);
+    border-top: 1px solid var(--barva-ramecek);
+    border-bottom: 3px solid var(--barva-zelena);
+    box-shadow: 0 14px 28px rgba(38, 33, 25, 0.14);
+  }
+  .obce-menu__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+    gap: 48px;
+    padding-top: 28px;
+    padding-bottom: 32px;
+    align-items: start;
+  }
+  .obce-menu__seznam { display: flex; flex-direction: column; gap: 14px; font-weight: 400; }
+  .obce-menu__nadpis {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--barva-zelena);
+  }
+  .obce-menu__seznam ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px;
+    font-size: 17px;
+    font-family: var(--font-nadpisy);
+    font-weight: 600;
+  }
+  .obce-menu__seznam ul a { color: var(--barva-text); }
+  .obce-menu__seznam ul a:hover { color: var(--barva-terakota); }
+  .obce-menu__pozn { margin: 0; font-size: 13px; color: var(--barva-text-tlumena); }
+  .obce-menu__vse { font-size: 14px; font-weight: 600; color: var(--barva-zelena); }
   .header__inner {
     display: flex;
     align-items: center;

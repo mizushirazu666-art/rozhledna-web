@@ -17,8 +17,12 @@ export interface Props {
 }
 
 const { vybrana, popisky = true } = Astro.props;
-const nase = new Map(taxonomie.obce.map((o) => [o.nazev, o.slug]));
-const obce = mapa.obce.map((o) => ({ ...o, slug: nase.get(o.nazev) }));
+const nase = new Map(taxonomie.obce.map((o) => [o.nazev, o]));
+const obce = mapa.obce.map((o) => ({ ...o, slug: nase.get(o.nazev)?.slug, obyvatel: nase.get(o.nazev)?.obyvatel ?? 0 }));
+// Při hodně obcích (Hlinecko 28) jen popisky větších obcí a centra, jinak by se překrývaly.
+const minObyvatel = taxonomie.obce.length > 8 ? 700 : 0;
+const sPopiskem = (o: (typeof obce)[number]) =>
+  o.nazev === region.centrum.nazev || (o.slug && o.obyvatel >= minObyvatel);
 ---
 <svg class="mapa" viewBox={`-1 -1 ${mapa.sirka + 2} ${mapa.vyska + 2}`} role="img" aria-label={`Mapa obcí – ${region.mikroregion}`}>
   {obce.map((o) =>
@@ -30,7 +34,7 @@ const obce = mapa.obce.map((o) => ({ ...o, slug: nase.get(o.nazev) }));
       <path d={o.d} class="mapa__obec"><title>{`${o.nazev} – připravujeme`}</title></path>
     )
   )}
-  {popisky && obce.filter((o) => o.slug || o.nazev === region.centrum.nazev).map((o) => (
+  {popisky && obce.filter(sPopiskem).map((o) => (
     <text x={o.x} y={o.y} class={`mapa__popisek${o.slug ? '' : ' mapa__popisek--centrum'}`}>{o.nazev}</text>
   ))}
   {!popisky && vybrana && obce.filter((o) => o.slug === vybrana).map((o) => (

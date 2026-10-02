@@ -4,6 +4,7 @@ import MapaObci from './MapaObci.astro';
 import DnesPruh from './DnesPruh.astro';
 import taxonomie from '../data/taxonomie.json';
 import region from '../data/region.json';
+import mapa from '../data/mapa-regionu.json';
 const { rubriky, obce } = taxonomie;
 ---
 <header class="header">
@@ -12,7 +13,7 @@ const { rubriky, obce } = taxonomie;
       <Logo size={28} />
       <span class="header__nazev">
         <span class="header__wordmark">ROZHLEDNA</span>
-        <span class="header__tag">Chrudimsko</span>
+        <span class="header__tag">{region.nazev}</span>
       </span>
     </a>
 
@@ -22,14 +23,14 @@ const { rubriky, obce } = taxonomie;
         <div class="obce-menu__panel">
           <div class="container obce-menu__inner">
             <div class="obce-menu__mapa"><MapaObci /></div>
-            <div class="obce-menu__seznam">
+            <div class={`obce-menu__seznam${obce.length > 8 ? ' obce-menu__seznam--hodne' : ''}`}>
               <span class="obce-menu__nadpis">{region.mikroregion}</span>
               <ul>
                 {obce.map((o) => (
                   <li><a href={`/obec/${o.slug}/`}>{o.nazev}</a></li>
                 ))}
               </ul>
-              <p class="obce-menu__pozn">Další obce mikroregionu (v mapce šedě) postupně přidáváme.</p>
+              {mapa.obce.length > obce.length && <p class="obce-menu__pozn">Další obce mikroregionu (v mapce šedě) postupně přidáváme.</p>}
               <a class="obce-menu__vse" href="/obce/">Všechny obce →</a>
             </div>
           </div>
@@ -129,6 +130,13 @@ const { rubriky, obce } = taxonomie;
     font-size: 17px;
     font-family: var(--font-nadpisy);
     font-weight: 600;
+  }
+  .obce-menu__seznam--hodne ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px 20px;
+    font-size: 15px;
+    font-family: var(--font-tělo);
+    font-weight: 500;
   }
   .obce-menu__seznam ul a { color: var(--barva-text); }
   .obce-menu__seznam ul a:hover { color: var(--barva-terakota); }

@@ -1,0 +1,204 @@
+{
+  "rubriky": [
+    {
+      "slug": "verejna-sprava",
+      "nazev": "Veřejná správa",
+      "barva": "zelena"
+    },
+    {
+      "slug": "doprava",
+      "nazev": "Doprava",
+      "barva": "terakota"
+    },
+    {
+      "slug": "sport",
+      "nazev": "Sport",
+      "barva": "zelena"
+    },
+    {
+      "slug": "bezpecnost",
+      "nazev": "Bezpečnost",
+      "barva": "terakota"
+    },
+    {
+      "slug": "kultura",
+      "nazev": "Kultura",
+      "barva": "zelena"
+    },
+    {
+      "slug": "bazarek",
+      "nazev": "Bazárek",
+      "barva": "terakota"
+    }
+  ],
+  "obce": [
+    {
+      "slug": "bojanov",
+      "nazev": "Bojanov",
+      "obyvatel": 603,
+      "vlna": 1
+    },
+    {
+      "slug": "chlumetin",
+      "nazev": "Chlumětín",
+      "obyvatel": 178,
+      "vlna": 1
+    },
+    {
+      "slug": "dedova",
+      "nazev": "Dědová",
+      "obyvatel": 149,
+      "vlna": 1
+    },
+    {
+      "slug": "hamry",
+      "nazev": "Hamry",
+      "obyvatel": 259,
+      "vlna": 1
+    },
+    {
+      "slug": "hlinsko",
+      "nazev": "Hlinsko",
+      "obyvatel": 9903,
+      "vlna": 1
+    },
+    {
+      "slug": "hodonin",
+      "nazev": "Hodonín",
+      "obyvatel": 96,
+      "vlna": 1
+    },
+    {
+      "slug": "holetin",
+      "nazev": "Holetín",
+      "obyvatel": 747,
+      "vlna": 1
+    },
+    {
+      "slug": "horni-bradlo",
+      "nazev": "Horní Bradlo",
+      "obyvatel": 448,
+      "vlna": 1
+    },
+    {
+      "slug": "jenikov",
+      "nazev": "Jeníkov",
+      "obyvatel": 469,
+      "vlna": 1
+    },
+    {
+      "slug": "kamenicky",
+      "nazev": "Kameničky",
+      "obyvatel": 798,
+      "vlna": 1
+    },
+    {
+      "slug": "kladno",
+      "nazev": "Kladno",
+      "obyvatel": 245,
+      "vlna": 1
+    },
+    {
+      "slug": "krasne",
+      "nazev": "Krásné",
+      "obyvatel": 169,
+      "vlna": 1
+    },
+    {
+      "slug": "krouna",
+      "nazev": "Krouna",
+      "obyvatel": 1353,
+      "vlna": 1
+    },
+    {
+      "slug": "miretice",
+      "nazev": "Miřetice",
+      "obyvatel": 1185,
+      "vlna": 1
+    },
+    {
+      "slug": "mrakotin",
+      "nazev": "Mrákotín",
+      "obyvatel": 349,
+      "vlna": 1
+    },
+    {
+      "slug": "otradov",
+      "nazev": "Otradov",
+      "obyvatel": 283,
+      "vlna": 1
+    },
+    {
+      "slug": "pokrikov",
+      "nazev": "Pokřikov",
+      "obyvatel": 264,
+      "vlna": 1
+    },
+    {
+      "slug": "rana",
+      "nazev": "Raná",
+      "obyvatel": 372,
+      "vlna": 1
+    },
+    {
+      "slug": "studnice",
+      "nazev": "Studnice",
+      "obyvatel": 446,
+      "vlna": 1
+    },
+    {
+      "slug": "svratouch",
+      "nazev": "Svratouch",
+      "obyvatel": 924,
+      "vlna": 1
+    },
+    {
+      "slug": "tisovec",
+      "nazev": "Tisovec",
+      "obyvatel": 312,
+      "vlna": 1
+    },
+    {
+      "slug": "trhova-kamenice",
+      "nazev": "Trhová Kamenice",
+      "obyvatel": 903,
+      "vlna": 1
+    },
+    {
+      "slug": "vcelakov",
+      "nazev": "Včelákov",
+      "obyvatel": 569,
+      "vlna": 1
+    },
+    {
+      "slug": "vitanov",
+      "nazev": "Vítanov",
+      "obyvatel": 408,
+      "vlna": 1
+    },
+    {
+      "slug": "vojtechov",
+      "nazev": "Vojtěchov",
+      "obyvatel": 427,
+      "vlna": 1
+    },
+    {
+      "slug": "vortova",
+      "nazev": "Vortová",
+      "obyvatel": 249,
+      "vlna": 1
+    },
+    {
+      "slug": "vseradov",
+      "nazev": "Všeradov",
+      "obyvatel": 137,
+      "vlna": 1
+    },
+    {
+      "slug": "vysocina",
+      "nazev": "Vysočina",
+      "obyvatel": 687,
+      "vlna": 1
+    }
+  ]
+}

@@ -1,10 +1,11 @@
 ---
+import region from '../data/region.json';
 export interface Props {
   nadpis?: string;
   podnadpis?: string;
 }
 const {
-  nadpis = 'Přehled týdne z Chrudimska do vašeho e-mailu',
+  nadpis = `Přehled týdne z ${region.genitiv} do vašeho e-mailu`,
   podnadpis = 'Jednou týdně, zdarma. Odhlásíte se kdykoliv jedním kliknutím.',
 } = Astro.props;
 ---

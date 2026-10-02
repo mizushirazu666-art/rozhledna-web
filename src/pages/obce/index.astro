@@ -7,6 +7,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MapaObci from '../../components/MapaObci.astro';
 import taxonomie from '../../data/taxonomie.json';
 import region from '../../data/region.json';
+import mapa from '../../data/mapa-regionu.json';
 ---
 <BaseLayout title="Obce" description={`Obce, ze kterých Rozhledna píše – ${region.mikroregion}.`}>
   <div class="container obce">
@@ -21,7 +22,7 @@ import region from '../../data/region.json';
           </li>
         ))}
       </ul>
-      <p class="obce__pozn">Další obce mikroregionu (v mapce šedě) postupně přidáváme.</p>
+      {mapa.obce.length > taxonomie.obce.length && <p class="obce__pozn">Další obce mikroregionu (v mapce šedě) postupně přidáváme.</p>}
     </div>
     <div class="obce__mapa"><MapaObci /></div>
   </div>

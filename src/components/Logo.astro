@@ -1,11 +1,12 @@
 ---
+import region from '../data/region.json';
 // Rozhledna – logo, Varianta 1 "Plná silueta" (odsouhlaseno v Kroku 2, doplnění).
 export interface Props {
   size?: number;
   fill?: string;
   accent?: string;
 }
-const { size = 30, fill = '#33513F', accent = '#C1622D' } = Astro.props;
+const { size = 30, fill = region.barva, accent = '#C1622D' } = Astro.props;
 // Unikátní id masky, ať se při více výskytech loga na jedné stránce (hlavička + patička) nekříží.
 const maskId = `rozhledna-logo-mask-${Math.random().toString(36).slice(2, 10)}`;
 ---

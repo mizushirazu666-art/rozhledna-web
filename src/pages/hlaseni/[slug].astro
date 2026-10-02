@@ -1,4 +1,5 @@
 ---
+import region from '../../data/region.json';
 /**
  * Krátký článek k hlášení ze sloupce „Bezpečnost v okolí“ (tabulka Hlaseni):
  * u zpráv policie/hasičů/Deníku text od AI, u výjezdů údaje hasičů.
@@ -27,13 +28,13 @@ const popis = h.text[0] ?? `${stitek}: ${titulek}`;
     <span>/</span>
     <a href="/rubrika/bezpecnost/">Bezpečnost</a>
     <span>/</span>
-    <span class="drobeckova__aktualni">{h.lokalita || 'Chrudimsko'}</span>
+    <span class="drobeckova__aktualni">{h.lokalita || region.nazev}</span>
   </div>
 
   <div class="container hlaseni-layout">
     <article class="hlaseni">
       <header class="hlaseni__hlavicka">
-        <span class="kicker kicker--terakota">{stitek} · {h.lokalita || 'Chrudimsko'}</span>
+        <span class="kicker kicker--terakota">{stitek} · {h.lokalita || region.nazev}</span>
         <h1 class="hlaseni__nadpis">{titulek}</h1>
         <div class="hlaseni__meta">
           {formatCas(h.cas, h.typ === 'zprava')}

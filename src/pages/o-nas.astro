@@ -1,11 +1,12 @@
 ---
+import region from '../data/region.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="O nás" description="Kdo stojí za Rozhlednou a jak pracujeme s AI v redakci.">
   <div class="container stranka">
     <h1>O nás</h1>
     <p>
-      Rozhledna přináší nezávislé hyperlokální zpravodajství pro obce Chrudimska, které velká
+      Rozhledna přináší nezávislé hyperlokální zpravodajství pro obce {region.genitiv}, které velká
       regionální média obvykle nepokrývají – zastupitelstva, uzavírky, odstávky, sportovní výsledky
       i drobné lidské příběhy ze sousedství.
     </p>

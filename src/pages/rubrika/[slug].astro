@@ -1,4 +1,5 @@
 ---
+import region from '../../data/region.json';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
@@ -15,7 +16,7 @@ const { rubrika } = Astro.props as { rubrika: (typeof taxonomie.rubriky)[number]
 const articlesData = await getClanky();
 const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika === rubrika.slug);
 ---
-<BaseLayout title={rubrika.nazev} description={`Zprávy z rubriky ${rubrika.nazev} – Rozhledna, Chrudimsko.`}>
+<BaseLayout title={rubrika.nazev} description={`Zprávy z rubriky ${rubrika.nazev} – Rozhledna, ${region.nazev}.`}>
   <div class="container rubrika-hlavicka">
     <span class="kicker kicker--zelena">Rubrika</span>
     <h1>{rubrika.nazev}</h1>
@@ -29,7 +30,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
 
   {rubrika.slug === 'bezpecnost' && (
     <div class="container izs-rubrika">
-      <HlaseniIzs nadpis="Hlášení z Chrudimska (posledních 30 dní)" />
+      <HlaseniIzs nadpis={`Hlášení z ${region.genitiv} (posledních 30 dní)`} />
     </div>
   )}
 

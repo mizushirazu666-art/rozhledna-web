@@ -27,7 +27,7 @@ const ostatni = hlavniZprava
 const rubrikaHlavni = hlavniZprava ? taxonomie.rubriky.find((r) => r.slug === hlavniZprava.rubrika) : undefined;
 const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZprava.obec) : undefined;
 ---
-<BaseLayout title="Domů" description="Nejnovější zprávy z Chrudimska – Slatiňany, Orel, Tuněchody, Rabštejnská Lhota.">
+<BaseLayout title="Domů" description={`Nejnovější zprávy z ${region.genitiv} – ${taxonomie.obce.slice(0, 4).map((o) => o.nazev).join(', ')} a okolí.`}>
   {hlavniZprava ? (
     <>
       <section class="hero">

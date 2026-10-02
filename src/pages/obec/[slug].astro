@@ -1,4 +1,5 @@
 ---
+import region from '../../data/region.json';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
@@ -16,7 +17,7 @@ const { obec } = Astro.props as { obec: (typeof taxonomie.obce)[number] };
 const articlesData = await getClanky();
 const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec === obec.slug);
 ---
-<BaseLayout title={obec.nazev} description={`Zprávy z obce ${obec.nazev} – Rozhledna, Chrudimsko.`}>
+<BaseLayout title={obec.nazev} description={`Zprávy z obce ${obec.nazev} – Rozhledna, ${region.nazev}.`}>
   <div class="container obec-hlavicka">
     <div class="obec-hlavicka__text">
       <span class="kicker kicker--zelena">Obec</span>

@@ -71,6 +71,14 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   sportovní blok; ze centrálního města nejvýš `limitCentraNaHlavni`
   zpráv), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]` (s mapkou
   „Kde leží …“), `obce/` (mapka + seznam; na mobilu štítek „Obce“).
+- **Více regionů (jeden kód, víc webů)**: region vybírá env
+  `ROZHLEDNA_REGION` ve Vercel projektu (výchozí `chrudimsko`). Pro jiný
+  region `astro.config.mjs` přesměruje importy `../data/taxonomie.json`,
+  `region.json` a `mapa-regionu.json` do `src/regiony/<region>/`
+  (Hlinecko: 28 obcí, petrolejová #1E5A63, centrum Hlinsko s limitem 2).
+  Barva regionu se nastavuje na `<html style="--barva-zelena: …">`
+  (BaseLayout), favicon `public/favicon-<centrum>.svg`. Každý web má vlastní
+  Airtable bázi (env AIRTABLE_BASE_ID; Hlinecko `app5oYoXQLN614av5`).
 - `src/data/region.json` – nastavení regionu (název mikroregionu, centrum
   + limit zpráv z něj na hlavní stránce, místo pro počasí). Připraveno pro
   další regiony (Hlinecko – jiná barva, viz CLAUDE.md pipeline).

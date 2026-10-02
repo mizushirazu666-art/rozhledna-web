@@ -1,4 +1,5 @@
 ---
+import region from '../data/region.json';
 /**
  * Bezpečnost v okolí – krátká hlášení z Chrudimska (src/lib/hlaseni.ts):
  * výjezdy hasičů a krátké zprávy policie, hasičů a Chrudimského deníku.
@@ -48,7 +49,7 @@ function stitek(h: Hlaseni): string {
           ))}
         </ul>
       ) : (
-        <p class="izs__prazdno">Za poslední týden na Chrudimsku žádná hlášení.</p>
+        <p class="izs__prazdno">Za poslední týden na {region.lokal} žádná hlášení.</p>
       )}
       <p class="izs__zdroj">
         Zdroje: <a href="https://www.hzspa.cz/vyjezdy/aktualni-vyjezdy.php" rel="noopener" target="_blank">HZS Pk</a>{', '}

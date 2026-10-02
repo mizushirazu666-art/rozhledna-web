@@ -1,0 +1,19 @@
+{
+  "nazev": "Hlinecko",
+  "genitiv": "Hlinecka",
+  "lokal": "Hlinecku",
+  "mikroregion": "Mikroregion Hlinecko",
+  "domena": "rozhledna-hlinecko.cz",
+  "barva": "#1E5A63",
+  "centrum": {
+    "slug": "hlinsko",
+    "nazev": "Hlinsko"
+  },
+  "limitCentraNaHlavni": 2,
+  "pocasi": {
+    "misto": "Hlinecko",
+    "lat": 49.76,
+    "lon": 15.91
+  },
+  "emailDomena": "rozhledna-chrudimsko.cz"
+}

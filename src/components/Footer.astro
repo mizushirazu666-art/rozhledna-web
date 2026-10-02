@@ -1,11 +1,12 @@
 ---
+import region from '../data/region.json';
 import Logo from './Logo.astro';
 ---
 <footer class="footer">
   <div class="container footer__inner">
     <div class="footer__disclosure">
       <Logo size={18} fill="#6B6154" />
-      <span>Rozhledna – Chrudimsko · Obsah připravujeme s pomocí AI, vždy s redakčním přezkumem před publikací.</span>
+      <span>Rozhledna – {region.nazev} · Obsah připravujeme s pomocí AI, vždy s redakčním přezkumem před publikací.</span>
     </div>
     <nav class="footer__links" aria-label="Patička">
       <a href="/o-nas/">O nás</a>

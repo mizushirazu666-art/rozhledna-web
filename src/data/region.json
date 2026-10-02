@@ -1,7 +1,19 @@
 {
   "nazev": "Chrudimsko",
+  "genitiv": "Chrudimska",
+  "lokal": "Chrudimsku",
   "mikroregion": "Mikroregion Chrudimsko",
-  "centrum": { "slug": "chrudim", "nazev": "Chrudim" },
+  "domena": "rozhledna-chrudimsko.cz",
+  "barva": "#33513F",
+  "centrum": {
+    "slug": "chrudim",
+    "nazev": "Chrudim"
+  },
   "limitCentraNaHlavni": 1,
-  "pocasi": { "misto": "Chrudimsko", "lat": 49.94, "lon": 15.8 }
+  "pocasi": {
+    "misto": "Chrudimsko",
+    "lat": 49.94,
+    "lon": 15.8
+  },
+  "emailDomena": "rozhledna-chrudimsko.cz"
 }

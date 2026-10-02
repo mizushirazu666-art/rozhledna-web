@@ -1,4 +1,5 @@
 ---
+import region from '../data/region.json';
 /**
  * Formulář „Pošlete fotku“ – fotka se v prohlížeči zmenší (max. 2000 px,
  * JPEG) a odešle na Vercel funkci api/poslat-fotku.js, která ji uloží do
@@ -7,7 +8,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import taxonomie from '../data/taxonomie.json';
 ---
-<BaseLayout title="Pošlete fotku" description="Máte hezkou fotku ze Slatiňan, Orle, Tuněchod nebo Rabštejnské Lhoty? Pošlete ji Rozhledně.">
+<BaseLayout title="Pošlete fotku" description={`Máte hezkou fotku z ${region.genitiv}? Pošlete ji Rozhledně.`}>
   <div class="container stranka">
     <span class="kicker kicker--zelena">Pro čtenáře</span>
     <h1>Pošlete nám fotku</h1>
@@ -57,7 +58,7 @@ import taxonomie from '../data/taxonomie.json';
       <label class="souhlas">
         <input type="checkbox" name="souhlas" required />
         <span>
-          Jsem autorem fotky a souhlasím s jejím bezplatným zveřejněním na webu Rozhledna (rozhledna-chrudimsko.cz)
+          Jsem autorem fotky a souhlasím s jejím bezplatným zveřejněním na webu Rozhledna ({region.domena})
           s uvedením mého jména. Na fotce nejsou rozpoznatelní lidé, kteří by se zveřejněním nesouhlasili.
         </span>
       </label>

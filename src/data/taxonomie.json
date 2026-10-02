@@ -1,16 +1,210 @@
 {
   "rubriky": [
-    { "slug": "verejna-sprava", "nazev": "Veřejná správa", "barva": "zelena" },
-    { "slug": "doprava", "nazev": "Doprava", "barva": "terakota" },
-    { "slug": "sport", "nazev": "Sport", "barva": "zelena" },
-    { "slug": "bezpecnost", "nazev": "Bezpečnost", "barva": "terakota" },
-    { "slug": "kultura", "nazev": "Kultura", "barva": "zelena" },
-    { "slug": "bazarek", "nazev": "Bazárek", "barva": "terakota" }
+    {
+      "slug": "verejna-sprava",
+      "nazev": "Veřejná správa",
+      "barva": "zelena"
+    },
+    {
+      "slug": "doprava",
+      "nazev": "Doprava",
+      "barva": "terakota"
+    },
+    {
+      "slug": "sport",
+      "nazev": "Sport",
+      "barva": "zelena"
+    },
+    {
+      "slug": "bezpecnost",
+      "nazev": "Bezpečnost",
+      "barva": "terakota"
+    },
+    {
+      "slug": "kultura",
+      "nazev": "Kultura",
+      "barva": "zelena"
+    },
+    {
+      "slug": "bazarek",
+      "nazev": "Bazárek",
+      "barva": "terakota"
+    }
   ],
   "obce": [
-    { "slug": "slatinany", "nazev": "Slatiňany", "obyvatel": 4074, "vlna": 1 },
-    { "slug": "orel", "nazev": "Orel", "obyvatel": 786, "vlna": 1 },
-    { "slug": "tunechody", "nazev": "Tuněchody", "obyvatel": 621, "vlna": 1 },
-    { "slug": "rabstejnska-lhota", "nazev": "Rabštejnská Lhota", "obyvatel": 866, "vlna": 1 }
+    {
+      "slug": "borice",
+      "nazev": "Bořice",
+      "obyvatel": 193,
+      "vlna": 2
+    },
+    {
+      "slug": "bylany",
+      "nazev": "Bylany",
+      "obyvatel": 485,
+      "vlna": 2
+    },
+    {
+      "slug": "dolni-bezdekov",
+      "nazev": "Dolní Bezděkov",
+      "obyvatel": 282,
+      "vlna": 2
+    },
+    {
+      "slug": "dvakacovice",
+      "nazev": "Dvakačovice",
+      "obyvatel": 210,
+      "vlna": 2
+    },
+    {
+      "slug": "honbice",
+      "nazev": "Honbice",
+      "obyvatel": 172,
+      "vlna": 2
+    },
+    {
+      "slug": "horka",
+      "nazev": "Horka",
+      "obyvatel": 435,
+      "vlna": 2
+    },
+    {
+      "slug": "chrast",
+      "nazev": "Chrast",
+      "obyvatel": 3150,
+      "vlna": 2
+    },
+    {
+      "slug": "chrudim",
+      "nazev": "Chrudim",
+      "obyvatel": 23564,
+      "vlna": 2
+    },
+    {
+      "slug": "koci",
+      "nazev": "Kočí",
+      "obyvatel": 739,
+      "vlna": 2
+    },
+    {
+      "slug": "lany",
+      "nazev": "Lány",
+      "obyvatel": 299,
+      "vlna": 2
+    },
+    {
+      "slug": "liciborice",
+      "nazev": "Licibořice",
+      "obyvatel": 269,
+      "vlna": 2
+    },
+    {
+      "slug": "lukavice",
+      "nazev": "Lukavice",
+      "obyvatel": 933,
+      "vlna": 2
+    },
+    {
+      "slug": "mladonovice",
+      "nazev": "Mladoňovice",
+      "obyvatel": 330,
+      "vlna": 2
+    },
+    {
+      "slug": "morasice",
+      "nazev": "Morašice",
+      "obyvatel": 816,
+      "vlna": 2
+    },
+    {
+      "slug": "nabocany",
+      "nazev": "Nabočany",
+      "obyvatel": 128,
+      "vlna": 2
+    },
+    {
+      "slug": "orel",
+      "nazev": "Orel",
+      "obyvatel": 786,
+      "vlna": 1
+    },
+    {
+      "slug": "prestavlky",
+      "nazev": "Přestavlky",
+      "obyvatel": 201,
+      "vlna": 2
+    },
+    {
+      "slug": "rabstejnska-lhota",
+      "nazev": "Rabštejnská Lhota",
+      "obyvatel": 866,
+      "vlna": 1
+    },
+    {
+      "slug": "restoky",
+      "nazev": "Řestoky",
+      "obyvatel": 473,
+      "vlna": 2
+    },
+    {
+      "slug": "slatinany",
+      "nazev": "Slatiňany",
+      "obyvatel": 4074,
+      "vlna": 1
+    },
+    {
+      "slug": "sobetuchy",
+      "nazev": "Sobětuchy",
+      "obyvatel": 1011,
+      "vlna": 2
+    },
+    {
+      "slug": "stolany",
+      "nazev": "Stolany",
+      "obyvatel": 401,
+      "vlna": 2
+    },
+    {
+      "slug": "tribrichy",
+      "nazev": "Třibřichy",
+      "obyvatel": 276,
+      "vlna": 2
+    },
+    {
+      "slug": "trojovice",
+      "nazev": "Trojovice",
+      "obyvatel": 183,
+      "vlna": 2
+    },
+    {
+      "slug": "tunechody",
+      "nazev": "Tuněchody",
+      "obyvatel": 621,
+      "vlna": 1
+    },
+    {
+      "slug": "uhretice",
+      "nazev": "Úhřetice",
+      "obyvatel": 492,
+      "vlna": 2
+    },
+    {
+      "slug": "vejvanovice",
+      "nazev": "Vejvanovice",
+      "obyvatel": 297,
+      "vlna": 2
+    },
+    {
+      "slug": "zajecice",
+      "nazev": "Zaječice",
+      "obyvatel": 1040,
+      "vlna": 2
+    },
+    {
+      "slug": "zajezdec",
+      "nazev": "Zájezdec",
+      "obyvatel": 118,
+      "vlna": 2
+    }
   ]
 }

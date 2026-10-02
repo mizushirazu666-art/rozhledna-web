@@ -40,11 +40,7 @@ function stitek(h: Hlaseni): string {
                 <span>{formatCas(h.cas, h.typ === 'zprava')}</span>
                 {h.probiha && <span class="izs__probiha">probíhá</span>}
               </span>
-              {h.typ === 'zprava' ? (
-                <a class="izs__hlavni" href={h.zdrojUrl} rel="noopener" target="_blank">{h.nadpis}</a>
-              ) : (
-                <span class="izs__hlavni">{h.druh}</span>
-              )}
+              <a class="izs__hlavni" href={`/hlaseni/${h.slug}/`}>{h.typ === 'zprava' ? h.nadpis : h.druh}</a>
               {(h.typ === 'vyjezd' ? h.misto : h.lokalita) && (
                 <span class="izs__misto">{h.typ === 'vyjezd' ? h.misto : h.lokalita}</span>
               )}
@@ -123,7 +119,8 @@ function stitek(h: Hlaseni): string {
     line-height: 1.35;
     color: var(--barva-text);
   }
-  a.izs__hlavni:hover { color: var(--barva-terakota); }
+  a.izs__hlavni { text-decoration: none; }
+  a.izs__hlavni:hover { color: var(--barva-terakota); text-decoration: underline; }
   .izs__misto {
     font-size: 13px;
     color: var(--barva-text-tlumena-tmavsi);

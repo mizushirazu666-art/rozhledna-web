@@ -50,7 +50,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   Obec je vyplněná jen u našich obcí (zelená tečka), Lokalita u všech.
   `kompakt` = podbarvený sloupec vedle „Nejnovější z okolí“ na hlavní stránce
   (nadpis na úrovni nadpisu článků, max. 7 za týden); plný seznam v rubrice
-  Bezpečnost (nad články) a na stránce obce (jen její hlášení).
+  Bezpečnost (nad články) a na stránce obce (jen její hlášení). Každé
+  hlášení má stránku `/hlaseni/<slug>/` (`src/pages/hlaseni/[slug].astro`,
+  slug z HlaseniId) s krátkým článkem z pole Text a odkazem na zdroj.
 - `src/pages/` – `index.astro` (hero s fotkou nebo varianta bez fotky,
   sportovní blok), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]`.
 - `src/components/Header.astro` – logo ROZHLEDNA s podtitulem „Chrudimsko“,

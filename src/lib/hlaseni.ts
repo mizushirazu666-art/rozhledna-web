@@ -21,6 +21,18 @@ export interface Hlaseni {
   probiha: boolean;
   zdroj: string;
   zdrojUrl: string;
+  text: string[]; // odstavce krátkého článku (může být prázdné)
+  slug: string; // /hlaseni/<slug>/
+}
+
+/** Titulek hlášení – u zpráv nadpis, u výjezdů "Požár – Chrudim IV". */
+export function titulekHlaseni(h: Hlaseni): string {
+  return h.typ === 'zprava' ? h.nadpis : `${h.druh} – ${h.misto}`;
+}
+
+/** "Chrudim - Chrudim IV" → "Chrudim, Chrudim IV" (zápis hasičů). */
+export function hezkeMisto(misto: string): string {
+  return misto.replace(/\s+-\s+/g, ', ');
 }
 
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
@@ -58,11 +70,13 @@ export function getHlaseni(): Promise<Hlaseni[]> {
           obec,
           lokalita: String(f.Lokalita || f.Obec || ''),
           nadpis: String(f.Nadpis ?? ''),
-          misto: String(f.Misto ?? ''),
+          misto: hezkeMisto(String(f.Misto ?? '')),
           druh: String(f.Druh ?? ''),
           probiha: f.Stav === 'Probíhá',
           zdroj: String(f.Zdroj ?? ''),
           zdrojUrl: String(f.ZdrojURL ?? ''),
+          text: String(f.Text ?? '').split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean),
+          slug: String(f.HlaseniId ?? id).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
         });
       }
       offset = data.offset;

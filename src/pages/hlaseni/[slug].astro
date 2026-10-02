@@ -1,0 +1,180 @@
+---
+/**
+ * Krátký článek k hlášení ze sloupce „Bezpečnost v okolí“ (tabulka Hlaseni):
+ * u zpráv policie/hasičů/Deníku text od AI, u výjezdů údaje hasičů.
+ * Stránky vznikají jen pro hlášení za posledních 30 dní (viz hlaseni.ts).
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NewsletterCTA from '../../components/NewsletterCTA.astro';
+import { getHlaseni, formatCas, titulekHlaseni, type Hlaseni } from '../../lib/hlaseni';
+
+export async function getStaticPaths() {
+  const vsechna = await getHlaseni();
+  return vsechna.map((h) => ({ params: { slug: h.slug }, props: { h, vsechna } }));
+}
+
+const { h, vsechna } = Astro.props as { h: Hlaseni; vsechna: Hlaseni[] };
+const titulek = titulekHlaseni(h);
+const zdrojNazev = h.typ === 'vyjezd' ? 'HZS Pardubického kraje – výjezdy' : h.zdroj;
+const jeDenik = /deník/i.test(h.zdroj);
+const stitek = h.typ === 'vyjezd' ? 'Hasiči · výjezd' : /policie/i.test(h.zdroj) ? 'Policie' : jeDenik ? 'Chrudimský deník' : 'Hasiči';
+const dalsi = vsechna.filter((x) => x.slug !== h.slug).slice(0, 5);
+const popis = h.text[0] ?? `${stitek}: ${titulek}`;
+---
+<BaseLayout title={titulek} description={popis.slice(0, 160)}>
+  <div class="container drobeckova">
+    <a href="/">Domů</a>
+    <span>/</span>
+    <a href="/rubrika/bezpecnost/">Bezpečnost</a>
+    <span>/</span>
+    <span class="drobeckova__aktualni">{h.lokalita || 'Chrudimsko'}</span>
+  </div>
+
+  <div class="container hlaseni-layout">
+    <article class="hlaseni">
+      <header class="hlaseni__hlavicka">
+        <span class="kicker kicker--terakota">{stitek} · {h.lokalita || 'Chrudimsko'}</span>
+        <h1 class="hlaseni__nadpis">{titulek}</h1>
+        <div class="hlaseni__meta">
+          {formatCas(h.cas, h.typ === 'zprava')}
+          {h.probiha && <span class="hlaseni__probiha">probíhá</span>}
+        </div>
+      </header>
+
+      <div class="hlaseni__telo">
+        {h.text.length > 0
+          ? h.text.map((odstavec) => <p>{odstavec}</p>)
+          : <p>Podrobnosti najdete v původní zprávě.</p>}
+      </div>
+
+      {h.zdrojUrl && (
+        <p class="hlaseni__zdroj">
+          Zdroj: <a href={h.zdrojUrl} rel="noopener" target="_blank">{jeDenik ? 'celý článek na webu Chrudimského deníku' : zdrojNazev}</a>
+        </p>
+      )}
+      <p class="hlaseni__pozn">
+        Krátké zprávy v Bezpečnosti vznikají automaticky z úředních zdrojů (hasiči, policie) a z Chrudimského deníku.
+        Narazili jste na chybu? Napište nám přes stránku <a href="/kontakt/">Kontakt</a>.
+      </p>
+    </article>
+
+    {dalsi.length > 0 && (
+      <aside class="hlaseni-dalsi">
+        <h2>Další hlášení z okolí</h2>
+        <ul>
+          {dalsi.map((x) => (
+            <li>
+              <span class="hlaseni-dalsi__cas">{formatCas(x.cas, x.typ === 'zprava')} · {x.lokalita}</span>
+              <a href={`/hlaseni/${x.slug}/`}>{titulekHlaseni(x)}</a>
+            </li>
+          ))}
+        </ul>
+        <a class="hlaseni-dalsi__vse" href="/rubrika/bezpecnost/">Vše z Bezpečnosti →</a>
+      </aside>
+    )}
+  </div>
+
+  <div class="container">
+    <NewsletterCTA />
+  </div>
+</BaseLayout>
+
+<style>
+  .drobeckova {
+    display: flex;
+    gap: 10px;
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+  }
+  .drobeckova a { color: var(--barva-text-tlumena); }
+  .drobeckova__aktualni { color: var(--barva-terakota); }
+
+  .hlaseni-layout {
+    display: flex;
+    gap: 64px;
+    padding-top: 24px;
+    padding-bottom: 40px;
+    align-items: flex-start;
+  }
+  .hlaseni {
+    flex: 2.2;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .hlaseni__hlavicka {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .hlaseni__nadpis {
+    font-size: 34px;
+    line-height: 1.22;
+  }
+  .hlaseni__meta {
+    font-size: 14px;
+    color: var(--barva-text-tlumena);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .hlaseni__probiha {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--barva-terakota);
+    border-radius: 3px;
+    padding: 1px 6px;
+  }
+  .hlaseni__telo p {
+    font-size: 17px;
+    line-height: 1.65;
+    margin: 0 0 16px;
+  }
+  .hlaseni__zdroj {
+    font-size: 15px;
+    margin: 0;
+    padding: 14px 18px;
+    background: #F1E7D8;
+    border-left: 3px solid var(--barva-terakota);
+  }
+  .hlaseni__zdroj a { color: var(--barva-terakota); font-weight: 700; }
+  .hlaseni__pozn {
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+    margin: 0;
+  }
+  .hlaseni__pozn a { color: inherit; text-decoration: underline; }
+
+  .hlaseni-dalsi {
+    flex: 1;
+    border-top: 3px solid var(--barva-terakota);
+    background: #F1E7D8;
+    padding: 14px 20px 18px;
+  }
+  .hlaseni-dalsi h2 { font-size: 18px; margin-bottom: 8px; }
+  .hlaseni-dalsi ul { list-style: none; margin: 0; padding: 0; }
+  .hlaseni-dalsi li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .hlaseni-dalsi__cas { font-size: 12px; color: var(--barva-text-tlumena); }
+  .hlaseni-dalsi a { color: var(--barva-text); font-weight: 700; font-size: 15px; line-height: 1.35; }
+  .hlaseni-dalsi a:hover { color: var(--barva-terakota); }
+  .hlaseni-dalsi .hlaseni-dalsi__vse { display: inline-block; margin-top: 12px; font-size: 14px; color: var(--barva-terakota); }
+
+  @media (max-width: 900px) {
+    .hlaseni-layout { flex-direction: column; gap: 32px; }
+    .hlaseni__nadpis { font-size: 25px; }
+    .hlaseni__telo p { font-size: 16px; }
+    .hlaseni-dalsi { width: 100%; box-sizing: border-box; }
+  }
+</style>

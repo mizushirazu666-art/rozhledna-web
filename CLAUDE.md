@@ -55,6 +55,12 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   slug z HlaseniId) s krátkým článkem z pole Text a odkazem na zdroj.
 - `src/lib/odkazy.ts` – v poli Telo se zápis `[text](adresa)` vykreslí jako
   odkaz (jen `/…` a http(s)); použito např. v článku „Volební víkend“.
+- `src/pages/poslete-fotku.astro` + `api/poslat-fotku.js` (Vercel funkce) –
+  formulář pro čtenáře: fotka se v prohlížeči zmenší (max. 2000 px, JPEG),
+  funkce založí záznam ve Fotobance (Schvaleno = false, Autor „Foto: jméno,
+  čtenář Rozhledny“, Licence „se svolením autora (čtenář)“, Email, Poznamka)
+  a nahraje přílohu přes content.airtable.com `uploadAttachment`. Ochrana:
+  skryté pole `web`, min. 4 s od načtení, max. ~3,5 MB. Odkaz v patičce.
 - `src/pages/` – `index.astro` (hero s fotkou nebo varianta bez fotky,
   sportovní blok), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]`.
 - `src/components/Header.astro` – logo ROZHLEDNA s podtitulem „Chrudimsko“,

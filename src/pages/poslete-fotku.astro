@@ -1,0 +1,206 @@
+---
+/**
+ * Formulář „Pošlete fotku“ – fotka se v prohlížeči zmenší (max. 2000 px,
+ * JPEG) a odešle na Vercel funkci api/poslat-fotku.js, která ji uloží do
+ * Fotobanky jako neschválený návrh (schvaluje redakce).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import taxonomie from '../data/taxonomie.json';
+---
+<BaseLayout title="Pošlete fotku" description="Máte hezkou fotku ze Slatiňan, Orle, Tuněchod nebo Rabštejnské Lhoty? Pošlete ji Rozhledně.">
+  <div class="container stranka">
+    <span class="kicker kicker--zelena">Pro čtenáře</span>
+    <h1>Pošlete nám fotku</h1>
+    <p class="uvod">
+      Máte povedenou fotku z obce – náves, kostel, rybník, akci, hasiče nebo zápas? Pošlete ji a my ji
+      rádi použijeme u článků na Rozhledně, vždy s vaším jménem. Každou fotku před zveřejněním
+      prohlédne redakce.
+    </p>
+
+    <form id="foto-form" class="formular" novalidate>
+      <label class="pole">
+        <span>Fotka <em>*</em></span>
+        <input type="file" name="soubor" accept="image/jpeg,image/png,image/webp,image/heic" required />
+        <small>JPG, PNG nebo WebP. Velkou fotku před odesláním sami zmenšíme.</small>
+      </label>
+      <img id="nahled" class="nahled" alt="" hidden />
+
+      <label class="pole">
+        <span>Co je na fotce <em>*</em></span>
+        <input type="text" name="popis" maxlength="200" placeholder="Např. Zámek Slatiňany od rybníka" required />
+      </label>
+
+      <label class="pole">
+        <span>Obec</span>
+        <select name="obec">
+          {taxonomie.obce.map((o) => <option value={o.nazev}>{o.nazev}</option>)}
+          <option value="Obecné">Jinde / obecná fotka</option>
+        </select>
+      </label>
+
+      <div class="dvojice">
+        <label class="pole">
+          <span>Vaše jméno (uvedeme u fotky) <em>*</em></span>
+          <input type="text" name="autor" maxlength="80" autocomplete="name" required />
+        </label>
+        <label class="pole">
+          <span>E-mail (nepovinný, jen pro případný dotaz)</span>
+          <input type="email" name="email" maxlength="120" autocomplete="email" />
+        </label>
+      </div>
+
+      <label class="pole pole--skryte" aria-hidden="true">
+        <span>Web</span>
+        <input type="text" name="web" tabindex="-1" autocomplete="off" />
+      </label>
+
+      <label class="souhlas">
+        <input type="checkbox" name="souhlas" required />
+        <span>
+          Jsem autorem fotky a souhlasím s jejím bezplatným zveřejněním na webu Rozhledna (rozhledna-chrudimsko.cz)
+          s uvedením mého jména. Na fotce nejsou rozpoznatelní lidé, kteří by se zveřejněním nesouhlasili.
+        </span>
+      </label>
+
+      <button type="submit">Odeslat fotku</button>
+      <p id="stav" class="stav" role="status" aria-live="polite"></p>
+    </form>
+
+    <p class="pozn">
+      E-mail použijeme jen k případnému dotazu k fotce a nikde ho nezveřejníme. Více v části
+      <a href="/ochrana-udaju/">Ochrana údajů</a>. Pokud byste chtěli fotku později stáhnout, napište na
+      redakce@rozhledna-chrudimsko.cz.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  const MAX_ROZMER = 2000;
+  const form = document.getElementById('foto-form') as HTMLFormElement;
+  const stav = document.getElementById('stav') as HTMLParagraphElement;
+  const nahled = document.getElementById('nahled') as HTMLImageElement;
+  const nacteno = Date.now();
+  let fotka: { data: string; typ: string; nazev: string } | null = null;
+
+  async function zmensi(soubor: File) {
+    const bitmapa = await createImageBitmap(soubor);
+    const pomer = Math.min(1, MAX_ROZMER / Math.max(bitmapa.width, bitmapa.height));
+    const platno = document.createElement('canvas');
+    platno.width = Math.round(bitmapa.width * pomer);
+    platno.height = Math.round(bitmapa.height * pomer);
+    platno.getContext('2d')!.drawImage(bitmapa, 0, 0, platno.width, platno.height);
+    const url = platno.toDataURL('image/jpeg', 0.85);
+    return { url, data: url.split(',')[1], typ: 'image/jpeg', nazev: soubor.name.replace(/\.[^.]+$/, '') + '.jpg' };
+  }
+
+  form.soubor.addEventListener('change', async () => {
+    const soubor = (form.soubor as HTMLInputElement).files?.[0];
+    fotka = null;
+    nahled.hidden = true;
+    if (!soubor) return;
+    stav.textContent = 'Připravuji fotku…';
+    try {
+      const z = await zmensi(soubor);
+      fotka = { data: z.data, typ: z.typ, nazev: z.nazev };
+      nahled.src = z.url;
+      nahled.hidden = false;
+      stav.textContent = '';
+    } catch {
+      stav.textContent = 'Tuhle fotku se nepodařilo načíst. Zkuste prosím JPG nebo PNG.';
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = new FormData(form);
+    if (!fotka) return void (stav.textContent = 'Vyberte prosím fotku.');
+    if (!String(f.get('popis')).trim() || !String(f.get('autor')).trim()) return void (stav.textContent = 'Vyplňte prosím popis a své jméno.');
+    if (!f.get('souhlas')) return void (stav.textContent = 'Potvrďte prosím souhlas se zveřejněním.');
+    const tlacitko = form.querySelector('button') as HTMLButtonElement;
+    tlacitko.disabled = true;
+    stav.textContent = 'Odesílám…';
+    try {
+      const resp = await fetch('/api/poslat-fotku', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...fotka,
+          popis: f.get('popis'),
+          obec: f.get('obec'),
+          autor: f.get('autor'),
+          email: f.get('email'),
+          souhlas: Boolean(f.get('souhlas')),
+          web: f.get('web'),
+          nacteno,
+        }),
+      });
+      const v = await resp.json().catch(() => ({ ok: false, chyba: 'Neočekávaná odpověď serveru.' }));
+      if (!v.ok) throw new Error(v.chyba);
+      form.reset();
+      fotka = null;
+      nahled.hidden = true;
+      stav.textContent = 'Děkujeme! Fotku jsme dostali, po kontrole ji zařadíme na web.';
+    } catch (err) {
+      stav.textContent = (err as Error).message || 'Odeslání se nepovedlo, zkuste to prosím znovu.';
+    } finally {
+      tlacitko.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .stranka {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .stranka h1 { font-size: 34px; }
+  .uvod { font-size: 17px; line-height: 1.6; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+  .formular {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: #F1E7D8;
+    border-top: 3px solid var(--barva-zelena);
+    padding: 24px;
+  }
+  .pole { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+  .pole span { font-weight: 700; }
+  .pole em { color: var(--barva-terakota); font-style: normal; }
+  .pole small { color: var(--barva-text-tlumena); font-size: 13px; }
+  .pole input[type='text'], .pole input[type='email'], .pole select {
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--barva-ramecek);
+    background: #fff;
+  }
+  .pole--skryte { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .dvojice { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .nahled { max-width: 100%; max-height: 320px; object-fit: contain; align-self: flex-start; }
+  .souhlas { display: flex; gap: 10px; font-size: 14px; line-height: 1.5; align-items: flex-start; }
+  .souhlas input { margin-top: 4px; }
+  button {
+    align-self: flex-start;
+    font: inherit;
+    font-weight: 700;
+    color: #fff;
+    background: var(--barva-zelena);
+    border: 0;
+    padding: 12px 22px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.6; cursor: wait; }
+  .stav { margin: 0; font-weight: 700; color: var(--barva-zelena); min-height: 1.2em; }
+  .pozn { font-size: 13px; color: var(--barva-text-tlumena); margin: 0; }
+  .pozn a { color: inherit; text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    .stranka { padding-top: 24px; }
+    .stranka h1 { font-size: 26px; }
+    .dvojice { grid-template-columns: 1fr; }
+    .formular { padding: 18px; }
+  }
+</style>

@@ -64,6 +64,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   skryté pole `web`, min. 4 s od načtení, max. ~3,5 MB. Odkaz v patičce.
   Potřebuje env `AIRTABLE_FOTKY_API_KEY` (token se zápisem; AIRTABLE_API_KEY
   webu je jen ke čtení – s ním zápis končí 403).
+- Statistiky: Vercel Web Analytics (skript `/_vercel/insights/script.js`
+  v BaseLayout, bez cookies); zapnout v projektu na Vercelu → Analytics.
+  Čtení přes Vercel MCP `aggregate_pageviews`.
 - `src/pages/` – `index.astro` (hero s fotkou nebo varianta bez fotky,
   sportovní blok), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]`.
 - `src/components/Header.astro` – logo ROZHLEDNA s podtitulem „Chrudimsko“,

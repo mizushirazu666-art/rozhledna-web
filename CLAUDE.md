@@ -16,8 +16,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   create_deployment s `gitSource {type: github, org: mizushirazu666-art,
   repo: rozhledna-web, ref: main}`, `target: production`, `forceNew: 1`.
   Pipeline po každém denním běhu volá Deploy Hook.
-- Env (jen na Vercelu, nedešifrovat): AIRTABLE_API_KEY, AIRTABLE_BASE_ID,
-  AIRTABLE_TABLE_NAME. Bez nich build použije ukázková data v `src/data`.
+- Env (jen na Vercelu, nedešifrovat): AIRTABLE_API_KEY (jen čtení),
+  AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME, AIRTABLE_FOTKY_API_KEY (zápis, jen
+  formulář fotek). Bez nich build použije ukázková data v `src/data`.
 - Build: `npm install && npx astro build`. Repozitář nemá `.gitignore` –
   `node_modules`, `dist`, `.astro` necommitovat.
 
@@ -61,6 +62,8 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   čtenář Rozhledny“, Licence „se svolením autora (čtenář)“, Email, Poznamka)
   a nahraje přílohu přes content.airtable.com `uploadAttachment`. Ochrana:
   skryté pole `web`, min. 4 s od načtení, max. ~3,5 MB. Odkaz v patičce.
+  Potřebuje env `AIRTABLE_FOTKY_API_KEY` (token se zápisem; AIRTABLE_API_KEY
+  webu je jen ke čtení – s ním zápis končí 403).
 - `src/pages/` – `index.astro` (hero s fotkou nebo varianta bez fotky,
   sportovní blok), `clanek/[slug]`, `rubrika/[slug]`, `obec/[slug]`.
 - `src/components/Header.astro` – logo ROZHLEDNA s podtitulem „Chrudimsko“,

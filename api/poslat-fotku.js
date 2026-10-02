@@ -3,7 +3,9 @@
  * Přijme JSON z formuláře (fotka zmenšená v prohlížeči, base64), založí
  * záznam ve Fotobance (Schvaleno = false – schvaluje redakce) a nahraje
  * fotku jako přílohu přes Airtable content API.
- * Env (Vercel): AIRTABLE_API_KEY, AIRTABLE_BASE_ID.
+ * Env (Vercel): AIRTABLE_FOTKY_API_KEY – samostatný Airtable token se zápisem
+ * (data.records:write jen pro tuto bázi); AIRTABLE_API_KEY webu je jen ke
+ * čtení. AIRTABLE_BASE_ID.
  */
 const TABULKA = 'Fotobanka';
 const POLE_OBRAZEK = 'fldHxrCJCmivsIUb6'; // Fotobanka.Obrazek
@@ -21,7 +23,8 @@ function text(v, max) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return chyba(res, 405, 'Jen POST.');
-  const { AIRTABLE_API_KEY: klic, AIRTABLE_BASE_ID: baze } = process.env;
+  const klic = process.env.AIRTABLE_FOTKY_API_KEY;
+  const baze = process.env.AIRTABLE_BASE_ID;
   if (!klic || !baze) return chyba(res, 500, 'Formulář není nastavený.');
 
   const d = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};

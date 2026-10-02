@@ -5,6 +5,7 @@ import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import { getClanky } from '../../lib/clanky';
+import { castiTextu } from '../../lib/odkazy';
 
 export async function getStaticPaths() {
   const articlesData = await getClanky();
@@ -66,7 +67,13 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
       )}
 
       <div class="clanek__telo">
-        {clanek.telo.map((odstavec: string) => <p>{odstavec}</p>)}
+        {clanek.telo.map((odstavec: string) => (
+          <p>
+            {castiTextu(odstavec).map((c) =>
+              c.href ? <a href={c.href} {...(c.externi ? { rel: 'noopener', target: '_blank' } : {})}>{c.text}</a> : c.text,
+            )}
+          </p>
+        ))}
       </div>
 
       {clanek.ukazkovyObsah && (
@@ -184,6 +191,7 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
     max-width: 760px;
   }
   .clanek__telo p { margin: 0; }
+  .clanek__telo a { color: var(--barva-terakota); text-decoration: underline; font-weight: 600; }
 
   .clanek__upozorneni {
     padding: 20px 24px;

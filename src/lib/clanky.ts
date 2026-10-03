@@ -275,7 +275,11 @@ interface AirtableRecord {
 
 async function nacistVsechnyZaznamy(): Promise<AirtableRecord[]> {
   const zaklad = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}`;
-  const filtr = encodeURIComponent("{Stav}='Publikováno'");
+  // PlatiDo = poslední den, kdy je článek aktuální (akce, uzavírka…); den poté
+  // ho web přestane ukazovat i bez běhu pipeline (ta ho přepne na Neaktuální).
+  const filtr = encodeURIComponent(
+    "AND({Stav}='Publikováno', OR(NOT({PlatiDo}), NOT(IS_BEFORE({PlatiDo}, TODAY()))))",
+  );
   const zaznamy: AirtableRecord[] = [];
   let offset: string | undefined;
 

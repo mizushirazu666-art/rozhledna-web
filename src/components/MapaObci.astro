@@ -19,10 +19,12 @@ export interface Props {
 const { vybrana, popisky = true } = Astro.props;
 const nase = new Map(taxonomie.obce.map((o) => [o.nazev, o]));
 const obce = mapa.obce.map((o) => ({ ...o, slug: nase.get(o.nazev)?.slug, obyvatel: nase.get(o.nazev)?.obyvatel ?? 0 }));
-// Při hodně obcích (Hlinecko 28) jen popisky větších obcí a centra, jinak by se překrývaly.
-const minObyvatel = taxonomie.obce.length > 8 ? 700 : 0;
-const sPopiskem = (o: (typeof obce)[number]) =>
-  o.nazev === region.centrum.nazev || (o.slug && o.obyvatel >= minObyvatel);
+// Popisky všech obcí – při hodně obcích (Chrudimsko 29, Hlinecko 28) mají
+// menší obce menší písmo, ať se nepřekrývají (Lukáš 3. 10. 2026: obce bez
+// názvu působily, jako by v mapce chyběly).
+const mnoho = taxonomie.obce.length > 8;
+const sPopiskem = (o: (typeof obce)[number]) => o.nazev === region.centrum.nazev || Boolean(o.slug);
+const mala = (o: (typeof obce)[number]) => mnoho && o.nazev !== region.centrum.nazev && o.obyvatel < 700;
 ---
 <svg class="mapa" viewBox={`-1 -1 ${mapa.sirka + 2} ${mapa.vyska + 2}`} role="img" aria-label={`Mapa obcí – ${region.mikroregion}`}>
   {obce.map((o) =>
@@ -35,7 +37,7 @@ const sPopiskem = (o: (typeof obce)[number]) =>
     )
   )}
   {popisky && obce.filter(sPopiskem).map((o) => (
-    <text x={o.x} y={o.y} class={`mapa__popisek${o.slug ? '' : ' mapa__popisek--centrum'}`}>{o.nazev}</text>
+    <text x={o.x} y={o.y} class={`mapa__popisek${o.slug ? '' : ' mapa__popisek--centrum'}${mala(o) ? ' mapa__popisek--mala' : ''}`}>{o.nazev}</text>
   ))}
   {!popisky && vybrana && obce.filter((o) => o.slug === vybrana).map((o) => (
     <circle cx={o.x} cy={o.y} r="1.4" class="mapa__bod" />
@@ -65,6 +67,7 @@ const sPopiskem = (o: (typeof obce)[number]) =>
     stroke: var(--barva-pozadi);
     stroke-width: 0.6px;
   }
+  .mapa__popisek--mala { font-size: 1.6px; font-weight: 500; stroke-width: 0.5px; }
   .mapa__popisek--centrum { font-weight: 500; fill: var(--barva-text-tlumena); }
   .mapa__bod { fill: var(--barva-terakota); stroke: var(--barva-pozadi); stroke-width: 0.4; }
 </style>

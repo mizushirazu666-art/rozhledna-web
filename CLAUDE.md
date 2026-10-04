@@ -40,6 +40,11 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
     jinak článek zůstane bez fotky. Obecné fotky jen k vlastním tématům
     článku, záložní témata obce (Obec obecně, Památky, Příroda) jen
     s fotkami té obce. Bazárek fotky nedostává.
+  - Kdo je na fotce (pole Lide – vyplní AI v pipeline, `fotobanka_kontrola.py`):
+    `lideClanku` pozná z textu článek o ženách/mužích/dětech, `sediLide` pak
+    nepustí fotku žen k mužům (a naopak); u sportu bez upřesnění jen fotky
+    bez lidí nebo smíšené. Prostredi „cizí“ (americký sport, cizí nápisy)
+    má nejnižší přednost.
 - `src/lib/sport.ts`, `src/components/SportPrehled.astro` – zápasy a
   tabulky z Airtable (Zapasy, Tabulky); „doma“ = `VObci`
   (`Boolean(f.VObci)` – Airtable nevyplněné checkboxy vynechává).

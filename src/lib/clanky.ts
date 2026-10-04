@@ -106,6 +106,11 @@ interface FotkaBanky {
   obrazek: Obrazek;
   obec: string; // slug, nebo '' = obecná fotka
   temata: string[];
+  /** Kdo je na fotce (AI kontrola v pipeline – fotobanka_kontrola.py):
+   * 'bez lidí' | 'muži' | 'ženy' | 'děti' | 'smíšeně', '' = nezkontrolováno. */
+  lide: string;
+  /** 'české' | 'neutrální' | 'cizí' – cizí fotky až nakonec. */
+  prostredi: string;
 }
 
 async function nacistFotobanku(): Promise<FotkaBanky[]> {
@@ -128,6 +133,8 @@ async function nacistFotobanku(): Promise<FotkaBanky[]> {
         obrazek: { ...obrazek, ilustracni: true },
         obec: f.Obec === 'Obecné' ? '' : (obecSlugZNazvu(f.Obec) ?? ''),
         temata: Array.isArray(f.Temata) ? f.Temata.map(String) : [],
+        lide: f.Lide ? String(f.Lide) : '',
+        prostredi: f.Prostredi ? String(f.Prostredi) : '',
       });
     }
     offset = data.offset;
@@ -216,6 +223,31 @@ function temataClanku(c: Clanek): string[] {
 // fotka "nějaké vesnice" nebo "nějakého lesa" by u článku jinak mátla.
 const ZALOZNI_TEMATA_OBCE = ['Obec obecně', 'Památky', 'Příroda'];
 
+/** Koho se článek týká – aby k článku o mužském volejbalu nešla fotka žen. */
+function lideClanku(c: Clanek): 'muži' | 'ženy' | 'děti' | 'smíšeně' | '' {
+  const text = `${c.nadpis} ${c.perex} ${c.telo.slice(0, 2).join(' ')}`.toLowerCase();
+  const zeny = /(?<!\p{L})žen(y|ám|ách|sk)|dívk|hráčk|volejbalistk|fotbalistk|florbalistk|házenkářk|sportovkyn|tenistk|běžkyn/u.test(text);
+  const muzi = /(?<!\p{L})muž(i|ů|sk)|(?<!\p{L})páni(?!\p{L})|volejbalist[éaůy]|fotbalist[éaůy]|florbalist[éaůy]|hokejist|házenkář[iů]|tenist[éaů]|běžc[iů]/u.test(text);
+  const deti = /(?<!\p{L})dět[ií]|žác|žák|dorost|mládež|přípravk|školák|školáci/u.test(text);
+  if (deti && !muzi && !zeny) return 'děti';
+  if (muzi && zeny) return 'smíšeně';
+  if (zeny) return 'ženy';
+  if (muzi) return 'muži';
+  return '';
+}
+
+/** Hodí se fotka k článku podle toho, kdo je na ní? Nezkontrolované fotky
+ * (lide '') a fotky bez lidí se hodí vždy. */
+function sediLide(f: FotkaBanky, c: Clanek, kdo: ReturnType<typeof lideClanku>): boolean {
+  if (!f.lide || f.lide === 'bez lidí') return true;
+  if (kdo === 'ženy') return f.lide === 'ženy';
+  if (kdo === 'muži') return f.lide === 'muži';
+  if (kdo === 'děti') return f.lide === 'děti' || f.lide === 'smíšeně';
+  if (kdo === 'smíšeně') return true;
+  // U sportu bez upřesnění raději fotka bez lidí nebo smíšená (nikdy nesedí špatně).
+  return c.rubrika !== 'sport' || f.lide === 'smíšeně';
+}
+
 /** Kolik sousedních článků (podle data) nesmí mít stejnou ilustrační fotku. */
 const OKNO_BEZ_OPAKOVANI = 12;
 
@@ -242,19 +274,28 @@ function rozdejIlustrace(clanky: Clanek[], banka: FotkaBanky[]): void {
     if (c.obrazek || c.rubrika === 'bazarek') continue;
     const temata = temataClanku(c);
     const vlastni = new Set(temata);
+    const kdo = lideClanku(c);
     let vybrana: FotkaBanky | undefined;
     for (const tema of [...temata, ...ZALOZNI_TEMATA_OBCE.filter((z) => !vlastni.has(z))]) {
       const kandidati = banka.filter(
         (f) =>
           f.temata.includes(tema) &&
           ((c.obec && f.obec === c.obec) || (f.obec === '' && vlastni.has(tema))) &&
-          !posledni.includes(f.obrazek.url),
+          !posledni.includes(f.obrazek.url) &&
+          sediLide(f, c, kdo),
       );
       if (!kandidati.length) continue;
-      const klic = (f: FotkaBanky) => [pouziti.get(f.obrazek.url) ?? 0, f.obec ? 0 : 1, hash(c.slug + f.obrazek.url)];
+      // Cizí prostředí (americký sport, cizí nápisy) až nakonec, pak nejméně
+      // použitá, pak fotka obce.
+      const klic = (f: FotkaBanky) => [
+        f.prostredi === 'cizí' ? 1 : 0,
+        pouziti.get(f.obrazek.url) ?? 0,
+        f.obec ? 0 : 1,
+        hash(c.slug + f.obrazek.url),
+      ];
       kandidati.sort((x, y) => {
         const [a, b] = [klic(x), klic(y)];
-        return a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+        return a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || a[3] - b[3];
       });
       vybrana = kandidati[0];
       break;

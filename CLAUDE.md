@@ -64,6 +64,18 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   skryté pole `web`, min. 4 s od načtení, max. ~3,5 MB. Odkaz v patičce.
   Potřebuje env `AIRTABLE_FOTKY_API_KEY` (token se zápisem; AIRTABLE_API_KEY
   webu je jen ke čtení – s ním zápis končí 403).
+- Propagace / vyhledávače (4. 10. 2026): BaseLayout má canonical, Open
+  Graph (náhled při sdílení – u článku fotka zmenšená přes `getImage`,
+  jinak `public/og-<region>.png`), `article:published_time`, JSON-LD
+  NewsArticle u článků, ověřovací meta z env `GOOGLE_SITE_VERIFICATION`
+  a `SEZNAM_WMT` (Vercel). Endpointy `sitemap.xml`, `robots.txt`,
+  `rss.xml` (40 posledních článků).
+- Newsletter: formuláře s `data-newsletter` (NewsletterCTA, boční panel
+  článku) obsluhuje `src/lib/newsletter-klient.ts` → `api/newsletter.js`
+  (Vercel funkce, token AIRTABLE_FOTKY_API_KEY) → tabulka **Odberatele**
+  (Chrudimsko `tblf9wjAK2IzJdQtc`, Hlinecko `tbla7UnnJsnM2eafN`: Email,
+  Prihlaseno, Stranka, Zdroj = utm_source, Odhlaseno). Rozesílání zatím
+  není (samostatný krok).
 - Statistiky: Vercel Web Analytics (skript `/_vercel/insights/script.js`
   v BaseLayout, bez cookies); zapnout v projektu na Vercelu → Analytics.
   Čtení přes Vercel MCP `aggregate_pageviews`.

@@ -22,7 +22,7 @@ const stitek = h.typ === 'vyjezd' ? 'Hasiči · výjezd' : /policie/i.test(h.zdr
 const dalsi = vsechna.filter((x) => x.slug !== h.slug).slice(0, 5);
 const popis = h.text[0] ?? `${stitek}: ${titulek}`;
 ---
-<BaseLayout title={titulek} description={popis.slice(0, 160)}>
+<BaseLayout title={titulek} description={popis.slice(0, 160)} typ="article" publikovano={h.cas}>
   <div class="container drobeckova">
     <a href="/">Domů</a>
     <span>/</span>

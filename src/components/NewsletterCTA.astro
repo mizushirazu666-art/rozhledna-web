@@ -14,11 +14,16 @@ const {
     <h2>{nadpis}</h2>
     <span>{podnadpis}</span>
   </div>
-  <form class="newsletter-cta__form">
-    <label class="sr-only" for="newsletter-email">E-mail</label>
-    <input id="newsletter-email" type="email" name="email" placeholder="vas@email.cz" required />
-    <button type="submit">Přihlásit se</button>
-  </form>
+  <div class="newsletter-cta__akce">
+    <form class="newsletter-cta__form" data-newsletter>
+      <label class="sr-only" for="newsletter-email">E-mail</label>
+      <input id="newsletter-email" type="email" name="email" placeholder="vas@email.cz" autocomplete="email" required />
+      <input type="text" name="web" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
+      <button type="submit">Přihlásit se</button>
+    </form>
+    <p class="newsletter-cta__zprava" data-newsletter-zprava hidden></p>
+    <p class="newsletter-cta__souhlas">E-mail použijeme jen k zasílání přehledu. <a href="/ochrana-udaju/">Ochrana údajů</a></p>
+  </div>
 </section>
 
 <style>
@@ -44,6 +49,24 @@ const {
     color: #C9D3CB;
     font-size: 14px;
   }
+  .newsletter-cta__akce {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .newsletter-cta__zprava {
+    margin: 0;
+    color: var(--barva-pozadi);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .newsletter-cta__zprava.newsletter-zprava--chyba { color: #F3C9B4; }
+  .newsletter-cta__souhlas {
+    margin: 0;
+    color: #C9D3CB;
+    font-size: 12px;
+  }
+  .newsletter-cta__souhlas a { color: inherit; }
   .newsletter-cta__form {
     display: flex;
     gap: 10px;
@@ -68,7 +91,25 @@ const {
 
   @media (max-width: 900px) {
     .newsletter-cta { padding: 26px 22px; flex-direction: column; align-items: stretch; }
-    .newsletter-cta__form { flex-direction: column; }
+    .newsletter-cta__akce {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .newsletter-cta__zprava {
+    margin: 0;
+    color: var(--barva-pozadi);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .newsletter-cta__zprava.newsletter-zprava--chyba { color: #F3C9B4; }
+  .newsletter-cta__souhlas {
+    margin: 0;
+    color: #C9D3CB;
+    font-size: 12px;
+  }
+  .newsletter-cta__souhlas a { color: inherit; }
+  .newsletter-cta__form { flex-direction: column; }
     .newsletter-cta__form input { width: 100%; }
   }
 </style>

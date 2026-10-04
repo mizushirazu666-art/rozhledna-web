@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import taxonomie from '../../data/taxonomie.json';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
+import region from '../../data/region.json';
 import { getClanky } from '../../lib/clanky';
 import { castiTextu } from '../../lib/odkazy';
 
@@ -24,8 +25,26 @@ const obecInfo = taxonomie.obce.find((o) => o.slug === clanek.obec);
 const souvisejici = (clanek.souvisejiciClanky ?? [])
   .map((slug) => vsechnyClanky.find((c) => c.slug === slug))
   .filter((c): c is (typeof vsechnyClanky)[number] => Boolean(c) && c!.stav === 'Publikováno');
+// Náhled pro sdílení: fotka článku zmenšená při buildu (adresa v Airtable
+// po pár hodinách vyprší, proto ne přímo).
+const nahled = clanek.obrazek
+  ? (await getImage({ src: clanek.obrazek.url, width: 1200, height: Math.round((1200 * clanek.obrazek.vyska) / clanek.obrazek.sirka), format: 'jpg' })).src
+  : undefined;
+const adresa = new URL(`/clanek/${clanek.slug}/`, Astro.site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'NewsArticle',
+  headline: clanek.nadpis.slice(0, 110),
+  description: clanek.perex,
+  datePublished: clanek.datumPublikace,
+  mainEntityOfPage: adresa,
+  ...(nahled ? { image: [new URL(nahled, Astro.site).href] } : {}),
+  ...(obecInfo ? { contentLocation: { '@type': 'Place', name: obecInfo.nazev } } : {}),
+  author: { '@type': 'Organization', name: `Rozhledna – ${region.nazev}`, url: new URL('/', Astro.site).href },
+  publisher: { '@type': 'Organization', name: `Rozhledna – ${region.nazev}`, url: new URL('/', Astro.site).href },
+};
 ---
-<BaseLayout title={clanek.nadpis} description={clanek.perex}>
+<BaseLayout title={clanek.nadpis} description={clanek.perex} obrazek={nahled} typ="article" publikovano={clanek.datumPublikace} jsonLd={jsonLd}>
   <div class="container drobeckova">
     <a href="/">Domů</a>
     <span>/</span>
@@ -100,11 +119,13 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
       <div class="postranni__blok postranni__blok--newsletter">
         <h2>Přehled týdne do e-mailu</h2>
         <span>Jednou týdně, zdarma. Odhlásíte se kdykoliv jedním kliknutím.</span>
-        <form>
+        <form data-newsletter>
           <label class="sr-only" for="sidebar-email">E-mail</label>
-          <input id="sidebar-email" type="email" name="email" placeholder="vas@email.cz" required />
+          <input id="sidebar-email" type="email" name="email" placeholder="vas@email.cz" autocomplete="email" required />
+          <input type="text" name="web" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" />
           <button type="submit">Přihlásit se k odběru</button>
         </form>
+        <p class="postranni__zprava" data-newsletter-zprava hidden></p>
       </div>
     </aside>
   </div>
@@ -239,6 +260,8 @@ const souvisejici = (clanek.souvisejiciClanky ?? [])
   .postranni__blok--newsletter h2 { color: var(--barva-pozadi); font-size: 17px; }
   .postranni__blok--newsletter span { color: #C9D3CB; font-size: 13px; line-height: 1.5; }
   .postranni__blok--newsletter form { display: flex; flex-direction: column; gap: 10px; }
+  .postranni__zprava { margin: 0; color: var(--barva-pozadi); font-size: 14px; font-weight: 600; }
+  .postranni__zprava.newsletter-zprava--chyba { color: #F3C9B4; }
   .postranni__blok--newsletter input {
     padding: 11px 14px; border: none; font-size: 14px; font-family: var(--font-tělo); width: 100%;
   }

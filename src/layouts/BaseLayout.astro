@@ -7,9 +7,32 @@ import '../styles/global.css';
 export interface Props {
   title: string;
   description?: string;
+  /** Náhledový obrázek pro sdílení (Facebook, WhatsApp…) – cesta na webu
+   * (/_astro/…) nebo celá adresa; bez něj obrázek regionu. */
+  obrazek?: string;
+  /** "article" u článků a hlášení – Facebook pak ukáže datum. */
+  typ?: 'website' | 'article';
+  publikovano?: string;
+  /** Strukturovaná data pro Google (schema.org NewsArticle apod.). */
+  jsonLd?: Record<string, unknown>;
 }
 
-const { title, description = `Rozhledna – nezávislé hyperlokální zpravodajství pro ${region.nazev}.` } = Astro.props;
+const {
+  title,
+  description = `Rozhledna – nezávislé hyperlokální zpravodajství pro ${region.nazev}.`,
+  obrazek,
+  typ = 'website',
+  publikovano,
+  jsonLd,
+} = Astro.props;
+const plnyTitulek = `${title} · Rozhledna – ${region.nazev}`;
+const kanonicka = new URL(Astro.url.pathname, Astro.site).href;
+const regionSlug = (process.env.ROZHLEDNA_REGION || 'chrudimsko').trim().toLowerCase();
+const nahled = new URL(obrazek || `/og-${regionSlug}.png`, Astro.site).href;
+// Ověření vlastnictví webu pro Google Search Console a Seznam Webmaster –
+// kód z jejich nastavení se dává do env projektu na Vercelu.
+const googleOvereni = process.env.GOOGLE_SITE_VERIFICATION;
+const seznamOvereni = process.env.SEZNAM_WMT;
 ---
 <!doctype html>
 <!-- Hlavní barva regionu (Chrudimsko zelená, Hlinecko petrolejová) přebíjí výchozí z global.css. -->
@@ -19,7 +42,23 @@ const { title, description = `Rozhledna – nezávislé hyperlokální zpravodaj
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href={region.nazev === 'Chrudimsko' ? '/favicon.svg' : `/favicon-${region.centrum.slug}.svg`} />
     <meta name="description" content={description} />
-    <title>{title} · Rozhledna – {region.nazev}</title>
+    <title>{plnyTitulek}</title>
+    <link rel="canonical" href={kanonicka} />
+    <link rel="alternate" type="application/rss+xml" title={`Rozhledna – ${region.nazev}`} href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <!-- Náhled při sdílení (Facebook, WhatsApp, Messenger, X…) -->
+    <meta property="og:site_name" content={`Rozhledna – ${region.nazev}`} />
+    <meta property="og:locale" content="cs_CZ" />
+    <meta property="og:type" content={typ} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={kanonicka} />
+    <meta property="og:image" content={nahled} />
+    {publikovano && <meta property="article:published_time" content={publikovano} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    {googleOvereni && <meta name="google-site-verification" content={googleOvereni} />}
+    {seznamOvereni && <meta name="seznam-wmt" content={seznamOvereni} />}
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -33,5 +72,9 @@ const { title, description = `Rozhledna – nezávislé hyperlokální zpravodaj
       <slot />
     </main>
     <Footer />
+    <script>
+      import { zapojitNewsletter } from '../lib/newsletter-klient';
+      zapojitNewsletter();
+    </script>
   </body>
 </html>

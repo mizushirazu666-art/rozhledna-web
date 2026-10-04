@@ -8,7 +8,10 @@ import { getClanky } from '../lib/clanky';
 import { getHlaseni } from '../lib/hlaseni';
 
 function polozka(adresa: string, zmena?: string): string {
-  const lastmod = zmena ? `<lastmod>${zmena.slice(0, 10)}</lastmod>` : '';
+  // Datum v budoucnu (články o budoucích akcích) vyhledávače neberou.
+  const dnes = new Date().toISOString().slice(0, 10);
+  const den = zmena?.slice(0, 10);
+  const lastmod = den ? `<lastmod>${den > dnes ? dnes : den}</lastmod>` : '';
   return `<url><loc>${adresa}</loc>${lastmod}</url>`;
 }
 

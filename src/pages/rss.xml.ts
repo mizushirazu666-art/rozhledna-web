@@ -10,9 +10,11 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 export const GET: APIRoute = async ({ site }) => {
   const clanky = (await getClanky()).filter((c) => c.stav === 'Publikováno' && !c.ukazkovyObsah).slice(0, 40);
+  // Články o budoucích akcích mají DatumPublikace v budoucnu – čtečky by je
+  // řadily špatně, proto datum nejvýš dnešní.
   const polozky = clanky.map((c) => {
     const odkaz = new URL(`/clanek/${c.slug}/`, site).href;
-    return `<item><title>${esc(c.nadpis)}</title><link>${odkaz}</link><guid>${odkaz}</guid><pubDate>${new Date(c.datumPublikace).toUTCString()}</pubDate><description>${esc(c.perex)}</description></item>`;
+    return `<item><title>${esc(c.nadpis)}</title><link>${odkaz}</link><guid>${odkaz}</guid><pubDate>${new Date(Math.min(Date.parse(c.datumPublikace) || Date.now(), Date.now())).toUTCString()}</pubDate><description>${esc(c.perex)}</description></item>`;
   });
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">

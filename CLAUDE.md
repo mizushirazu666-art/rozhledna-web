@@ -70,7 +70,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   Potřebuje env `AIRTABLE_FOTKY_API_KEY` (token se zápisem; AIRTABLE_API_KEY
   webu je jen ke čtení – s ním zápis končí 403).
 - Propagace / vyhledávače (4. 10. 2026): BaseLayout má canonical, Open
-  Graph (náhled při sdílení – u článku fotka zmenšená přes `getImage`,
+  Graph (náhled při sdílení – u článku fotka na stálé adrese `/og/<slug>.jpg`
+  (`src/pages/og/[slug].jpg.ts`, sharp; adresy `/_astro/…` se s každým
+  buildem mění a Facebook pak ukázal prázdný náhled),
   jinak `public/og-<region>.png`), `article:published_time`, JSON-LD
   NewsArticle u článků, ověřovací meta z env `GOOGLE_SITE_VERIFICATION`
   a `SEZNAM_WMT` (Vercel). Endpointy `sitemap.xml`, `robots.txt`,

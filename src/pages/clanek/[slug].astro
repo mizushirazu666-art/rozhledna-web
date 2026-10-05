@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import taxonomie from '../../data/taxonomie.json';
-import { Image, getImage } from 'astro:assets';
+import { Image } from 'astro:assets';
 import region from '../../data/region.json';
 import { getClanky } from '../../lib/clanky';
 import { castiTextu } from '../../lib/odkazy';
@@ -25,11 +25,9 @@ const obecInfo = taxonomie.obce.find((o) => o.slug === clanek.obec);
 const souvisejici = (clanek.souvisejiciClanky ?? [])
   .map((slug) => vsechnyClanky.find((c) => c.slug === slug))
   .filter((c): c is (typeof vsechnyClanky)[number] => Boolean(c) && c!.stav === 'Publikováno');
-// Náhled pro sdílení: fotka článku zmenšená při buildu (adresa v Airtable
-// po pár hodinách vyprší, proto ne přímo).
-const nahled = clanek.obrazek
-  ? (await getImage({ src: clanek.obrazek.url, width: 1200, height: Math.round((1200 * clanek.obrazek.vyska) / clanek.obrazek.sirka), format: 'jpg' })).src
-  : undefined;
+// Náhled pro sdílení: fotka článku zmenšená při buildu na stálé adrese
+// (src/pages/og/[slug].jpg.ts) – adresy /_astro/… se s každým buildem mění.
+const nahled = clanek.obrazek ? `/og/${clanek.slug}.jpg` : undefined;
 const adresa = new URL(`/clanek/${clanek.slug}/`, Astro.site).href;
 const jsonLd = {
   '@context': 'https://schema.org',

@@ -30,7 +30,11 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   ≤ 7 dní, jinak veřejná správa/doprava/bezpečnost ≤ 3 dny s fotkou, jinak
   nejnovější) a ilustrační fotky z Fotobanky:
   - `nacistFotobanku` – filtr `AND({Schvaleno}, NOT({Neschvaleno}))`;
-    u licencí kromě „vlastní“ se licence připojí k autorovi.
+    u licencí kromě „vlastní“ se licence připojí k autorovi. Navíc obecné
+    fotky (Obec = Obecné) schválené ve Fotobance druhého regionu
+    (`sdilenaFotobanka` v region.json – Chrudimsko ↔ Hlinecko), kromě těch,
+    které vlastní báze má (i zamítnuté) podle ZdrojURL. Token
+    AIRTABLE_API_KEY musí mít čtení obou bází, jinak se sdílené vynechají.
   - `PODTEMATA` – regexy podtémat (názvy musí sedět s
     `config/ilustrace.json` v pipeline), `temataClanku` = podtémata, pak
     hlavní témata, pak podle rubriky.

@@ -18,6 +18,7 @@
  * teprve Publikováno se objeví na webu).
  */
 import taxonomie from '../data/taxonomie.json';
+import region from '../data/region.json';
 import articlesJsonFallback from '../data/articles.json';
 
 export interface Clanek {
@@ -113,33 +114,66 @@ interface FotkaBanky {
   prostredi: string;
 }
 
-async function nacistFotobanku(): Promise<FotkaBanky[]> {
-  const zaklad = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/Fotobanka`;
-  const fotky: FotkaBanky[] = [];
+/** Záznam Fotobanky; u zamítnutých nás zajímá jen ZdrojURL, fotka může chybět. */
+type FotkaBankyZaznam = Omit<FotkaBanky, 'obrazek'> & { obrazek?: Obrazek; zdroj: string };
+
+async function nacistFotky(baze: string, vzorec: string): Promise<FotkaBankyZaznam[]> {
+  const zaklad = `https://api.airtable.com/v0/${baze}/Fotobanka`;
+  const fotky: FotkaBankyZaznam[] = [];
   let offset: string | undefined;
   do {
-    const params = new URLSearchParams({ filterByFormula: 'AND({Schvaleno}, NOT({Neschvaleno}))', pageSize: '100' });
+    const params = new URLSearchParams({ filterByFormula: vzorec, pageSize: '100' });
     if (offset) params.set('offset', offset);
     const resp = await fetch(`${zaklad}?${params}`, { headers: { Authorization: `Bearer ${AIRTABLE_API_KEY}` } });
-    if (!resp.ok) throw new Error(`Airtable Fotobanka vrátila ${resp.status}: ${await resp.text()}`);
+    if (!resp.ok) throw new Error(`Airtable Fotobanka (${baze}) vrátila ${resp.status}: ${await resp.text()}`);
     const data = (await resp.json()) as { records: AirtableRecord[]; offset?: string };
     for (const rec of data.records) {
       const f = rec.fields as Record<string, any>;
+      const zdroj = f.ZdrojURL ? String(f.ZdrojURL) : '';
       // Licence CC BY(-SA) vyžadují u fotky uvést autora i licenci.
       const autor = [f.Autor, f.Licence && !/vlastní/i.test(String(f.Licence)) ? f.Licence : ''].filter(Boolean).join(', ');
       const obrazek = obrazekZPoli({ Obrazek: f.Obrazek, ObrazekPopis: f.Popis, ObrazekAutor: autor });
-      if (!obrazek) continue;
       fotky.push({
-        obrazek: { ...obrazek, ilustracni: true },
+        obrazek: obrazek && { ...obrazek, ilustracni: true },
         obec: f.Obec === 'Obecné' ? '' : (obecSlugZNazvu(f.Obec) ?? ''),
         temata: Array.isArray(f.Temata) ? f.Temata.map(String) : [],
         lide: f.Lide ? String(f.Lide) : '',
         prostredi: f.Prostredi ? String(f.Prostredi) : '',
+        zdroj,
       });
     }
     offset = data.offset;
   } while (offset);
   return fotky;
+}
+
+const SCHVALENE = 'AND({Schvaleno}, NOT({Neschvaleno}))';
+
+/**
+ * Schválené fotky vlastní báze + obecné fotky (Obec = Obecné) schválené ve
+ * Fotobance druhého regionu (`sdilenaFotobanka` v region.json). Fotky
+ * bez konkrétního místa (míč, silnice, volební místnost…) se tak schvalují
+ * jen jednou. Sdílená fotka se vynechá, když ji vlastní báze má taky
+ * (podle ZdrojURL) – i zamítnutou. Když token na druhou bázi nemá přístup,
+ * použijí se jen vlastní fotky.
+ */
+async function nacistFotobanku(): Promise<FotkaBanky[]> {
+  const vlastni = await nacistFotky(AIRTABLE_BASE_ID!, SCHVALENE);
+  const sdilenaBaze = (region as { sdilenaFotobanka?: string }).sdilenaFotobanka;
+  let sdilene: FotkaBankyZaznam[] = [];
+  if (sdilenaBaze && sdilenaBaze !== AIRTABLE_BASE_ID) {
+    try {
+      const zamitnute = await nacistFotky(AIRTABLE_BASE_ID!, '{Neschvaleno}');
+      const zname = new Set([...vlastni, ...zamitnute].map((f) => f.zdroj).filter(Boolean));
+      sdilene = (await nacistFotky(sdilenaBaze, `AND(${SCHVALENE}, {Obec} = 'Obecné')`)).filter(
+        (f) => f.obrazek && !(f.zdroj && zname.has(f.zdroj)),
+      );
+      console.log(`[clanky] Sdílené obecné fotky z druhé Fotobanky: ${sdilene.length}`);
+    } catch (err) {
+      console.warn('[clanky] Sdílenou Fotobanku se nepodařilo načíst, použiji jen vlastní fotky:', err);
+    }
+  }
+  return [...vlastni, ...sdilene].filter((f): f is FotkaBanky & { zdroj: string } => Boolean(f.obrazek));
 }
 
 // Podtémata ilustračních fotek (názvy musí sedět s config/ilustrace.json v

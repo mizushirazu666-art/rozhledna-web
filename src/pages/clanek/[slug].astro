@@ -5,7 +5,7 @@ import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import region from '../../data/region.json';
-import { getClanky } from '../../lib/clanky';
+import { getClanky, nazevObceClanku } from '../../lib/clanky';
 import { castiTextu } from '../../lib/odkazy';
 
 export async function getStaticPaths() {
@@ -21,7 +21,7 @@ const { clanek, vsechnyClanky } = Astro.props as {
 };
 
 const rubrikaInfo = taxonomie.rubriky.find((r) => r.slug === clanek.rubrika);
-const obecInfo = taxonomie.obce.find((o) => o.slug === clanek.obec);
+const obecNazev = nazevObceClanku(clanek.obec);
 const souvisejici = (clanek.souvisejiciClanky ?? [])
   .map((slug) => vsechnyClanky.find((c) => c.slug === slug))
   .filter((c): c is (typeof vsechnyClanky)[number] => Boolean(c) && c!.stav === 'Publikováno');
@@ -37,7 +37,7 @@ const jsonLd = {
   datePublished: clanek.datumPublikace,
   mainEntityOfPage: adresa,
   ...(nahled ? { image: [new URL(nahled, Astro.site).href] } : {}),
-  ...(obecInfo ? { contentLocation: { '@type': 'Place', name: obecInfo.nazev } } : {}),
+  ...(obecNazev ? { contentLocation: { '@type': 'Place', name: obecNazev } } : {}),
   author: { '@type': 'Organization', name: `Rozhledna – ${region.nazev}`, url: new URL('/', Astro.site).href },
   publisher: { '@type': 'Organization', name: `Rozhledna – ${region.nazev}`, url: new URL('/', Astro.site).href },
 };
@@ -48,13 +48,13 @@ const jsonLd = {
     <span>/</span>
     <a href={`/rubrika/${rubrikaInfo?.slug}/`}>{rubrikaInfo?.nazev}</a>
     <span>/</span>
-    <span class="drobeckova__aktualni">{obecInfo?.nazev}</span>
+    <span class="drobeckova__aktualni">{obecNazev}</span>
   </div>
 
   <div class="container clanek-layout">
     <article class="clanek">
       <header class="clanek__header">
-        <span class="kicker kicker--zelena">{rubrikaInfo?.nazev} · {obecInfo?.nazev}</span>
+        <span class="kicker kicker--zelena">{rubrikaInfo?.nazev} · {obecNazev}</span>
         <h1 class="clanek__nadpis">{clanek.nadpis}</h1>
         <p class="clanek__perex">{clanek.perex}</p>
         <div class="clanek__byline">

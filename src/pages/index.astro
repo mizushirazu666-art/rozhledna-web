@@ -7,7 +7,7 @@ import HlaseniIzs from '../components/HlaseniIzs.astro';
 import taxonomie from '../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import region from '../data/region.json';
-import { getClanky, vyberHlavniZpravu } from '../lib/clanky';
+import { getClanky, vyberHlavniZpravu, nazevObceClanku } from '../lib/clanky';
 
 const articlesData = await getClanky();
 const clanky = articlesData.filter((c) => c.stav === 'Publikováno');
@@ -25,7 +25,7 @@ const ostatni = hlavniZprava
   : [];
 
 const rubrikaHlavni = hlavniZprava ? taxonomie.rubriky.find((r) => r.slug === hlavniZprava.rubrika) : undefined;
-const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZprava.obec) : undefined;
+const obecHlavni = hlavniZprava ? nazevObceClanku(hlavniZprava.obec) : undefined;
 ---
 <BaseLayout title="Domů" description={`Nejnovější zprávy z ${region.genitiv} – ${taxonomie.obce.slice(0, 4).map((o) => o.nazev).join(', ')} a okolí.`}>
   {hlavniZprava ? (
@@ -33,7 +33,7 @@ const obecHlavni = hlavniZprava ? taxonomie.obce.find((o) => o.slug === hlavniZp
       <section class="hero">
         <div class={`container hero__inner${hlavniZprava.obrazek ? '' : ' hero__inner--bez-fotky'}`}>
           <div class="hero__text">
-            <span class="kicker kicker--zelena">{rubrikaHlavni?.nazev} · {obecHlavni?.nazev}</span>
+            <span class="kicker kicker--zelena">{rubrikaHlavni?.nazev} · {obecHlavni}</span>
             <h1 class="hero__title"><a href={`/clanek/${hlavniZprava.slug}/`}>{hlavniZprava.nadpis}</a></h1>
             <p class="hero__perex">{hlavniZprava.perex}</p>
             <span class="hero__meta">{new Date(hlavniZprava.datumPublikace).toLocaleDateString('cs-CZ')} · {hlavniZprava.casCteniMin} min čtení</span>

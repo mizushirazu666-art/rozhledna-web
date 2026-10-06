@@ -69,9 +69,20 @@ function rubrikaSlugZNazvu(nazev: string | undefined): string | null {
   return taxonomie.rubriky.find((r) => r.nazev === nazev)?.slug ?? null;
 }
 
+/** Články za celý mikroregion (např. souhrny voleb) mají v Airtable Obec =
+ *  region.mikroregion („Mikroregion Chrudimsko“) a slug 'mikroregion'. */
+export const MIKROREGION_SLUG = 'mikroregion';
+
 function obecSlugZNazvu(nazev: string | undefined): string | null {
   if (!nazev) return null;
+  if (nazev === region.mikroregion) return MIKROREGION_SLUG;
   return taxonomie.obce.find((o) => o.nazev === nazev)?.slug ?? null;
+}
+
+/** Název obce článku pro štítky a drobečkovou navigaci (i pro celý mikroregion). */
+export function nazevObceClanku(slug: string): string | undefined {
+  if (slug === MIKROREGION_SLUG) return region.mikroregion;
+  return taxonomie.obce.find((o) => o.slug === slug)?.nazev;
 }
 
 function odhadniCasCteni(telo: string[]): number {

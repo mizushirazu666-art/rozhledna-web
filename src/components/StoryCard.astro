@@ -1,5 +1,6 @@
 ---
 import taxonomie from '../data/taxonomie.json';
+import { nazevObceClanku } from '../lib/clanky';
 
 export interface Props {
   clanek: {
@@ -14,11 +15,11 @@ export interface Props {
 
 const { clanek, barva } = Astro.props;
 const rubrikaInfo = taxonomie.rubriky.find((r) => r.slug === clanek.rubrika);
-const obecInfo = taxonomie.obce.find((o) => o.slug === clanek.obec);
+const obecNazev = nazevObceClanku(clanek.obec);
 const barvaFinal = barva ?? rubrikaInfo?.barva ?? 'zelena';
 ---
 <a href={`/clanek/${clanek.slug}/`} class={`story-card story-card--${barvaFinal}`}>
-  <span class={`kicker kicker--${barvaFinal}`}>{rubrikaInfo?.nazev} · {obecInfo?.nazev}</span>
+  <span class={`kicker kicker--${barvaFinal}`}>{rubrikaInfo?.nazev} · {obecNazev}</span>
   <h3 class="story-card__title">{clanek.nadpis}</h3>
   {clanek.perex && <span class="story-card__perex">{clanek.perex}</span>}
 </a>

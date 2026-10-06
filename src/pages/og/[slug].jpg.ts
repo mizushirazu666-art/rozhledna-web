@@ -31,10 +31,12 @@ async function zdrojFotky(url: string): Promise<Buffer> {
 }
 
 export const GET: APIRoute = async ({ props }) => {
-  // 1200 px na šířku doporučuje Facebook; menší fotku nezvětšujeme.
+  // Vždy 1200 × 630 (poměr, který Facebook ukazuje jako velký náhled) –
+  // rozměry pak může BaseLayout uvést v og:image:width/height. Výřez se
+  // zaměří na nejzajímavější část fotky (sharp „attention“).
   const jpg = await sharp(await zdrojFotky(props.url as string))
     .rotate()
-    .resize({ width: 1200, withoutEnlargement: true })
+    .resize({ width: 1200, height: 630, fit: 'cover', position: sharp.strategy.attention })
     .flatten({ background: '#ffffff' })
     .jpeg({ quality: 82, mozjpeg: true })
     .toBuffer();

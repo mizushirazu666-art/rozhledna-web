@@ -9,7 +9,8 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
 
 ## Nasazení
 
-- Vercel projekt `prj_hWKinbqAXFyDvmQfgS39TzvM5wHL` (team slug `rozhledna`).
+- Vercel projekt `rozhledna-chrudimsko` (`prj_hWKinbqAXFyDvmQfgS39TzvM5wHL`,
+  team slug `rozhledna`; do 7. 10. 2026 se jmenoval `rozhledna-web`).
   Push na `main` = automatický produkční deploy. Push na main je povolený,
   PR jen na přání.
 - Ruční přestavění (např. po schválení fotek/článků v Airtable): Vercel

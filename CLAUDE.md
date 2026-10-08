@@ -35,14 +35,16 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
     fotky (Obec = Obecné) schválené ve Fotobance druhého regionu
     (`sdilenaFotobanka` v region.json – Chrudimsko ↔ Hlinecko), kromě těch,
     které vlastní báze má (i zamítnuté) podle ZdrojURL. Token
-    AIRTABLE_API_KEY musí mít čtení obou bází, jinak se sdílené vynechají.
+    AIRTABLE_API_KEY musí mít čtení obou bází, jinak se sdílené vynechají
+    (Hlinecko dostalo přístup k bázi Chrudimska 8. 10. 2026 – do té doby
+    na Hlinecku žádné obecné fotky).
   - `PODTEMATA` – regexy podtémat (názvy musí sedět s
     `config/ilustrace.json` v pipeline), `temataClanku` = podtémata, pak
     hlavní témata, pak podle rubriky.
   - `rozdejIlustrace` – články od nejstaršího; pořadí (8. 10. 2026, přání
     Lukáše – téma před krajinou obce): 1) konkrétní podtéma (Divadlo,
-    Fotbalový zápas…; hledá se v nadpisu/perexu/štítcích, jinak v začátku
-    textu) – fotka obce i obecná, 2) totéž podtéma i s nedávno použitou
+    Fotbalový zápas…; přednost má podtéma z nadpisu, pak perex/štítky,
+    jinak začátek textu) – fotka obce i obecná, 2) totéž podtéma i s nedávno použitou
     fotkou, 3) hlavní témata (text + rubrika), 4) záložní fotky obce (Obec
     obecně, Památky) jen u článků bez konkrétního podtématu – jinak raději
     bez fotky; Příroda jen u článků o přírodě. V kroku se míchají fotky obce

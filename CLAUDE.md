@@ -79,6 +79,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   mapka obcí regionu s hodnotou u obce (1. sloupec = název obce přesně jako
   v mapa-regionu.json, 2. = hodnota, sytost barvy podle čísla), tabulka pak
   sbalená pod mapkou.
+- `src/components/FacebookOdkaz.astro` (8. 10. 2026) – „Sledujte Rozhlednu na
+  Facebooku“ (region.json `facebook`): blok pod článkem a na hlavní stránce,
+  odkaz v patičce. Lukáš nemá osobní FB profil (nemůže zvát přátele).
 - `src/pages/poslete-fotku.astro` + `api/poslat-fotku.js` (Vercel funkce) –
   formulář pro čtenáře: fotka se v prohlížeči zmenší (max. 2000 px, JPEG),
   funkce založí záznam ve Fotobance (Schvaleno = false, Autor „Foto: jméno,

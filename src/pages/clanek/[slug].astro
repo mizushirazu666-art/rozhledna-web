@@ -9,6 +9,7 @@ import { getClanky, nazevObceClanku } from '../../lib/clanky';
 import { castiTextu } from '../../lib/odkazy';
 import { blokTextu } from '../../lib/bloky';
 import MapaHodnoty from '../../components/MapaHodnoty.astro';
+import FacebookOdkaz from '../../components/FacebookOdkaz.astro';
 
 export async function getStaticPaths() {
   const articlesData = await getClanky();
@@ -121,6 +122,8 @@ const jsonLd = {
           {clanek.stitky.map((s: string) => <span>#{s.replace(/\s+/g, '')}</span>)}
         </div>
       )}
+
+      <FacebookOdkaz />
     </article>
 
     <aside class="postranni">

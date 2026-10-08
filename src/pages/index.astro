@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StoryCard from '../components/StoryCard.astro';
 import NewsletterCTA from '../components/NewsletterCTA.astro';
+import FacebookOdkaz from '../components/FacebookOdkaz.astro';
 import SportPrehled from '../components/SportPrehled.astro';
 import HlaseniIzs from '../components/HlaseniIzs.astro';
 import taxonomie from '../data/taxonomie.json';
@@ -86,6 +87,7 @@ const obecHlavni = hlavniZprava ? nazevObceClanku(hlavniZprava.obec) : undefined
 
   <div class="container">
     <NewsletterCTA />
+    <div class="fb-hlavni"><FacebookOdkaz /></div>
   </div>
 </BaseLayout>
 
@@ -180,4 +182,5 @@ const obecHlavni = hlavniZprava ? nazevObceClanku(hlavniZprava.obec) : undefined
     .novinky { padding-top: 22px; padding-bottom: 24px; grid-template-columns: 1fr; gap: 32px; }
     .novinky__mrizka { grid-template-columns: 1fr; gap: 20px; }
   }
+  .fb-hlavni { margin-top: 24px; }
 </style>

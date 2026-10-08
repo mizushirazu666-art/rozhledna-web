@@ -41,6 +41,9 @@ export interface Clanek {
   hlavniZprava: boolean;
   /** Ručně připnutý článek – na hlavní stránce hned pod hlavní zprávou. */
   pripnout?: boolean;
+  /** AI výběr ilustrační fotky v pipeline (ilustrace_vyber.py, pole
+   * Ilustrace): ID záznamu Fotobanky, '-' = bez fotky, '' = výběr podle témat. */
+  ilustrace?: string;
   souvisejiciClanky: string[];
   ukazkovyObsah?: boolean;
 }
@@ -117,6 +120,8 @@ function obrazekZPoli(f: Record<string, any>): Obrazek | undefined {
 // --- Ilustrační fotky (Airtable tabulka Fotobanka) ---------------------------
 
 interface FotkaBanky {
+  /** ID záznamu ve Fotobance (na něj odkazuje pole Ilustrace článku). */
+  id: string;
   obrazek: Obrazek;
   obec: string; // slug, nebo '' = obecná fotka
   temata: string[];
@@ -147,6 +152,7 @@ async function nacistFotky(baze: string, vzorec: string): Promise<FotkaBankyZazn
       const autor = [f.Autor, f.Licence && !/vlastní/i.test(String(f.Licence)) ? f.Licence : ''].filter(Boolean).join(', ');
       const obrazek = obrazekZPoli({ Obrazek: f.Obrazek, ObrazekPopis: f.Popis, ObrazekAutor: autor });
       fotky.push({
+        id: rec.id,
         obrazek: obrazek && { ...obrazek, ilustracni: true },
         obec: f.Obec === 'Obecné' ? '' : (obecSlugZNazvu(f.Obec) ?? ''),
         temata: Array.isArray(f.Temata) ? f.Temata.map(String) : [],
@@ -328,13 +334,25 @@ function hash(text: string): number {
  * V rámci kroku se fotky obce a obecné míchají: přednost má fotka, která se
  * zatím použila nejméně; při shodě fotka z obce. Fotka z posledních
  * OKNO_BEZ_OPAKOVANI článků se (kromě kroku 2) přeskočí. Bazárek fotky
- * nedostává. */
+ * nedostává. Před tím vším má přednost volba AI z pole Ilustrace (pipeline
+ * ilustrace_vyber.py, 8. 10. 2026); '-' = bez fotky. */
 function rozdejIlustrace(clanky: Clanek[], banka: FotkaBanky[]): void {
   const pouziti = new Map<string, number>();
   const posledni: string[] = [];
   const poradi = [...clanky].sort((a, b) => a.datumPublikace.localeCompare(b.datumPublikace));
   for (const c of poradi) {
     if (c.obrazek || c.rubrika === 'bazarek') continue;
+    // Volba AI (pipeline vidí popis i obsah fotky) má přednost před
+    // výběrem podle slov; '-' = žádná fotka nesedí.
+    if (c.ilustrace === '-') continue;
+    const zAi = c.ilustrace ? banka.find((f) => f.id === c.ilustrace) : undefined;
+    if (zAi) {
+      c.obrazek = zAi.obrazek;
+      pouziti.set(zAi.obrazek.url, (pouziti.get(zAi.obrazek.url) ?? 0) + 1);
+      posledni.push(zAi.obrazek.url);
+      if (posledni.length > OKNO_BEZ_OPAKOVANI) posledni.shift();
+      continue;
+    }
     const temata = temataClanku(c);
     const podtemata = new Set(podtemataClanku(c));
     const vlastni = new Set(temata);
@@ -462,6 +480,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
         .filter(Boolean),
       hlavniZprava: Boolean(f.HlavniZprava),
       pripnout: Boolean(f.Pripnout),
+      ilustrace: f.Ilustrace ? String(f.Ilustrace).trim() : '',
       souvisejiciClanky: [],
       ukazkovyObsah: false,
     });

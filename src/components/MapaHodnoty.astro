@@ -1,0 +1,85 @@
+---
+/**
+ * Mapka obcí regionu s hodnotou u každé obce (blok [mapa] v textu článku –
+ * src/lib/bloky.ts). Čím vyšší číslo, tím sytější barva regionu; obce bez
+ * hodnoty jsou šedé.
+ */
+import mapa from '../data/mapa-regionu.json';
+import region from '../data/region.json';
+import { cisloZHodnoty } from '../lib/bloky';
+
+export interface Props {
+  radky: string[][];
+  popis?: string;
+}
+
+const { radky, popis } = Astro.props;
+const hodnoty = new Map(radky.map((r) => [r[0], r[1] ?? '']));
+const cisla = [...hodnoty.values()].map(cisloZHodnoty).filter((c): c is number => c !== null);
+const min = Math.min(...cisla);
+const max = Math.max(...cisla);
+const sytost = (h: string | undefined) => {
+  const c = h ? cisloZHodnoty(h) : null;
+  if (c === null || !cisla.length) return null;
+  return max > min ? 0.18 + 0.82 * ((c - min) / (max - min)) : 0.6;
+};
+const obce = mapa.obce.map((o) => ({ ...o, hodnota: hodnoty.get(o.nazev), sytost: sytost(hodnoty.get(o.nazev)) }));
+---
+<figure class="mapa-hodnoty">
+  <svg viewBox={`-1 -1 ${mapa.sirka + 2} ${mapa.vyska + 2}`} role="img" aria-label={popis ?? `Mapa obcí – ${region.mikroregion}`}>
+    {obce.map((o) => (
+      <path d={o.d} class="mapa-hodnoty__obec" style={o.sytost !== null ? `fill-opacity:${o.sytost.toFixed(2)}` : undefined}
+        data-bez={o.sytost === null ? '' : undefined}><title>{o.hodnota ? `${o.nazev}: ${o.hodnota}` : o.nazev}</title></path>
+    ))}
+    {obce.filter((o) => o.hodnota).map((o) => (
+      <text x={o.x} y={o.y} class="mapa-hodnoty__popisek">
+        <tspan x={o.x} dy="-0.9" class="mapa-hodnoty__nazev">{o.nazev}</tspan>
+        <tspan x={o.x} dy="2.3" class="mapa-hodnoty__hodnota">{o.hodnota}</tspan>
+      </text>
+    ))}
+  </svg>
+  {cisla.length > 1 && (
+    <figcaption class="mapa-hodnoty__legenda">
+      <span>{String(min).replace('.', ',')}</span>
+      <span class="mapa-hodnoty__skala" aria-hidden="true"></span>
+      <span>{String(max).replace('.', ',')}</span>
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .mapa-hodnoty { margin: 0; }
+  .mapa-hodnoty svg { display: block; width: 100%; height: auto; }
+  .mapa-hodnoty__obec {
+    fill: var(--barva-zelena);
+    stroke: var(--barva-pozadi);
+    stroke-width: 0.35;
+    stroke-linejoin: round;
+  }
+  .mapa-hodnoty__obec[data-bez] { fill: var(--barva-ramecek); }
+  .mapa-hodnoty__popisek {
+    font-family: var(--font-tělo);
+    text-anchor: middle;
+    fill: var(--barva-text);
+    paint-order: stroke;
+    stroke: var(--barva-pozadi);
+    stroke-width: 0.5px;
+    pointer-events: none;
+  }
+  .mapa-hodnoty__nazev { font-size: 1.5px; font-weight: 500; }
+  .mapa-hodnoty__hodnota { font-size: 2.1px; font-weight: 700; }
+  .mapa-hodnoty__legenda {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--barva-text-tlumena);
+  }
+  .mapa-hodnoty__skala {
+    flex: 0 0 120px;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, color-mix(in srgb, var(--barva-zelena) 18%, transparent), var(--barva-zelena));
+  }
+</style>

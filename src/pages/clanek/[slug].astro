@@ -7,6 +7,8 @@ import { Image } from 'astro:assets';
 import region from '../../data/region.json';
 import { getClanky, nazevObceClanku } from '../../lib/clanky';
 import { castiTextu } from '../../lib/odkazy';
+import { blokTextu } from '../../lib/bloky';
+import MapaHodnoty from '../../components/MapaHodnoty.astro';
 
 export async function getStaticPaths() {
   const articlesData = await getClanky();
@@ -84,13 +86,28 @@ const jsonLd = {
       )}
 
       <div class="clanek__telo">
-        {clanek.telo.map((odstavec: string) => (
-          <p>
-            {castiTextu(odstavec).map((c) =>
-              c.href ? <a href={c.href} {...(c.externi ? { rel: 'noopener', target: '_blank' } : {})}>{c.text}</a> : c.text,
-            )}
-          </p>
-        ))}
+        {clanek.telo.map((odstavec: string) => blokTextu(odstavec)).map((blok) =>
+          blok.typ === 'tabulka' ? (
+            <div class="clanek__blok">
+              {blok.mapa && <MapaHodnoty radky={blok.radky} popis={blok.hlavicka.join(' – ')} />}
+              <details class="clanek__tabulka" open={!blok.mapa}>
+                <summary>{blok.mapa ? 'Tabulka s hodnotami' : blok.hlavicka.join(' – ')}</summary>
+                <div class="clanek__tabulka-obal">
+                  <table>
+                    <thead><tr>{blok.hlavicka.map((h) => <th>{h}</th>)}</tr></thead>
+                    <tbody>{blok.radky.map((r) => <tr>{r.map((b) => <td>{b}</td>)}</tr>)}</tbody>
+                  </table>
+                </div>
+              </details>
+            </div>
+          ) : (
+            <p>
+              {castiTextu(blok.text).map((c) =>
+                c.href ? <a href={c.href} {...(c.externi ? { rel: 'noopener', target: '_blank' } : {})}>{c.text}</a> : c.text,
+              )}
+            </p>
+          ),
+        )}
       </div>
 
       {clanek.ukazkovyObsah && (
@@ -211,6 +228,15 @@ const jsonLd = {
   }
   .clanek__telo p { margin: 0; }
   .clanek__telo a { color: var(--barva-terakota); text-decoration: underline; font-weight: 600; }
+  .clanek__blok { display: flex; flex-direction: column; gap: 12px; }
+  .clanek__tabulka summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+  .clanek__tabulka:not([open]) summary { color: var(--barva-terakota); }
+  .clanek__tabulka[open] summary { list-style: none; margin-bottom: 8px; }
+  .clanek__tabulka-obal { overflow-x: auto; }
+  .clanek__tabulka table { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.4; }
+  .clanek__tabulka th { text-align: left; font-weight: 700; border-bottom: 2px solid var(--barva-ramecek); padding: 6px 10px; }
+  .clanek__tabulka td { border-bottom: 1px solid var(--barva-ramecek); padding: 6px 10px; }
+  .clanek__tabulka td:not(:first-child), .clanek__tabulka th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
 
   .clanek__upozorneni {
     padding: 20px 24px;

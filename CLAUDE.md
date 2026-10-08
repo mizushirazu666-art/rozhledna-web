@@ -73,6 +73,12 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   slug z HlaseniId) s krátkým článkem z pole Text a odkazem na zdroj.
 - `src/lib/odkazy.ts` – v poli Telo se zápis `[text](adresa)` vykreslí jako
   odkaz (jen `/…` a http(s)); použito např. v článku „Volební víkend“.
+- `src/lib/bloky.ts` + `src/components/MapaHodnoty.astro` (8. 10. 2026, přání
+  Lukáše – výčty ne jako dlouhá věta): odstavec v Telo, jehož řádky jsou
+  `| a | b |`, je tabulka (1. řádek záhlaví); s řádkem `[mapa]` nad ní navíc
+  mapka obcí regionu s hodnotou u obce (1. sloupec = název obce přesně jako
+  v mapa-regionu.json, 2. = hodnota, sytost barvy podle čísla), tabulka pak
+  sbalená pod mapkou.
 - `src/pages/poslete-fotku.astro` + `api/poslat-fotku.js` (Vercel funkce) –
   formulář pro čtenáře: fotka se v prohlížeči zmenší (max. 2000 px, JPEG),
   funkce založí záznam ve Fotobance (Schvaleno = false, Autor „Foto: jméno,

@@ -29,7 +29,8 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   fotek (`obrazekZPoli`, HEAD kontrola dostupnosti – nedostupná fotka se
   vynechá, aby nespadl build), `vyberHlavniZpravu` (ruční HlavniZprava
   ≤ 7 dní, jinak veřejná správa/doprava/bezpečnost ≤ 3 dny s fotkou, jinak
-  nejnovější) a ilustrační fotky z Fotobanky:
+  nejnovější) a `pripnuteNahoru` (Airtable Pripnout ✔ ≤ 7 dní = na hlavní
+  stránce hned pod hlavní zprávou, 8. 10. 2026) a ilustrační fotky z Fotobanky:
   - `nacistFotobanku` – filtr `AND({Schvaleno}, NOT({Neschvaleno}))`;
     u licencí kromě „vlastní“ se licence připojí k autorovi. Navíc obecné
     fotky (Obec = Obecné) schválené ve Fotobance druhého regionu

@@ -39,6 +39,8 @@ export interface Clanek {
   telo: string[];
   stitky: string[];
   hlavniZprava: boolean;
+  /** Ručně připnutý článek – na hlavní stránce hned pod hlavní zprávou. */
+  pripnout?: boolean;
   souvisejiciClanky: string[];
   ukazkovyObsah?: boolean;
 }
@@ -459,6 +461,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
         .map((s: string) => s.trim())
         .filter(Boolean),
       hlavniZprava: Boolean(f.HlavniZprava),
+      pripnout: Boolean(f.Pripnout),
       souvisejiciClanky: [],
       ukazkovyObsah: false,
     });
@@ -538,6 +541,13 @@ const RUBRIKY_PRO_HLAVNI_ZPRAVU = ['verejna-sprava', 'doprava', 'bezpecnost'];
 // Ručně vybraná hlavní zpráva vydrží nahoře nejvýš tolik dní, pak ji
 // vystřídá automatický výběr – zapomenuté zaškrtnutí tak nezůstane navěky.
 const RUCNI_HLAVNI_ZPRAVA_DNU = 7;
+
+/** Pořadí pod hlavní zprávou: nejdřív ručně připnuté články (Pripnout ✔,
+ * nejdéle RUCNI_HLAVNI_ZPRAVA_DNU dní staré), pak ostatní od nejnovějšího. */
+export function pripnuteNahoru(clanky: Clanek[], dnes: Date = new Date()): Clanek[] {
+  const pripnute = clanky.filter((c) => c.pripnout && staryDni(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_DNU);
+  return [...pripnute, ...clanky.filter((c) => !pripnute.includes(c))];
+}
 // Automatický výběr bere z preferovaných rubrik jen dost čerstvé články;
 // starší důležitá zpráva nemá přebít novější článek z jiné rubriky.
 const AUTOMATICKA_HLAVNI_ZPRAVA_DNU = 3;

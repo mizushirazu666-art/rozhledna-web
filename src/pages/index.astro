@@ -7,7 +7,7 @@ import HlaseniIzs from '../components/HlaseniIzs.astro';
 import taxonomie from '../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import region from '../data/region.json';
-import { getClanky, vyberHlavniZpravu, nazevObceClanku } from '../lib/clanky';
+import { getClanky, vyberHlavniZpravu, nazevObceClanku, pripnuteNahoru } from '../lib/clanky';
 
 const articlesData = await getClanky();
 const clanky = articlesData.filter((c) => c.stav === 'Publikováno');
@@ -18,7 +18,7 @@ const zCentra = (c: { obec: string }) => c.obec === region.centrum.slug;
 const hlavniZprava = vyberHlavniZpravu(clanky);
 let zbyvaCentrum = region.limitCentraNaHlavni - (hlavniZprava && zCentra(hlavniZprava) ? 1 : 0);
 const ostatni = hlavniZprava
-  ? clanky
+  ? pripnuteNahoru(clanky)
       .filter((c) => c.slug !== hlavniZprava.slug)
       .filter((c) => !zCentra(c) || zbyvaCentrum-- > 0)
       .slice(0, 6)

@@ -228,7 +228,7 @@ const PODTEMATA: [RegExp, string][] = [
   [/mikuláš|čert|rozsvícení/, 'Mikuláš'],
   [/advent|vánoc|vánoční|jarmark/, 'Advent a Vánoce'],
   [/masopust|maškar/, 'Masopust'],
-  [/koncert|kapel|hudb|zpěv|sbor/, 'Koncert'],
+  [/koncert|kapel|hudb|zpěv|pěveck|sborov/, 'Koncert'],
   [/divadl|představení|loutk/, 'Divadlo'],
   [/výstav|muze|galeri|vernisáž/, 'Výstava'],
   [/ples|taneční|zábav/, 'Ples'],
@@ -243,11 +243,12 @@ const PODTEMATA: [RegExp, string][] = [
 /** Témata Fotobanky, která se k článku hodí, od nejvhodnějšího: nejdřív
  * konkrétní podtémata (svoz odpadu → popelnice), pak hlavní témata. */
 function podtemataClanku(c: Clanek): string[] {
-  const hlavni = `${c.nadpis} ${c.perex} ${c.stitky.join(' ')}`.toLowerCase();
-  const podle = (text: string) => PODTEMATA.filter(([re]) => re.test(text)).map(([, tema]) => tema);
-  const t = podle(hlavni);
+  const podle = (text: string) => PODTEMATA.filter(([re]) => re.test(text.toLowerCase())).map(([, tema]) => tema);
+  // Přednost má téma z nadpisu (zájezd do divadla vlakem → divadlo, ne vlak),
+  // pak z perexu a štítků.
+  const t = [...new Set([...podle(c.nadpis), ...podle(`${c.perex} ${c.stitky.join(' ')}`)])];
   // Nadpis a perex nic konkrétního neprozradí → zkusit začátek textu.
-  return t.length ? t : podle(c.telo.slice(0, 2).join(' ').toLowerCase());
+  return t.length ? t : podle(c.telo.slice(0, 2).join(' '));
 }
 
 function temataClanku(c: Clanek): string[] {

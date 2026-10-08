@@ -39,12 +39,16 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   - `PODTEMATA` – regexy podtémat (názvy musí sedět s
     `config/ilustrace.json` v pipeline), `temataClanku` = podtémata, pak
     hlavní témata, pak podle rubriky.
-  - `rozdejIlustrace` – články od nejstaršího; v rámci tématu se míchají
-    fotky obce a obecné, přednost nejméně použitá (při shodě z obce);
-    fotka se neopakuje v `OKNO_BEZ_OPAKOVANI` (12) sousedních článcích,
-    jinak článek zůstane bez fotky. Obecné fotky jen k vlastním tématům
-    článku, záložní témata obce (Obec obecně, Památky, Příroda) jen
-    s fotkami té obce. Bazárek fotky nedostává.
+  - `rozdejIlustrace` – články od nejstaršího; pořadí (8. 10. 2026, přání
+    Lukáše – téma před krajinou obce): 1) konkrétní podtéma (Divadlo,
+    Fotbalový zápas…; hledá se v nadpisu/perexu/štítcích, jinak v začátku
+    textu) – fotka obce i obecná, 2) totéž podtéma i s nedávno použitou
+    fotkou, 3) hlavní témata (text + rubrika), 4) záložní fotky obce (Obec
+    obecně, Památky) jen u článků bez konkrétního podtématu – jinak raději
+    bez fotky; Příroda jen u článků o přírodě. V kroku se míchají fotky obce
+    a obecné, přednost nejméně použitá (při shodě z obce); mimo krok 2 se
+    fotka neopakuje v `OKNO_BEZ_OPAKOVANI` (12) sousedních článcích.
+    Obecné fotky jen k vlastním tématům článku. Bazárek fotky nedostává.
   - Kdo je na fotce (pole Lide – vyplní AI v pipeline, `fotobanka_kontrola.py`):
     `lideClanku` pozná z textu článek o ženách/mužích/dětech, `sediLide` pak
     nepustí fotku žen k mužům (a naopak); u sportu bez upřesnění jen fotky

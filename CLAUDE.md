@@ -42,6 +42,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   - `PODTEMATA` – regexy podtémat (názvy musí sedět s
     `config/ilustrace.json` v pipeline), `temataClanku` = podtémata, pak
     hlavní témata, pak podle rubriky.
+  - Pole **Ilustrace** článku (AI výběr v pipeline `ilustrace_vyber.py`,
+    8. 10. 2026) má přednost: ID fotky z Fotobanky, „-“ = bez fotky; prázdné
+    = výběr podle témat níže.
   - `rozdejIlustrace` – články od nejstaršího; pořadí (8. 10. 2026, přání
     Lukáše – téma před krajinou obce): 1) konkrétní podtéma (Divadlo,
     Fotbalový zápas…; přednost má podtéma z nadpisu, pak perex/štítky,

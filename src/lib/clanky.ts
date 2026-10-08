@@ -242,9 +242,17 @@ const PODTEMATA: [RegExp, string][] = [
 
 /** Témata Fotobanky, která se k článku hodí, od nejvhodnějšího: nejdřív
  * konkrétní podtémata (svoz odpadu → popelnice), pak hlavní témata. */
+function podtemataClanku(c: Clanek): string[] {
+  const hlavni = `${c.nadpis} ${c.perex} ${c.stitky.join(' ')}`.toLowerCase();
+  const podle = (text: string) => PODTEMATA.filter(([re]) => re.test(text)).map(([, tema]) => tema);
+  const t = podle(hlavni);
+  // Nadpis a perex nic konkrétního neprozradí → zkusit začátek textu.
+  return t.length ? t : podle(c.telo.slice(0, 2).join(' ').toLowerCase());
+}
+
 function temataClanku(c: Clanek): string[] {
   const text = `${c.nadpis} ${c.perex} ${c.stitky.join(' ')}`.toLowerCase();
-  const t: string[] = PODTEMATA.filter(([re]) => re.test(text)).map(([, tema]) => tema);
+  const t: string[] = podtemataClanku(c);
   const kdyz = (re: RegExp, tema: string) => { if (re.test(text)) t.push(tema); };
   kdyz(/fotbal/, 'Fotbal');
   kdyz(/volejbal/, 'Volejbal');
@@ -259,14 +267,15 @@ function temataClanku(c: Clanek): string[] {
     doprava: ['Doprava a silnice'],
     'verejna-sprava': ['Úřad a zastupitelstvo'],
     bezpecnost: ['Hasiči'],
-    kultura: ['Kultura a akce', 'Památky'],
+    kultura: ['Kultura a akce'],
   };
   return [...new Set([...t, ...(podleRubriky[c.rubrika] ?? [])])];
 }
 
 // Záložní témata jen pro fotky konkrétní obce (náves, zámek, okolí) – obecná
 // fotka "nějaké vesnice" nebo "nějakého lesa" by u článku jinak mátla.
-const ZALOZNI_TEMATA_OBCE = ['Obec obecně', 'Památky', 'Příroda'];
+// Příroda (krajina, rezervace) jen u článků, kde téma Příroda vyšlo z textu.
+const ZALOZNI_TEMATA_OBCE = ['Obec obecně', 'Památky'];
 
 /** Koho se článek týká – aby k článku o mužském volejbalu nešla fotka žen. */
 function lideClanku(c: Clanek): 'muži' | 'ženy' | 'děti' | 'smíšeně' | '' {
@@ -305,12 +314,18 @@ function hash(text: string): number {
 /** Rozdá ilustrační fotky článkům bez vlastní fotky. Články se procházejí od
  * nejstaršího, takže starší článek si fotku drží i po přidání nových.
  *
- * U každého článku se zkoušejí témata od nejvhodnějšího (podtéma → hlavní
- * téma → záložní témata obce). V rámci tématu se fotky obce a obecné fotky
- * míchají: přednost má fotka, která se zatím použila nejméně; při shodě fotka
- * z obce. Fotka použitá u některého z posledních OKNO_BEZ_OPAKOVANI článků se
- * přeskočí – když už k článku žádná jiná není, zůstane bez fotky (lepší než
- * pořád táž). Bazárek fotky nedostává. */
+ * Přednost má fotka k tématu článku před fotkou obce (zájezd do divadla →
+ * divadlo, ne krajina kolem obce). Pořadí pokusů:
+ *  1. konkrétní podtéma (Divadlo, Uzavírka…) – fotka obce i obecná;
+ *  2. totéž podtéma i s fotkou použitou nedávno – u konkrétního tématu je
+ *     opakovaná fotka lepší než nesouvisející;
+ *  3. hlavní témata podle textu a rubriky (Kultura a akce, Doprava…);
+ *  4. záložní fotky obce (náves, památky) – jen když článek nemá žádné
+ *     konkrétní podtéma; jinak raději bez fotky.
+ * V rámci kroku se fotky obce a obecné míchají: přednost má fotka, která se
+ * zatím použila nejméně; při shodě fotka z obce. Fotka z posledních
+ * OKNO_BEZ_OPAKOVANI článků se (kromě kroku 2) přeskočí. Bazárek fotky
+ * nedostává. */
 function rozdejIlustrace(clanky: Clanek[], banka: FotkaBanky[]): void {
   const pouziti = new Map<string, number>();
   const posledni: string[] = [];
@@ -318,32 +333,50 @@ function rozdejIlustrace(clanky: Clanek[], banka: FotkaBanky[]): void {
   for (const c of poradi) {
     if (c.obrazek || c.rubrika === 'bazarek') continue;
     const temata = temataClanku(c);
+    const podtemata = new Set(podtemataClanku(c));
     const vlastni = new Set(temata);
     const kdo = lideClanku(c);
-    let vybrana: FotkaBanky | undefined;
-    for (const tema of [...temata, ...ZALOZNI_TEMATA_OBCE.filter((z) => !vlastni.has(z))]) {
+
+    const vyber = (tema: string, sOpakovanim: boolean): FotkaBanky | undefined => {
       const kandidati = banka.filter(
         (f) =>
           f.temata.includes(tema) &&
           ((c.obec && f.obec === c.obec) || (f.obec === '' && vlastni.has(tema))) &&
-          !posledni.includes(f.obrazek.url) &&
+          (sOpakovanim || !posledni.includes(f.obrazek.url)) &&
           sediLide(f, c, kdo),
       );
-      if (!kandidati.length) continue;
+      if (!kandidati.length) return undefined;
       // Cizí prostředí (americký sport, cizí nápisy) až nakonec, pak nejméně
-      // použitá, pak fotka obce.
+      // použitá (s opakováním: ta, která byla použita nejdávněji), pak fotka obce.
       const klic = (f: FotkaBanky) => [
         f.prostredi === 'cizí' ? 1 : 0,
+        sOpakovanim ? posledni.indexOf(f.obrazek.url) : 0,
         pouziti.get(f.obrazek.url) ?? 0,
         f.obec ? 0 : 1,
         hash(c.slug + f.obrazek.url),
       ];
       kandidati.sort((x, y) => {
         const [a, b] = [klic(x), klic(y)];
-        return a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || a[3] - b[3];
+        return a[0] - b[0] || a[1] - b[1] || a[2] - b[2] || a[3] - b[3] || a[4] - b[4];
       });
-      vybrana = kandidati[0];
-      break;
+      return kandidati[0];
+    };
+
+    const konkretni = temata.filter((t) => podtemata.has(t));
+    const ostatni = temata.filter((t) => !podtemata.has(t));
+    const zalozni = konkretni.length ? [] : ZALOZNI_TEMATA_OBCE.filter((z) => !vlastni.has(z));
+    let vybrana: FotkaBanky | undefined;
+    for (const [seznam, sOpakovanim] of [
+      [konkretni, false],
+      [konkretni, true],
+      [ostatni, false],
+      [zalozni, false],
+    ] as [string[], boolean][]) {
+      for (const tema of seznam) {
+        vybrana = vyber(tema, sOpakovanim);
+        if (vybrana) break;
+      }
+      if (vybrana) break;
     }
     if (!vybrana) continue;
     c.obrazek = vybrana.obrazek;

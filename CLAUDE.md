@@ -85,6 +85,14 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
 - `src/components/FacebookOdkaz.astro` (8. 10. 2026) – „Sledujte Rozhlednu na
   Facebooku“ (region.json `facebook`): blok pod článkem a na hlavní stránce,
   odkaz v patičce. Lukáš nemá osobní FB profil (nemůže zvát přátele).
+- Volby živě (9. 10. 2026): `src/pages/volby-2026.astro` + `api/volby.js`
+  (Vercel funkce: pro obce regionu stáhne z volby.gov.cz `vysled` a
+  `ucast/obec` JSON, cache 60 s; prohlížeč obnovuje každou minutu). Obce a
+  kódy ČSÚ jsou přímo v `api/volby.js` (z pipeline obce.json). Upoutávka
+  `VolbyZive.astro` na hlavní stránce se ukáže jen 10. 10. 13:30 – 11. 10.
+  22:00 SELČ (náhled `/?volby`). Pořadí sloupců `ucast.celkem` (okrsky,
+  zpracováno, %, voliči, obálky, účast %…) je odhad podle XML ČSÚ – ověřit
+  s reálnými daty. Po volbách upoutávku odebrat.
 - `src/pages/poslete-fotku.astro` + `api/poslat-fotku.js` (Vercel funkce) –
   formulář pro čtenáře: fotka se v prohlížeči zmenší (max. 2000 px, JPEG),
   funkce založí záznam ve Fotobance (Schvaleno = false, Autor „Foto: jméno,

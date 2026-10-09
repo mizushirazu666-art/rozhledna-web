@@ -1,0 +1,43 @@
+---
+// Upoutávka na živé výsledky voleb (/volby-2026/). Web je statický, proto
+// o zobrazení rozhoduje prohlížeč podle času: od soboty 10. 10. 2026 13:30
+// do neděle 11. 10. večer (pak se sama skryje, komponentu lze odebrat).
+---
+<div class="container volby-zive-obal"><a class="volby-zive" href="/volby-2026/" data-od="2026-10-10T11:30:00Z" data-do="2026-10-11T20:00:00Z" hidden>
+  <span class="volby-zive__bod" aria-hidden="true"></span>
+  <span><strong>Komunální volby 2026 živě:</strong> průběžné výsledky ve všech našich obcích</span>
+  <span class="volby-zive__sipka" aria-hidden="true">→</span>
+</a></div>
+
+<script>
+  for (const a of document.querySelectorAll<HTMLElement>('.volby-zive')) {
+    const ted = Date.now();
+    const zobrazit = ted >= Date.parse(a.dataset.od!) && ted <= Date.parse(a.dataset.do!);
+    // ?volby v adrese = náhled upoutávky i mimo volební víkend
+    if (zobrazit || new URLSearchParams(location.search).has('volby')) a.hidden = false;
+  }
+</script>
+
+<style>
+  .volby-zive {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: var(--barva-terakota);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+  .volby-zive[hidden] { display: none; }
+  .volby-zive:hover { color: #fff; filter: brightness(1.05); }
+  .volby-zive__sipka { margin-left: auto; font-size: 20px; }
+  .volby-zive__bod {
+    width: 10px; height: 10px; border-radius: 50%; background: #fff; flex: none;
+    animation: volby-pulz 1.6s ease-in-out infinite;
+  }
+  @keyframes volby-pulz { 50% { opacity: .3; } }
+  @media (max-width: 900px) { .volby-zive { margin-top: 12px; font-size: 15px; } }
+</style>

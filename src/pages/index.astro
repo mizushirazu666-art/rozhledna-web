@@ -1,4 +1,5 @@
 ---
+import VolbyZive from '../components/VolbyZive.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StoryCard from '../components/StoryCard.astro';
 import NewsletterCTA from '../components/NewsletterCTA.astro';
@@ -29,6 +30,7 @@ const rubrikaHlavni = hlavniZprava ? taxonomie.rubriky.find((r) => r.slug === hl
 const obecHlavni = hlavniZprava ? nazevObceClanku(hlavniZprava.obec) : undefined;
 ---
 <BaseLayout title="Domů" description={`Nejnovější zprávy z ${region.genitiv} – ${taxonomie.obce.slice(0, 4).map((o) => o.nazev).join(', ')} a okolí.`}>
+  <VolbyZive />
   {hlavniZprava ? (
     <>
       <section class="hero">

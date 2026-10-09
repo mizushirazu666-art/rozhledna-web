@@ -35,3 +35,19 @@
 .volby .kicker a { color: inherit; }
 .volby__odkazy { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 15px; font-weight: 600; margin: 4px 0 0; }
 .volby__odkazy a { color: var(--barva-terakota); }
+
+/* Souhrn, moje obec, sdílení (9. 10. 2026) */
+.souhrn { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.souhrn__dlazdice { background: #fff; border: 1px solid var(--barva-ramecek); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.souhrn__cislo { font-size: 24px; color: var(--barva-zelena); font-variant-numeric: tabular-nums; }
+.souhrn__popis { font-size: 13px; color: var(--barva-text-tlumena-tmavsi); line-height: 1.3; }
+.karta--moje { border: 2px solid var(--barva-terakota); }
+.karta__prava { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.karta__moje { font: inherit; font-size: 13px; font-weight: 600; background: none; border: 1px solid var(--barva-ramecek); border-radius: 999px; padding: 3px 10px; cursor: pointer; color: var(--barva-text-tlumena-tmavsi); }
+.karta--moje .karta__moje { border-color: var(--barva-terakota); color: var(--barva-terakota); }
+.karta__pata { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+.sdileni { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sdileni__tlacitko { font: inherit; font-size: 14px; font-weight: 700; color: #fff; background: var(--barva-zelena); border: 0; border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.sdileni__odkaz { display: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--barva-terakota); background: none; border: 0; padding: 0; cursor: pointer; }
+.sdileni--otevrene .sdileni__odkaz { display: inline; }
+@media (max-width: 900px) { .souhrn { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -103,7 +103,7 @@ const popis = `Výsledky komunálních voleb 2026 v obci ${o.nazev}: hlasy kandi
         : sectenoHlasu(o)
           ? `Sčítá se – průběžné výsledky. Aktualizováno v ${cas}.`
           : `Výsledky zatím nejsou – sčítání začne v sobotu 10. 10. po 14:00. Kontrolováno v ${cas}.`;
-      obal.replaceChildren(karta(o, otevrene, true));
+      obal.replaceChildren(karta(o, otevrene, true, nacist));
     } catch {
       /* zůstane stav z buildu */
     }

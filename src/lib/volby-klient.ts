@@ -8,7 +8,7 @@ export type Strana = {
 export type Obec = {
   slug: string; nazev: string; obyvatel?: number; dostupne: boolean; konecne: boolean; mandatu: number | null;
   okrskyCelkem: number | null; okrskyZpracovano: number | null; zpracovanoProcent: number | null;
-  ucastProcent: number | null; strany: Strana[];
+  ucastProcent: number | null; volicu?: number | null; strany: Strana[];
 };
 
 export const cz = (n: number, des = 0) =>
@@ -35,12 +35,23 @@ function stitek(o: Obec) {
 
 /** Karta obce. `otevrene` si pamatuje rozbalené části mezi obnoveními,
  * `detail` = karta na vlastní stránce obce (bez zkracování seznamu). */
-export function karta(o: Obec, otevrene: Set<string>, detail = false) {
-  const k = el('article', 'karta');
+export function karta(o: Obec, otevrene: Set<string>, detail = false, priZmeneMoje?: () => void) {
+  const moje = mojeObec() === o.slug;
+  const k = el('article', moje ? 'karta karta--moje' : 'karta');
   const hlava = el('div', 'karta__hlava');
   const odkaz = el(detail ? 'span' : 'a', 'karta__nazev', o.nazev) as HTMLAnchorElement;
   if (!detail) odkaz.href = `/volby-2026/${o.slug}/`;
-  hlava.append(odkaz, stitek(o));
+  const prava = el('div', 'karta__prava');
+  prava.append(stitek(o));
+  if (priZmeneMoje) {
+    const hvezda = el('button', 'karta__moje', moje ? '★ Moje obec' : '☆ Moje obec') as HTMLButtonElement;
+    hvezda.type = 'button';
+    hvezda.title = moje ? 'Přestat sledovat' : 'Sledovat – obec bude vždy nahoře';
+    hvezda.setAttribute('aria-pressed', String(moje));
+    hvezda.addEventListener('click', () => { nastavMojeObec(moje ? '' : o.slug); priZmeneMoje(); });
+    prava.append(hvezda);
+  }
+  hlava.append(odkaz, prava);
   k.append(hlava);
 
   const info: string[] = [];
@@ -87,12 +98,80 @@ export function karta(o: Obec, otevrene: Set<string>, detail = false) {
     }
     k.append(d);
   }
+  const pata = el('div', 'karta__pata');
   if (!detail) {
     const vic = el('a', 'karta__vic', 'Detail obce →') as HTMLAnchorElement;
     vic.href = `/volby-2026/${o.slug}/`;
-    k.append(vic);
+    pata.append(vic);
   }
+  pata.append(sdileni(o));
+  k.append(pata);
   return k;
+}
+
+/** Souhrnná čísla nad seznamem obcí. Účast se počítá jen z obcí, kde ji ČSÚ
+ * už uvádí (vážená počtem voličů, když je známý). */
+export function souhrn(data: Obec[]) {
+  const konec = data.filter((o) => o.konecne).length;
+  const prubeh = data.filter((o) => !o.konecne && sectenoHlasu(o)).length;
+  const sUcasti = data.filter((o) => o.ucastProcent !== null && o.ucastProcent > 0 && o.ucastProcent <= 100);
+  const vahy = sUcasti.map((o) => (o.volicu && o.volicu > 0 ? o.volicu : 1));
+  const soucetVah = vahy.reduce((a, b) => a + b, 0);
+  const ucast = soucetVah ? sUcasti.reduce((a, o, i) => a + (o.ucastProcent as number) * vahy[i], 0) / soucetVah : null;
+  const nejvyssi = sUcasti.slice().sort((a, b) => (b.ucastProcent as number) - (a.ucastProcent as number))[0];
+  const box = el('div', 'souhrn');
+  const dlazdice = (cislo: string, popis: string) => {
+    const d = el('div', 'souhrn__dlazdice');
+    d.append(el('strong', 'souhrn__cislo', cislo), el('span', 'souhrn__popis', popis));
+    return d;
+  };
+  box.append(dlazdice(`${konec} z ${data.length}`, 'obcí má konečné výsledky'));
+  box.append(dlazdice(String(prubeh), 'obcí se právě sčítá'));
+  if (ucast !== null) box.append(dlazdice(`${cz(ucast, 1)} %`, `účast v ${sUcasti.length === data.length ? 'regionu' : `${sUcasti.length} sečtených obcích`}`));
+  if (nejvyssi) box.append(dlazdice(`${cz(nejvyssi.ucastProcent as number, 1)} %`, `nejvyšší účast – ${nejvyssi.nazev}`));
+  return box;
+}
+
+// „Moje obec“ – zapamatovaná v prohlížeči (jen pohodlí; když úložiště
+// nejde, prostě se nepamatuje).
+const KLIC_MOJE = 'rozhledna-volby-moje-obec';
+export function mojeObec(): string {
+  try { return localStorage.getItem(KLIC_MOJE) || ''; } catch { return ''; }
+}
+export function nastavMojeObec(slug: string) {
+  try { slug ? localStorage.setItem(KLIC_MOJE, slug) : localStorage.removeItem(KLIC_MOJE); } catch { /* nic */ }
+}
+
+/** Tlačítko „Sdílet výsledky“: na mobilu nabídka sdílení telefonu, jinak
+ * Facebook + zkopírování odkazu. */
+export function sdileni(o: Obec) {
+  const url = new URL(`/volby-2026/${o.slug}/`, location.origin).href;
+  const titulek = `Výsledky voleb 2026: ${o.nazev}`;
+  const obal = el('div', 'sdileni');
+  const hlavni = el('button', 'sdileni__tlacitko', 'Sdílet výsledky obce') as HTMLButtonElement;
+  hlavni.type = 'button';
+  const fb = el('a', 'sdileni__odkaz', 'Facebook') as HTMLAnchorElement;
+  fb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  fb.target = '_blank';
+  fb.rel = 'noopener';
+  const kopirovat = el('button', 'sdileni__odkaz', 'Kopírovat odkaz') as HTMLButtonElement;
+  kopirovat.type = 'button';
+  kopirovat.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      kopirovat.textContent = 'Zkopírováno ✓';
+    } catch {
+      prompt('Odkaz na výsledky:', url);
+    }
+  });
+  hlavni.addEventListener('click', async () => {
+    if (navigator.share) {
+      try { await navigator.share({ title: titulek, url }); return; } catch { /* zrušeno */ }
+    }
+    obal.classList.toggle('sdileni--otevrene');
+  });
+  obal.append(hlavni, fb, kopirovat);
+  return obal;
 }
 
 export const casAktualizace = (iso: string) =>

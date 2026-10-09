@@ -22,6 +22,7 @@ const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeo
     </p>
 
     <div class="volby__stav" id="volby-stav" aria-live="polite">Načítám výsledky…</div>
+    <div id="volby-souhrn"></div>
 
     <label class="volby__hledat">
       <span>Najít obec</span>
@@ -44,17 +45,21 @@ const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeo
 </BaseLayout>
 
 <script>
-  import { karta, bezDiakritiky, sectenoHlasu, casAktualizace, type Obec } from '../../lib/volby-klient';
+  import { karta, souhrn, mojeObec, bezDiakritiky, sectenoHlasu, casAktualizace, type Obec } from '../../lib/volby-klient';
 
   const stav = document.getElementById('volby-stav')!;
   const seznam = document.getElementById('volby-obce')!;
   const hledat = document.getElementById('volby-hledat') as HTMLInputElement;
+  const souhrnEl = document.getElementById('volby-souhrn')!;
   const otevrene = new Set<string>();
   let data: Obec[] = [];
 
   function vykreslit() {
     const q = bezDiakritiky(hledat.value.trim());
-    seznam.replaceChildren(...data.filter((o) => !q || bezDiakritiky(o.nazev).includes(q)).map((o) => karta(o, otevrene)));
+    const moje = mojeObec();
+    // Zapamatovaná „moje obec“ vždy první, pak podle velikosti.
+    const serazene = [...data].sort((a, b) => Number(b.slug === moje) - Number(a.slug === moje));
+    seznam.replaceChildren(...serazene.filter((o) => !q || bezDiakritiky(o.nazev).includes(q)).map((o) => karta(o, otevrene, false, vykreslit)));
   }
 
   async function nacist() {
@@ -66,6 +71,7 @@ const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeo
       const konec = data.filter((o) => o.konecne).length;
       const prubeh = data.filter((o) => !o.konecne && sectenoHlasu(o)).length;
       const cas = casAktualizace(j.stazeno);
+      souhrnEl.replaceChildren(...(konec || prubeh ? [souhrn(data)] : []));
       stav.textContent = konec || prubeh
         ? `Konečné výsledky: ${konec} z ${data.length} obcí${prubeh ? `, sčítá se v dalších ${prubeh}` : ''}. Aktualizováno v ${cas}.`
         : `Výsledky zatím nejsou – sčítání začne v sobotu 10. 10. po 14:00. Kontrolováno v ${cas}.`;

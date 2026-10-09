@@ -96,7 +96,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   stránku `/volby-2026/<slug>/` (`[obec].astro` – kvůli vyhledávání
   „výsledky voleb <obec>“; stav z buildu ve statickém HTML, v prohlížeči
   obnova z `/api/volby?obec=<slug>`), odkaz ze stránky obce, v sitemapě.
-  Vykreslení karet `src/lib/volby-klient.ts`, styly `src/styles/volby.css`.
+  Vykreslení karet `src/lib/volby-klient.ts`, styly `src/styles/volby.css`; souhrnné dlaždice (sečteno, účast, nejvyšší účast), „Moje obec“
+  (localStorage, obec nahoře) a tlačítko „Sdílet výsledky obce“ (navigator.share,
+  jinak Facebook + kopírovat odkaz). Obce řazené podle počtu obyvatel.
 - `src/pages/poslete-fotku.astro` + `api/poslat-fotku.js` (Vercel funkce) –
   formulář pro čtenáře: fotka se v prohlížeči zmenší (max. 2000 px, JPEG),
   funkce založí záznam ve Fotobance (Schvaleno = false, Autor „Foto: jméno,

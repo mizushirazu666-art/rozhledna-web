@@ -356,7 +356,7 @@ function rozdejIlustrace(clanky: Clanek[], banka: FotkaBanky[]): void {
     if (c.obrazek || c.rubrika === 'bazarek') continue;
     // Volba AI (pipeline vidí popis i obsah fotky) má přednost před
     // výběrem podle slov; '-' = žádná fotka nesedí.
-    if (c.ilustrace === '-') continue;
+    if (c.ilustrace?.startsWith('-')) continue; // '-' / '--' (ani po návrzích fotek)
     const zAi = c.ilustrace ? banka.find((f) => f.id === c.ilustrace) : undefined;
     if (zAi) {
       c.obrazek = zAi.obrazek;

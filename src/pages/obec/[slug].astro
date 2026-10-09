@@ -23,6 +23,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
       <span class="kicker kicker--zelena">Obec</span>
       <h1>{obec.nazev}</h1>
       <span class="obec-hlavicka__meta">{obec.obyvatel.toLocaleString('cs-CZ')} obyvatel</span>
+      <a class="obec-volby" href={`/volby-2026/${obec.slug}/`}>Výsledky komunálních voleb 2026 v obci {obec.nazev} →</a>
     </div>
     <aside class="obec-mapa">
       <span class="obec-mapa__nadpis">Kde leží {obec.nazev}</span>
@@ -55,6 +56,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
 </BaseLayout>
 
 <style>
+  .obec-volby { margin-top: 10px; font-weight: 700; color: var(--barva-terakota); font-size: 15px; }
   .obec-hlavicka {
     display: flex;
     justify-content: space-between;

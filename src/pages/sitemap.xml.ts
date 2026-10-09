@@ -6,6 +6,7 @@ import type { APIRoute } from 'astro';
 import taxonomie from '../data/taxonomie.json';
 import { getClanky } from '../lib/clanky';
 import { getHlaseni } from '../lib/hlaseni';
+import { OBCE } from '../../api/volby.js';
 
 function polozka(adresa: string, zmena?: string): string {
   // Datum v budoucnu (články o budoucích akcích) vyhledávače neberou.
@@ -25,6 +26,10 @@ export const GET: APIRoute = async ({ site }) => {
     ...taxonomie.rubriky.map((r) => polozka(url(`/rubrika/${r.slug}/`))),
     polozka(url('/obce/')),
     ...taxonomie.obce.map((o) => polozka(url(`/obec/${o.slug}/`))),
+    polozka(url('/volby-2026/'), new Date().toISOString()),
+    ...(OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeof OBCE] || OBCE.chrudimsko).map((o) =>
+      polozka(url(`/volby-2026/${o.slug}/`), new Date().toISOString()),
+    ),
     ...clanky.map((c) => polozka(url(`/clanek/${c.slug}/`), c.datumPublikace)),
     ...hlaseni.map((h) => polozka(url(`/hlaseni/${h.slug}/`), h.cas)),
     ...['/o-nas/', '/kontakt/', '/poslete-fotku/', '/inzerce/', '/ochrana-udaju/'].map((c) => polozka(url(c))),

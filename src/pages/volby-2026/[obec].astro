@@ -1,0 +1,114 @@
+---
+// Výsledky voleb 2026 jedné obce – vlastní adresa kvůli vyhledávání
+// („výsledky voleb Slatiňany“). Při buildu se vykreslí stav z volby.gov.cz
+// (vyhledávače vidí text i bez JavaScriptu), v prohlížeči se pak každou
+// minutu obnovuje z /api/volby?obec=<slug>.
+import region from '../../data/region.json';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/volby.css';
+import { OBCE, nactiObec } from '../../../api/volby.js';
+
+type ObecVolby = (typeof OBCE)['chrudimsko'][number];
+
+export function getStaticPaths() {
+  const seznam = OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeof OBCE] || OBCE.chrudimsko;
+  return seznam.map((o: ObecVolby) => ({ params: { obec: o.slug }, props: { o } }));
+}
+
+const { o } = Astro.props as { o: ObecVolby };
+let data: Awaited<ReturnType<typeof nactiObec>> | null = null;
+try {
+  data = await nactiObec(o);
+} catch {
+  data = null;
+}
+const strany = data?.strany ?? [];
+const seceno = strany.some((s) => s.hlasy > 0);
+const cz = (n: number, des = 0) => n.toLocaleString('cs-CZ', { minimumFractionDigits: des, maximumFractionDigits: des });
+const pocetKand = strany.length;
+const popisKand = pocetKand === 1 ? 'jediná kandidátka' : pocetKand >= 2 && pocetKand <= 4 ? `${pocetKand} kandidátky` : `${pocetKand} kandidátek`;
+const titulek = `Výsledky voleb 2026: ${o.nazev}`;
+const popis = `Výsledky komunálních voleb 2026 v obci ${o.nazev}: hlasy kandidátek, účast a zvolení zastupitelé – průběžně ze sčítání ČSÚ.`;
+---
+<BaseLayout title={titulek} description={popis}>
+  <div class="container volby">
+    <p class="kicker kicker--terakota"><a href="/volby-2026/">Komunální volby 2026 · živě</a></p>
+    <h1>{titulek}</h1>
+    <p class="volby__uvod">
+      Volby do zastupitelstva obce {o.nazev} 9. a 10. října 2026
+      {data?.mandatu ? <> – o {data.mandatu} míst v zastupitelstvu {pocetKand ? <>usiluje {popisKand}</> : null}</> : null}.
+      Výsledky načítáme přímo z Českého statistického úřadu a stránka se během sčítání sama obnovuje
+      každou minutu. Sčítat se začne v sobotu 10. října po 14. hodině.
+    </p>
+
+    <div class="volby__stav" id="volby-stav" aria-live="polite">
+      {data?.konecne ? 'Konečné výsledky' : seceno ? 'Sčítá se' : 'Výsledky zatím nejsou – sčítání začne v sobotu 10. 10. po 14:00.'}
+    </div>
+
+    <div id="volby-karta" data-obec={o.slug}>
+      <article class="karta">
+        <div class="karta__strany">
+          {strany.map((s) => (
+            <div class="strana">
+              <div class="strana__popis">
+                <span class="strana__nazev">{s.plnyNazev || s.nazev}</span>
+                <span class="strana__cisla">
+                  {seceno ? `${cz(s.procent, 2)} % · ${cz(s.hlasy)} hl.` : ''}{s.mandaty !== null ? ` · mandáty: ${s.mandaty}` : ''}
+                </span>
+              </div>
+              <div class="strana__pruh"><div class="strana__vypln" style={`width:${Math.max(0, Math.min(100, s.procent))}%`}></div></div>
+            </div>
+          ))}
+        </div>
+        {data?.konecne && strany.some((s) => s.zvoleni.length) ? (
+          <details class="karta__zvoleni" open>
+            <summary>Zvolení zastupitelé</summary>
+            {strany.filter((s) => s.zvoleni.length).map((s) => (
+              <p><strong>{s.nazev}:</strong> {s.zvoleni.map((z) => z.jmeno).join(', ')}</p>
+            ))}
+          </details>
+        ) : null}
+      </article>
+    </div>
+
+    <p class="volby__odkazy">
+      <a href="/volby-2026/">← Výsledky ve všech obcích {region.genitiv}</a>
+      <a href={`/obec/${o.slug}/`}>Zprávy z obce {o.nazev} →</a>
+    </p>
+
+    <p class="volby__zdroj">
+      Zdroj: Český statistický úřad, <a href="https://volby.gov.cz/" rel="noopener">volby.gov.cz</a>.
+      Do vyhlášení konečných výsledků jde o průběžný stav sčítání.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  import { karta, casAktualizace, sectenoHlasu, type Obec } from '../../lib/volby-klient';
+
+  const obal = document.getElementById('volby-karta')!;
+  const stav = document.getElementById('volby-stav')!;
+  const slug = obal.dataset.obec!;
+  const otevrene = new Set<string>();
+
+  async function nacist() {
+    try {
+      const resp = await fetch(`/api/volby?obec=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+      const j = await resp.json();
+      const o = (j.obce as Obec[])?.[0];
+      if (!j.ok || !o) throw new Error();
+      const cas = casAktualizace(j.stazeno);
+      stav.textContent = o.konecne
+        ? `Konečné výsledky. Aktualizováno v ${cas}.`
+        : sectenoHlasu(o)
+          ? `Sčítá se – průběžné výsledky. Aktualizováno v ${cas}.`
+          : `Výsledky zatím nejsou – sčítání začne v sobotu 10. 10. po 14:00. Kontrolováno v ${cas}.`;
+      obal.replaceChildren(karta(o, otevrene, true));
+    } catch {
+      /* zůstane stav z buildu */
+    }
+  }
+
+  nacist();
+  setInterval(nacist, 60_000);
+</script>

@@ -14,7 +14,7 @@
  *     voliči, vydané obálky, účast %, odevzdané obálky, platné hlasy)
  */
 // Obce regionů (kódy ČSÚ z pipeline config/(hlinecko/)obce.json).
-const OBCE = {
+export const OBCE = {
   chrudimsko: [
     { slug: 'borice', nazev: 'Bořice', kod: 571229, okres: 5301 },
     { slug: 'bylany', nazev: 'Bylany', kod: 571245, okres: 5301 },
@@ -94,7 +94,7 @@ function cislo(v) {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
-async function obec(o) {
+export async function nactiObec(o) {
   const [vysled, ucast] = await Promise.all([
     json(`${ZAKLAD}/vysled/${o.okres}/${o.kod}.json`),
     json(`${ZAKLAD}/ucast/obec/${o.okres}/${o.kod}.json`),
@@ -139,8 +139,11 @@ async function obec(o) {
 
 export default async function handler(req, res) {
   const region = process.env.ROZHLEDNA_REGION || 'chrudimsko';
-  const seznam = OBCE[region] || OBCE.chrudimsko;
-  const vysledky = await Promise.all(seznam.map(obec));
+  const vsechny = OBCE[region] || OBCE.chrudimsko;
+  // ?obec=<slug> = jen jedna obec (stránka /volby-2026/<slug>/)
+  const jen = typeof req.query?.obec === 'string' ? req.query.obec : '';
+  const seznam = jen ? vsechny.filter((o) => o.slug === jen) : vsechny;
+  const vysledky = await Promise.all(seznam.map(nactiObec));
   res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
   res.status(200).json({ ok: true, region, stazeno: new Date().toISOString(), obce: vysledky });
 }

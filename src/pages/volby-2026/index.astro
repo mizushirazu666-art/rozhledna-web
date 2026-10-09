@@ -1,0 +1,81 @@
+---
+// Živé výsledky komunálních voleb 2026 (10. 10. 2026). Data čte prohlížeč
+// každou minutu z /api/volby (Vercel funkce, stahuje volby.gov.cz) – stránka
+// se kvůli novým číslům nemusí přestavovat.
+import region from '../../data/region.json';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/volby.css';
+import { OBCE } from '../../../api/volby.js';
+const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeof OBCE] || OBCE.chrudimsko).slice().sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+---
+<BaseLayout
+  title="Volby 2026 živě – výsledky v obcích"
+  description={`Průběžné výsledky komunálních voleb 2026 ve všech obcích ${region.genitiv}: účast, hlasy stran a zvolení zastupitelé.`}
+>
+  <div class="container volby">
+    <p class="kicker kicker--terakota">Komunální volby 2026 · živě</p>
+    <h1>Výsledky voleb v obcích {region.genitiv}</h1>
+    <p class="volby__uvod">
+      Průběžné výsledky načítáme přímo z Českého statistického úřadu (volby.gov.cz) a stránka se
+      sama obnovuje každou minutu. Sčítat se začne v sobotu 10. října po 14. hodině, první obce
+      bývají sečtené během odpoledne.
+    </p>
+
+    <div class="volby__stav" id="volby-stav" aria-live="polite">Načítám výsledky…</div>
+
+    <label class="volby__hledat">
+      <span>Najít obec</span>
+      <input type="search" id="volby-hledat" placeholder="např. Slatiňany" autocomplete="off" />
+    </label>
+
+    <div class="volby__obce" id="volby-obce">
+      {obce.map((o) => (
+        <article class="karta"><div class="karta__hlava"><a class="karta__nazev" href={`/volby-2026/${o.slug}/`}>{o.nazev}</a></div>
+          <a class="karta__vic" href={`/volby-2026/${o.slug}/`}>Výsledky voleb 2026 – {o.nazev} →</a></article>
+      ))}
+    </div>
+
+    <p class="volby__zdroj">
+      Zdroj: Český statistický úřad, <a href="https://volby.gov.cz/" rel="noopener">volby.gov.cz</a>.
+      Do vyhlášení konečných výsledků jde o průběžný stav sčítání. Počet mandátů a jména zvolených
+      zastupitelů ukážeme u obce, jakmile jsou výsledky konečné.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  import { karta, bezDiakritiky, sectenoHlasu, casAktualizace, type Obec } from '../../lib/volby-klient';
+
+  const stav = document.getElementById('volby-stav')!;
+  const seznam = document.getElementById('volby-obce')!;
+  const hledat = document.getElementById('volby-hledat') as HTMLInputElement;
+  const otevrene = new Set<string>();
+  let data: Obec[] = [];
+
+  function vykreslit() {
+    const q = bezDiakritiky(hledat.value.trim());
+    seznam.replaceChildren(...data.filter((o) => !q || bezDiakritiky(o.nazev).includes(q)).map((o) => karta(o, otevrene)));
+  }
+
+  async function nacist() {
+    try {
+      const resp = await fetch('/api/volby', { cache: 'no-store' });
+      const j = await resp.json();
+      if (!j.ok) throw new Error();
+      data = (j.obce as Obec[]).sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+      const konec = data.filter((o) => o.konecne).length;
+      const prubeh = data.filter((o) => !o.konecne && sectenoHlasu(o)).length;
+      const cas = casAktualizace(j.stazeno);
+      stav.textContent = konec || prubeh
+        ? `Konečné výsledky: ${konec} z ${data.length} obcí${prubeh ? `, sčítá se v dalších ${prubeh}` : ''}. Aktualizováno v ${cas}.`
+        : `Výsledky zatím nejsou – sčítání začne v sobotu 10. 10. po 14:00. Kontrolováno v ${cas}.`;
+      vykreslit();
+    } catch {
+      stav.textContent = 'Výsledky se teď nepodařilo načíst, zkusíme to znovu za minutu.';
+    }
+  }
+
+  hledat.addEventListener('input', vykreslit);
+  nacist();
+  setInterval(nacist, 60_000);
+</script>

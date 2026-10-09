@@ -92,7 +92,11 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   `VolbyZive.astro` na hlavní stránce se ukáže jen 10. 10. 13:30 – 11. 10.
   22:00 SELČ (náhled `/?volby`). Pořadí sloupců `ucast.celkem` (okrsky,
   zpracováno, %, voliči, obálky, účast %…) je odhad podle XML ČSÚ – ověřit
-  s reálnými daty. Po volbách upoutávku odebrat.
+  s reálnými daty. Po volbách upoutávku odebrat. Každá obec má i vlastní
+  stránku `/volby-2026/<slug>/` (`[obec].astro` – kvůli vyhledávání
+  „výsledky voleb <obec>“; stav z buildu ve statickém HTML, v prohlížeči
+  obnova z `/api/volby?obec=<slug>`), odkaz ze stránky obce, v sitemapě.
+  Vykreslení karet `src/lib/volby-klient.ts`, styly `src/styles/volby.css`.
 - `src/pages/poslete-fotku.astro` + `api/poslat-fotku.js` (Vercel funkce) –
   formulář pro čtenáře: fotka se v prohlížeči zmenší (max. 2000 px, JPEG),
   funkce založí záznam ve Fotobance (Schvaleno = false, Autor „Foto: jméno,

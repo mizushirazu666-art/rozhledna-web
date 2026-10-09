@@ -1,0 +1,37 @@
+/* Živé výsledky voleb 2026 – společné pro /volby-2026/ i stránky obcí. */
+.container.volby { max-width: 900px; padding-top: 40px; padding-bottom: 64px; display: flex; flex-direction: column; gap: 16px; }
+  .volby h1 { font-size: 34px; line-height: 1.2; }
+  .volby__uvod { font-size: 16px; line-height: 1.5; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+  .volby__stav { background: var(--barva-zelena); color: #fff; padding: 12px 16px; border-radius: 6px; font-weight: 600; font-size: 15px; }
+  .volby__hledat { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; }
+  .volby__hledat input { font: inherit; font-weight: 400; padding: 10px 12px; border: 1px solid var(--barva-ramecek); border-radius: 6px; background: #fff; max-width: 360px; }
+  .volby__obce { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .volby__zdroj { font-size: 13px; color: var(--barva-text-tlumena); line-height: 1.5; margin: 8px 0 0; }
+  .volby__zdroj a { color: var(--barva-terakota); }
+
+  .volby .karta { background: #fff; border: 1px solid var(--barva-ramecek); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .volby .karta__hlava { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .volby .karta__nazev { font-size: 20px; font-weight: 700; color: var(--barva-text); }
+  .volby .karta__info { margin: 0; font-size: 14px; color: var(--barva-text-tlumena-tmavsi); }
+  .volby .stitek { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--barva-text-tlumena); }
+  .volby .stitek--prubeh { color: var(--barva-terakota); }
+  .volby .stitek--konec { color: var(--barva-zelena); }
+  .volby .karta__strany { display: flex; flex-direction: column; gap: 8px; }
+  .volby .strana__popis { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; line-height: 1.35; }
+  .volby .strana__cisla { white-space: nowrap; color: var(--barva-text-tlumena-tmavsi); font-variant-numeric: tabular-nums; }
+  .volby .strana__pruh { height: 6px; background: var(--barva-obrazek-placeholder); border-radius: 3px; overflow: hidden; margin-top: 3px; }
+  .volby .strana__vypln { height: 100%; background: var(--barva-zelena); transition: width .4s; }
+  .volby .karta__dalsi summary { cursor: pointer; font-size: 13px; color: var(--barva-text-tlumena-tmavsi); }
+  .volby .karta__dalsi[open] { display: flex; flex-direction: column; gap: 8px; }
+  .volby .karta__vic { font-size: 14px; font-weight: 600; color: var(--barva-terakota); align-self: flex-start; }
+  .volby .karta__zvoleni summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--barva-terakota); }
+  .volby .karta__zvoleni p { font-size: 14px; line-height: 1.45; margin: 6px 0 0; }
+
+  @media (max-width: 900px) {
+    .container.volby { padding-top: 24px; gap: 12px; }
+    .volby h1 { font-size: 26px; }
+    .volby__obce { grid-template-columns: 1fr; }
+  }
+.volby .kicker a { color: inherit; }
+.volby__odkazy { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 15px; font-weight: 600; margin: 4px 0 0; }
+.volby__odkazy a { color: var(--barva-terakota); }

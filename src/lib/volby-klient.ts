@@ -6,7 +6,7 @@ export type Strana = {
   mandaty: number | null; zvoleni: { jmeno: string; hlasy: number | null }[];
 };
 export type Obec = {
-  slug: string; nazev: string; dostupne: boolean; konecne: boolean; mandatu: number | null;
+  slug: string; nazev: string; obyvatel?: number; dostupne: boolean; konecne: boolean; mandatu: number | null;
   okrskyCelkem: number | null; okrskyZpracovano: number | null; zpracovanoProcent: number | null;
   ucastProcent: number | null; strany: Strana[];
 };

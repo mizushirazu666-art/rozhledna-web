@@ -6,7 +6,7 @@ import region from '../../data/region.json';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import '../../styles/volby.css';
 import { OBCE } from '../../../api/volby.js';
-const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeof OBCE] || OBCE.chrudimsko).slice().sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeof OBCE] || OBCE.chrudimsko).slice().sort((a, b) => b.obyvatel - a.obyvatel);  // největší obce nahoře – odtud bude nejvíc čtenářů
 ---
 <BaseLayout
   title="Volby 2026 živě – výsledky v obcích"
@@ -62,7 +62,7 @@ const obce = (OBCE[(process.env.ROZHLEDNA_REGION || 'chrudimsko') as keyof typeo
       const resp = await fetch('/api/volby', { cache: 'no-store' });
       const j = await resp.json();
       if (!j.ok) throw new Error();
-      data = (j.obce as Obec[]).sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+      data = (j.obce as Obec[]).sort((a, b) => (b.obyvatel ?? 0) - (a.obyvatel ?? 0));
       const konec = data.filter((o) => o.konecne).length;
       const prubeh = data.filter((o) => !o.konecne && sectenoHlasu(o)).length;
       const cas = casAktualizace(j.stazeno);

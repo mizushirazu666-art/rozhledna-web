@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ site }) => {
     ),
     ...clanky.map((c) => polozka(url(`/clanek/${c.slug}/`), c.datumPublikace)),
     ...hlaseni.map((h) => polozka(url(`/hlaseni/${h.slug}/`), h.cas)),
-    ...['/o-nas/', '/kontakt/', '/poslete-fotku/', '/inzerce/', '/ochrana-udaju/'].map((c) => polozka(url(c))),
+    ...['/o-nas/', '/kontakt/', '/poslete-fotku/', '/ochrana-udaju/'].map((c) => polozka(url(c))),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${radky.join('\n')}\n</urlset>\n`;
   return new Response(xml, { headers: { 'Content-Type': 'application/xml; charset=utf-8' } });

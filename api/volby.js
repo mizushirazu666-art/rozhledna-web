@@ -96,6 +96,33 @@ function cislo(v) {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
+// Odhad rozdělení míst podle průběžných hlasů (než ČSÚ zveřejní konečné
+// mandáty): d'Hondtova metoda (dělitelé 1, 2, 3…), do dělení jen strany
+// s aspoň 5 % (u ČSÚ 7. sloupec – podíl z přepočteného základu, jinak podíl
+// hlasů), strana nedostane víc míst, než má kandidátů. Koalice mají ve
+// skutečnosti vyšší hranici – proto je to jen „odhad“.
+export function odhadMandatu(radky, mist) {
+  if (!mist || !radky.length) return {};
+  const podil = (r) => cislo(r[6]) ?? cislo(r[3]) ?? 0;
+  let mezi = radky.filter((r) => (cislo(r[2]) ?? 0) > 0 && podil(r) >= 5);
+  if (mezi.length < 2) mezi = radky.filter((r) => (cislo(r[2]) ?? 0) > 0);
+  const vysledek = Object.fromEntries(radky.map((r) => [String(r[0]), 0]));
+  for (let i = 0; i < mist; i++) {
+    let nej = null;
+    let nejPodil = -1;
+    for (const r of mezi) {
+      const c = String(r[0]);
+      const kandidatu = cislo(r[4]) ?? mist;
+      if (vysledek[c] >= kandidatu) continue;
+      const q = cislo(r[2]) / (vysledek[c] + 1);
+      if (q > nejPodil) { nejPodil = q; nej = c; }
+    }
+    if (nej === null) break;
+    vysledek[nej] += 1;
+  }
+  return vysledek;
+}
+
 export async function nactiObec(o) {
   const [vysled, ucast] = await Promise.all([
     json(`${ZAKLAD}/vysled/${o.okres}/${o.kod}.json`),
@@ -109,6 +136,7 @@ export async function nactiObec(o) {
   const plne = Object.fromEntries((vysled?.plne_nazvy_stran || []).map(([c, n]) => [String(c), n]));
   const hlasy = vysled?.hlasy || {};
   const konecne = Boolean(vysled?.zvoleno);
+  const odhad = !konecne && (prehled[3] ?? 0) > 0 ? odhadMandatu(vysled?.vysledky || [], cislo(prehled[0])) : {};
   const strany = (vysled?.vysledky || []).map((r) => {
     const kandidati = hlasy[String(r[0])] || [];
     const zvoleni = konecne
@@ -123,6 +151,7 @@ export async function nactiObec(o) {
       hlasy: cislo(r[2]) ?? 0,
       procent: cislo(r[3]) ?? 0,
       mandaty: konecne ? (cislo(r[7]) ?? zvoleni.length) : null,
+      odhadMandatu: konecne ? null : (odhad[String(r[0])] ?? null),
       zvoleni,
     };
   }).sort((a, b) => b.hlasy - a.hlasy);

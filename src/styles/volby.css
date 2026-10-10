@@ -13,6 +13,7 @@
   .volby .karta__hlava { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .volby .karta__nazev { font-size: 20px; font-weight: 700; color: var(--barva-text); }
   .volby .karta__info { margin: 0; font-size: 14px; color: var(--barva-text-tlumena-tmavsi); }
+  .volby .karta__pozn { margin: 6px 0 0; font-size: 13px; color: var(--barva-text-tlumena-tmavsi); }
   .volby .stitek { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--barva-text-tlumena); }
   .volby .stitek--prubeh { color: var(--barva-terakota); }
   .volby .stitek--konec { color: var(--barva-zelena); }

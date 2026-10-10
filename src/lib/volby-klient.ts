@@ -3,7 +3,7 @@
 
 export type Strana = {
   cislo: number; nazev: string; plnyNazev: string; hlasy: number; procent: number;
-  mandaty: number | null; zvoleni: { jmeno: string; hlasy: number | null }[];
+  mandaty: number | null; odhadMandatu?: number | null; zvoleni: { jmeno: string; hlasy: number | null }[];
 };
 export type Obec = {
   slug: string; nazev: string; obyvatel?: number; dostupne: boolean; konecne: boolean; mandatu: number | null;
@@ -73,7 +73,10 @@ export function karta(o: Obec, otevrene: Set<string>, detail = false, priZmeneMo
     const popis = el('div', 'strana__popis');
     popis.append(el('span', 'strana__nazev', s.plnyNazev || s.nazev));
     const cisla = sectenoHlasu(o) ? `${cz(s.procent, 2)} % · ${cz(s.hlasy)} hl.` : '';
-    const mand = s.mandaty !== null ? ` · ${s.mandaty} ${s.mandaty === 1 ? 'mandát' : s.mandaty >= 2 && s.mandaty <= 4 ? 'mandáty' : 'mandátů'}` : '';
+    const tvar = (n: number) => (n === 1 ? 'mandát' : n >= 2 && n <= 4 ? 'mandáty' : 'mandátů');
+    const mand = s.mandaty !== null
+      ? ` · ${s.mandaty} ${tvar(s.mandaty)}`
+      : typeof s.odhadMandatu === 'number' ? ` · ≈ ${s.odhadMandatu} ${tvar(s.odhadMandatu)}` : '';
     popis.append(el('span', 'strana__cisla', cisla + mand));
     const pruh = el('div', 'strana__pruh');
     const vypln = el('div', 'strana__vypln');
@@ -84,6 +87,9 @@ export function karta(o: Obec, otevrene: Set<string>, detail = false, priZmeneMo
   }
   if (o.strany.length > NAHORE + 1) strany.append(zbytek);
   k.append(strany);
+  if (!o.konecne && o.strany.some((s) => typeof s.odhadMandatu === 'number')) {
+    k.append(el('p', 'karta__pozn', '≈ odhad rozdělení míst podle dosud sečtených hlasů (d’Hondtova metoda, hranice 5 %); konečné mandáty po sečtení všech okrsků.'));
+  }
 
   const zvoleni = o.strany.filter((s) => s.zvoleni.length);
   if (o.konecne && zvoleni.length) {

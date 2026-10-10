@@ -7,8 +7,10 @@
  *
  * Zdroje (stejné jako pipeline scrapers/volby.py):
  *   /appdata/kv2026/20261009/vysled/{okres}/{obec}.json – strany, hlasy,
- *     kandidáti; "zvoleno": true = konečný výsledek (zvolený kandidát má
- *     vyplněný 6. sloupec)
+ *     kandidáti; "zvoleno": true = konečný výsledek. Ověřeno 10. 10. 2026:
+ *     vysledky [č., název, hlasy, %, kandidátů, …, mandáty (8. sloupec), …],
+ *     kandidát [pořadí, jméno, věk, hlasy, %, zvolen true/false, pořadí
+ *     zvolení / náhradníka]
  *   /appdata/kv2026/20261009/ucast/obec/{okres}/{obec}.json – "celkem"
  *     (voliči, vydané obálky, účast %, ?, odevzdané obálky, platné obálky,
  *     % platných, platné hlasy); okrsky a % zpracování jen v vysled.prehled
@@ -110,8 +112,8 @@ export async function nactiObec(o) {
   const strany = (vysled?.vysledky || []).map((r) => {
     const kandidati = hlasy[String(r[0])] || [];
     const zvoleni = konecne
-      ? kandidati.filter((k) => k[5] !== null && k[5] !== undefined && k[5] !== 0 && k[5] !== '')
-          .sort((a, b) => a[5] - b[5])
+      ? kandidati.filter((k) => k[5] === true)
+          .sort((a, b) => (a[6] ?? 0) - (b[6] ?? 0))
           .map((k) => ({ jmeno: k[1], hlasy: cislo(k[3]) }))
       : [];
     return {
@@ -120,7 +122,7 @@ export async function nactiObec(o) {
       plnyNazev: plne[String(r[0])] || r[1],
       hlasy: cislo(r[2]) ?? 0,
       procent: cislo(r[3]) ?? 0,
-      mandaty: konecne ? zvoleni.length : null,
+      mandaty: konecne ? (cislo(r[7]) ?? zvoleni.length) : null,
       zvoleni,
     };
   }).sort((a, b) => b.hlasy - a.hlasy);

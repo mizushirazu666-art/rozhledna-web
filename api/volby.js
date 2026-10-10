@@ -10,8 +10,8 @@
  *     kandidáti; "zvoleno": true = konečný výsledek (zvolený kandidát má
  *     vyplněný 6. sloupec)
  *   /appdata/kv2026/20261009/ucast/obec/{okres}/{obec}.json – "celkem"
- *     (pořadí sloupců jako v XML ČSÚ: okrsky celkem, zpracováno, % zprac.,
- *     voliči, vydané obálky, účast %, odevzdané obálky, platné hlasy)
+ *     (voliči, vydané obálky, účast %, ?, odevzdané obálky, platné obálky,
+ *     % platných, platné hlasy); okrsky a % zpracování jen v vysled.prehled
  */
 // Obce regionů (kódy ČSÚ z pipeline config/(hlinecko/)obce.json).
 export const OBCE = {
@@ -100,6 +100,10 @@ export async function nactiObec(o) {
     json(`${ZAKLAD}/ucast/obec/${o.okres}/${o.kod}.json`),
   ]);
   const celkem = Array.isArray(ucast?.celkem) ? ucast.celkem : [];
+  // prehled (ověřeno na reálných datech 10. 10. 2026): [mandáty, ?, okrsky celkem,
+  // okrsky zpracované, % zpracováno, voliči, vydané obálky, účast %, ?, odevzdané
+  // obálky, platné obálky, % platných, platné hlasy]; celkem = prehled[5..12].
+  const prehled = Array.isArray(vysled?.prehled) ? vysled.prehled : [];
   const plne = Object.fromEntries((vysled?.plne_nazvy_stran || []).map(([c, n]) => [String(c), n]));
   const hlasy = vysled?.hlasy || {};
   const konecne = Boolean(vysled?.zvoleno);
@@ -126,12 +130,12 @@ export async function nactiObec(o) {
     obyvatel: o.obyvatel,
     dostupne: Boolean(vysled),
     konecne,
-    mandatu: cislo(vysled?.prehled?.[0]),
-    okrskyCelkem: cislo(celkem[0]),
-    okrskyZpracovano: cislo(celkem[1]),
-    zpracovanoProcent: cislo(celkem[2]),
-    volicu: cislo(celkem[3]),
-    ucastProcent: cislo(celkem[5]),
+    mandatu: cislo(prehled[0]),
+    okrskyCelkem: cislo(prehled[2]),
+    okrskyZpracovano: cislo(prehled[3]),
+    zpracovanoProcent: cislo(prehled[4]),
+    volicu: cislo(prehled[5]) ?? cislo(celkem[0]),
+    ucastProcent: cislo(prehled[7]) ?? cislo(celkem[2]),
     generovano: vysled?.generovano || null,
     strany,
     surove: { prehled: vysled?.prehled ?? null, celkem },

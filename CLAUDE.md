@@ -89,10 +89,10 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   (Vercel funkce: pro obce regionu stáhne z volby.gov.cz `vysled` a
   `ucast/obec` JSON, cache 60 s; prohlížeč obnovuje každou minutu). Obce a
   kódy ČSÚ jsou přímo v `api/volby.js` (z pipeline obce.json). Upoutávka
-  `VolbyZive.astro` na hlavní stránce se ukáže jen 10. 10. 13:30 – 11. 10.
-  22:00 SELČ (náhled `/?volby`). Pořadí sloupců `ucast.celkem` (okrsky,
-  zpracováno, %, voliči, obálky, účast %…) je odhad podle XML ČSÚ – ověřit
-  s reálnými daty. Po volbách upoutávku odebrat. Každá obec má i vlastní
+  `VolbyZive.astro` po volbách odebrána (11. 10. 2026). Sloupce ČSÚ ověřené
+  na reálných datech 10. 10. (viz komentář v `api/volby.js`); během sčítání
+  odhad mandátů d'Hondtem. Na hlavní stránce nejvýš 2 články s výsledky
+  obcí (ZdrojTyp `volby-vysledky`), souhrn regionu jako hlavní zpráva. Každá obec má i vlastní
   stránku `/volby-2026/<slug>/` (`[obec].astro` – kvůli vyhledávání
   „výsledky voleb <obec>“; stav z buildu ve statickém HTML, v prohlížeči
   obnova z `/api/volby?obec=<slug>`), odkaz ze stránky obce, v sitemapě.

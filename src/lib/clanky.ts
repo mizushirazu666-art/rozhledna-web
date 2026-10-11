@@ -38,6 +38,8 @@ export interface Clanek {
   obrazek?: Obrazek;
   telo: string[];
   stitky: string[];
+  /** Typ zdroje z pipeline (ZdrojTyp), např. volby-vysledky. */
+  zdrojTyp?: string;
   hlavniZprava: boolean;
   /** Ručně připnutý článek – na hlavní stránce hned pod hlavní zprávou. */
   pripnout?: boolean;
@@ -490,6 +492,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
         .split(',')
         .map((s: string) => s.trim())
         .filter(Boolean),
+      zdrojTyp: f.ZdrojTyp ? String(f.ZdrojTyp) : '',
       hlavniZprava: Boolean(f.HlavniZprava),
       pripnout: Boolean(f.Pripnout),
       ilustrace: f.Ilustrace ? String(f.Ilustrace).trim() : '',

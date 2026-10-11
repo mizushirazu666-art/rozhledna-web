@@ -1,5 +1,4 @@
 ---
-import VolbyZive from '../components/VolbyZive.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StoryCard from '../components/StoryCard.astro';
 import NewsletterCTA from '../components/NewsletterCTA.astro';
@@ -19,10 +18,14 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno');
 const zCentra = (c: { obec: string }) => c.obec === region.centrum.slug;
 const hlavniZprava = vyberHlavniZpravu(clanky);
 let zbyvaCentrum = region.limitCentraNaHlavni - (hlavniZprava && zCentra(hlavniZprava) ? 1 : 0);
+// Výsledky voleb po obcích (desítky článků naráz) by zaplnily celou hlavní
+// stránku – nejvýš 2, ostatní jsou v rubrice a na stránkách obcí.
+let zbyvaVolby = 2;
 const ostatni = hlavniZprava
   ? pripnuteNahoru(clanky)
       .filter((c) => c.slug !== hlavniZprava.slug)
       .filter((c) => !zCentra(c) || zbyvaCentrum-- > 0)
+      .filter((c) => c.zdrojTyp !== 'volby-vysledky' || zbyvaVolby-- > 0)
       .slice(0, 6)
   : [];
 
@@ -30,7 +33,6 @@ const rubrikaHlavni = hlavniZprava ? taxonomie.rubriky.find((r) => r.slug === hl
 const obecHlavni = hlavniZprava ? nazevObceClanku(hlavniZprava.obec) : undefined;
 ---
 <BaseLayout title="Domů" description={`Nejnovější zprávy z ${region.genitiv} – ${taxonomie.obce.slice(0, 4).map((o) => o.nazev).join(', ')} a okolí.`}>
-  <VolbyZive />
   {hlavniZprava ? (
     <>
       <section class="hero">

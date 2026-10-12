@@ -1,4 +1,5 @@
 ---
+import region from '../data/region.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Ochrana údajů" description="GDPR a redakční poznámka k práci s AI podle AI Act.">
@@ -18,7 +19,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       Fotky poslané přes formulář <a href="/poslete-fotku/">Pošlete fotku</a> ukládáme do redakční fotobanky.
       Zveřejníme je až po kontrole redakcí, vždy se jménem autora. E-mail, pokud ho vyplníte, slouží jen
       k případnému dotazu k fotce, nezveřejňujeme ho a nepředáváme dál. Fotku i e-mail na požádání smažeme
-      (redakce@rozhledna-chrudimsko.cz).
+      (redakce@{region.emailDomena}).
     </p>
     <h2>Redakční proces a AI</h2>
     <p>
@@ -39,7 +40,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       Když se přihlásíte k odběru přehledu týdne, uložíme váš e-mail, datum přihlášení a stránku, na které jste
       se přihlásili. E-mail použijeme jen k zasílání newsletteru, nepředáváme ho dál a nepoužíváme k reklamě.
       Odběr můžete kdykoliv zrušit odkazem v patičce každého vydání nebo e-mailem na
-      redakce@rozhledna-chrudimsko.cz – e-mail pak už nepoužijeme.
+      redakce@{region.emailDomena} – e-mail pak už nepoužijeme.
     </p>
   </div>
 </BaseLayout>

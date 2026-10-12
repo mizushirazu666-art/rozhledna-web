@@ -1,10 +1,11 @@
 ---
+import region from '../data/region.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Kontakt" description="Kontakt na redakci Rozhledny.">
   <div class="container stranka">
     <h1>Kontakt</h1>
-    <p>Redakce: redakce@rozhledna-chrudimsko.cz</p>
+    <p>Redakce: redakce@{region.emailDomena}</p>
     <p>Máte fotku z obce? <a href="/poslete-fotku/">Pošlete nám ji přes formulář</a>.</p>
   </div>
 </BaseLayout>

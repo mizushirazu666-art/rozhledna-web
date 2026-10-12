@@ -17,6 +17,10 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   create_deployment s `gitSource {type: github, org: mizushirazu666-art,
   repo: rozhledna-web, ref: main}`, `target: production`, `forceNew: 1`.
   Pipeline po každém denním běhu volá Deploy Hook.
+- Deployment Storage (free 10 GB na tým): 12. 10. 2026 na 75 % – každý build
+  nese všechny fotky a vzniká jich ~6–8 denně na web. Deployment Retention
+  Policy v obou projektech (Settings → Security) nastavena na 1 týden;
+  ruční přestavby dělat jen když je potřeba.
 - Env (jen na Vercelu, nedešifrovat): AIRTABLE_API_KEY (jen čtení),
   AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME, AIRTABLE_FOTKY_API_KEY (zápis, jen
   formulář fotek). Bez nich build použije ukázková data v `src/data`.

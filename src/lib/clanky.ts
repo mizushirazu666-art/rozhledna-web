@@ -597,14 +597,20 @@ function staryDni(clanek: Clanek, dnes: Date): number {
  *   2. jinak nejnovější článek z rubrik veřejná správa/doprava/bezpečnost
  *      z posledních 3 dnů (když jich je víc, dostane přednost ten s fotkou),
  *   3. jinak prostě nejnovější článek.
+ * Volební články (ZdrojTyp volby-*, štítek s „volby“) automaticky nahoru nejdou.
  */
 export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Clanek | undefined {
   const rucne = clanky.find((c) => c.hlavniZprava && staryDni(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_DNU);
   if (rucne) return rucne;
 
-  const kandidati = clanky.filter(
+  // Volební články (výsledky, povolební) už nejsou aktuální jako hlavní zpráva
+  // (17. 10. 2026) – nahoru jdou jen ručním zaškrtnutím HlavniZprava.
+  const bezVoleb = clanky.filter(
+    (c) => !c.zdrojTyp?.startsWith('volby') && !c.stitky.some((s) => /volb/i.test(s)),
+  );
+  const kandidati = bezVoleb.filter(
     (c) => RUBRIKY_PRO_HLAVNI_ZPRAVU.includes(c.rubrika) && staryDni(c, dnes) <= AUTOMATICKA_HLAVNI_ZPRAVA_DNU,
   );
   const sFotkou = kandidati.find((c) => c.obrazek && !c.obrazek.ilustracni);
-  return sFotkou ?? kandidati[0] ?? clanky[0];
+  return sFotkou ?? kandidati[0] ?? bezVoleb[0] ?? clanky[0];
 }

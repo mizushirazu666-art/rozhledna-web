@@ -590,14 +590,30 @@ function staryDni(clanek: Clanek, dnes: Date): number {
   return (dnes.getTime() - new Date(clanek.datumPublikace).getTime()) / 86_400_000;
 }
 
+// Automaticky vybraná hlavní zpráva se během dne střídá (19. 10. 2026, přání
+// Lukáše): web se přestavuje 3× denně (10:17, 15:17, 20:17 Praha) a každá
+// přestavba vezme jiný z nejvýš 3 nejlepších kandidátů.
+const STRIDANI_HLAVNI_ZPRAVY = 3;
+
+/** Část dne v Praze při buildu: 0 = dopoledne, 1 = odpoledne, 2 = večer. */
+function castDne(dnes: Date): number {
+  const hodina = Number(
+    new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hour12: false, timeZone: 'Europe/Prague' }).format(dnes),
+  );
+  return hodina < 12 ? 0 : hodina < 17 ? 1 : 2;
+}
+
 /**
  * Vybere hlavní zprávu na homepage z publikovaných článků seřazených od
  * nejnovějšího:
- *   1. nejnovější článek se zaškrtnutým HlavniZprava, pokud není starší než 7 dní,
- *   2. jinak nejnovější článek z rubrik veřejná správa/doprava/bezpečnost
- *      z posledních 3 dnů (když jich je víc, dostane přednost ten s fotkou),
- *   3. jinak prostě nejnovější článek.
- * Volební články (ZdrojTyp volby-*, štítek s „volby“) automaticky nahoru nejdou.
+ *   1. nejnovější článek se zaškrtnutým HlavniZprava, pokud není starší než 7 dní
+ *      (ruční výběr se nestřídá),
+ *   2. jinak se střídají (podle části dne) až 3 nejlepší kandidáti v pořadí:
+ *      veřejná správa/doprava/bezpečnost z posledních 3 dnů (nejdřív s vlastní
+ *      fotkou), pak čerstvá kultura a další rubriky, pak sport, pak prostě
+ *      nejnovější článek.
+ * Volební články (ZdrojTyp volby-*, štítek s „volby“) a bazárek automaticky
+ * nahoru nejdou.
  */
 export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Clanek | undefined {
   const rucne = clanky.find((c) => c.hlavniZprava && staryDni(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_DNU);
@@ -606,11 +622,19 @@ export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Cl
   // Volební články (výsledky, povolební) už nejsou aktuální jako hlavní zpráva
   // (17. 10. 2026) – nahoru jdou jen ručním zaškrtnutím HlavniZprava.
   const bezVoleb = clanky.filter(
-    (c) => !c.zdrojTyp?.startsWith('volby') && !c.stitky.some((s) => /volb/i.test(s)),
+    (c) => !c.zdrojTyp?.startsWith('volby') && !c.stitky.some((s) => /volb/i.test(s)) && c.rubrika !== 'bazarek',
   );
-  const kandidati = bezVoleb.filter(
-    (c) => RUBRIKY_PRO_HLAVNI_ZPRAVU.includes(c.rubrika) && staryDni(c, dnes) <= AUTOMATICKA_HLAVNI_ZPRAVA_DNU,
-  );
-  const sFotkou = kandidati.find((c) => c.obrazek && !c.obrazek.ilustracni);
-  return sFotkou ?? kandidati[0] ?? bezVoleb[0] ?? clanky[0];
+  const cerstve = bezVoleb.filter((c) => staryDni(c, dnes) <= AUTOMATICKA_HLAVNI_ZPRAVA_DNU);
+  const vlastniFotka = (c: Clanek) => Boolean(c.obrazek && !c.obrazek.ilustracni);
+  const dulezite = cerstve.filter((c) => RUBRIKY_PRO_HLAVNI_ZPRAVU.includes(c.rubrika));
+  const poradi = [
+    ...dulezite.filter(vlastniFotka),
+    ...dulezite.filter((c) => !vlastniFotka(c)),
+    ...cerstve.filter((c) => !RUBRIKY_PRO_HLAVNI_ZPRAVU.includes(c.rubrika) && c.rubrika !== 'sport'),
+    ...cerstve.filter((c) => c.rubrika === 'sport'),
+    ...bezVoleb,
+  ];
+  const nejlepsi = [...new Set(poradi)].slice(0, STRIDANI_HLAVNI_ZPRAVY);
+  if (!nejlepsi.length) return clanky[0];
+  return nejlepsi[castDne(dnes) % nejlepsi.length];
 }

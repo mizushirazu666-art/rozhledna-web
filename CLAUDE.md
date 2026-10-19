@@ -32,7 +32,7 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
 - `src/lib/clanky.ts` – načtení článků (`{Stav}='Publikováno'`), převod
   fotek (`obrazekZPoli`, HEAD kontrola dostupnosti – nedostupná fotka se
   vynechá, aby nespadl build), `vyberHlavniZpravu` (ruční HlavniZprava
-  ≤ 7 dní, jinak se podle části dne při buildu – dopoledne/odpoledne/večer,
+  jen v den článku a den poté – od 19. 10. 2026, jinak se podle části dne při buildu – dopoledne/odpoledne/večer,
   přestavby 10:17/15:17/20:17 – střídají až 3 nejlepší: veřejná správa/
   doprava/bezpečnost ≤ 3 dny (s vlastní fotkou dřív), čerstvá kultura aj.,
   sport, nejnovější; bez volebních článků a bazárku – 17. a 19. 10. 2026) a `pripnuteNahoru` (Airtable Pripnout ✔ ≤ 7 dní = na hlavní

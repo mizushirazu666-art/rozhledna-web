@@ -572,9 +572,17 @@ export function getClanky(): Promise<Clanek[]> {
 // věci, které se týkají hodně lidí (úřad, silnice, bezpečnost). Sport, kultura
 // a bazárek jdou nahoru jen ručně zaškrtnutým polem HlavniZprava.
 const RUBRIKY_PRO_HLAVNI_ZPRAVU = ['verejna-sprava', 'doprava', 'bezpecnost'];
-// Ručně vybraná hlavní zpráva vydrží nahoře nejvýš tolik dní, pak ji
-// vystřídá automatický výběr – zapomenuté zaškrtnutí tak nezůstane navěky.
+// Ručně připnutý článek (Pripnout) vydrží pod hlavní zprávou nejvýš tolik dní.
 const RUCNI_HLAVNI_ZPRAVA_DNU = 7;
+// Ručně vybraná hlavní zpráva (HlavniZprava) vydrží nahoře jen v den článku
+// a den poté (kalendářní dny v Praze; 19. 10. 2026, přání Lukáše), pak ji
+// vystřídá automatický výběr – zaškrtnutí se v Airtable rušit nemusí.
+const RUCNI_HLAVNI_ZPRAVA_KAL_DNU = 1;
+
+function kalendarnichDniOd(clanek: Clanek, dnes: Date): number {
+  const dnesPraha = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(dnes);
+  return (Date.parse(dnesPraha) - Date.parse(clanek.datumPublikace.slice(0, 10))) / 86_400_000;
+}
 
 /** Pořadí pod hlavní zprávou: nejdřív ručně připnuté články (Pripnout ✔,
  * nejdéle RUCNI_HLAVNI_ZPRAVA_DNU dní staré), pak ostatní od nejnovějšího. */
@@ -606,7 +614,7 @@ function castDne(dnes: Date): number {
 /**
  * Vybere hlavní zprávu na homepage z publikovaných článků seřazených od
  * nejnovějšího:
- *   1. nejnovější článek se zaškrtnutým HlavniZprava, pokud není starší než 7 dní
+ *   1. nejnovější článek se zaškrtnutým HlavniZprava – v den článku a den poté
  *      (ruční výběr se nestřídá),
  *   2. jinak se střídají (podle části dne) až 3 nejlepší kandidáti v pořadí:
  *      veřejná správa/doprava/bezpečnost z posledních 3 dnů (nejdřív s vlastní
@@ -616,7 +624,7 @@ function castDne(dnes: Date): number {
  * nahoru nejdou.
  */
 export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Clanek | undefined {
-  const rucne = clanky.find((c) => c.hlavniZprava && staryDni(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_DNU);
+  const rucne = clanky.find((c) => c.hlavniZprava && kalendarnichDniOd(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_KAL_DNU);
   if (rucne) return rucne;
 
   // Volební články (výsledky, povolební) už nejsou aktuální jako hlavní zpráva

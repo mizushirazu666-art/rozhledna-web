@@ -614,8 +614,8 @@ function castDne(dnes: Date): number {
 /**
  * Vybere hlavní zprávu na homepage z publikovaných článků seřazených od
  * nejnovějšího:
- *   1. nejnovější článek se zaškrtnutým HlavniZprava – v den článku a den poté
- *      (ruční výběr se nestřídá),
+ *   1. články se zaškrtnutým HlavniZprava – v den článku a den poté (když jich
+ *      je víc, střídají se až 3 nejnovější podle části dne),
  *   2. jinak se střídají (podle části dne) až 3 nejlepší kandidáti v pořadí:
  *      veřejná správa/doprava/bezpečnost z posledních 3 dnů (nejdřív s vlastní
  *      fotkou), pak čerstvá kultura a další rubriky, pak sport, pak prostě
@@ -624,8 +624,11 @@ function castDne(dnes: Date): number {
  * nahoru nejdou.
  */
 export function vyberHlavniZpravu(clanky: Clanek[], dnes: Date = new Date()): Clanek | undefined {
-  const rucne = clanky.find((c) => c.hlavniZprava && kalendarnichDniOd(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_KAL_DNU);
-  if (rucne) return rucne;
+  // Víc ručně vybraných hlavních zpráv se střídá stejně jako automatické.
+  const rucne = clanky
+    .filter((c) => c.hlavniZprava && kalendarnichDniOd(c, dnes) <= RUCNI_HLAVNI_ZPRAVA_KAL_DNU)
+    .slice(0, STRIDANI_HLAVNI_ZPRAVY);
+  if (rucne.length) return rucne[castDne(dnes) % rucne.length];
 
   // Volební články (výsledky, povolební) už nejsou aktuální jako hlavní zpráva
   // (17. 10. 2026) – nahoru jdou jen ručním zaškrtnutím HlavniZprava.

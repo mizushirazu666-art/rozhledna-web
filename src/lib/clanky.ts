@@ -528,6 +528,18 @@ async function nacistZAirtable(): Promise<Clanek[]> {
 
   // Nejnovější nahoře.
   clanky.sort((a, b) => (a.datumPublikace < b.datumPublikace ? 1 : -1));
+  // Dva články se stejným slugem (stejná akce z víc zdrojů) by měly jednu
+  // adresu, ale výpis a stránka článku by ukázaly každý jiný – nechá se
+  // jen novější (pipeline nové duplicity ukládá jako Neschváleno).
+  const videneSlugy = new Set<string>();
+  for (let i = 0; i < clanky.length; i++) {
+    if (videneSlugy.has(clanky[i].slug)) {
+      console.warn(`[clanky] Duplicitní slug "${clanky[i].slug}" – starší článek vynechán.`);
+      clanky.splice(i--, 1);
+    } else {
+      videneSlugy.add(clanky[i].slug);
+    }
+  }
 
   // Související články: stejná obec, jiný slug, max 3 nejnovější. Airtable
   // zatím nemá pole pro ruční výběr souvisejících článků - dopočítá se tady.

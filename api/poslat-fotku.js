@@ -8,8 +8,12 @@
  * čtení. AIRTABLE_BASE_ID.
  */
 const TABULKA = 'Fotobanka';
-const POLE_OBRAZEK = 'fldHxrCJCmivsIUb6'; // Fotobanka.Obrazek
-const OBCE = ['Slatiňany', 'Orel', 'Tuněchody', 'Rabštejnská Lhota', 'Obecné'];
+// Pole se jménem, ne ID – ID se liší v každé bázi (Hlinecko má jiné; do 20. 10.
+// 2026 tu bylo ID Chrudimska a nahrání fotky na Hlinecku vždy selhalo).
+const POLE_OBRAZEK = 'Obrazek';
+// Obec z výběru ve formuláři (obce regionu z taxonomie + „Obecné“); jen
+// písmena, mezery a pomlčky – Airtable novou volbu přidá (typecast).
+const OBEC_RE = /^[\p{L} .-]{2,40}$/u;
 const MAX_BAJTU = 3_500_000; // po zmenšení v prohlížeči; Vercel bere max. ~4,5 MB těla
 const TYPY = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -36,7 +40,7 @@ export default async function handler(req, res) {
   const popis = text(d.popis, 200);
   const autor = text(d.autor, 80);
   const email = text(d.email, 120);
-  const obec = OBCE.includes(d.obec) ? d.obec : 'Obecné';
+  const obec = typeof d.obec === 'string' && OBEC_RE.test(d.obec.trim()) ? d.obec.trim() : 'Obecné';
   if (!popis || !autor) return chyba(res, 400, 'Vyplňte prosím popis fotky a své jméno.');
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return chyba(res, 400, 'E-mail nevypadá správně.');
   if (!d.souhlas) return chyba(res, 400, 'Bez souhlasu fotku zveřejnit nemůžeme.');
@@ -75,6 +79,11 @@ export default async function handler(req, res) {
   });
   if (!nahrani.ok) {
     console.error('Fotobanka: nahrání fotky selhalo', nahrani.status, await nahrani.text());
+    // Záznam bez fotky by ve Fotobance jen překážel.
+    await fetch(`https://api.airtable.com/v0/${baze}/${encodeURIComponent(TABULKA)}/${zaznam.id}`, {
+      method: 'DELETE',
+      headers: hlavicky,
+    }).catch(() => {});
     return chyba(res, 502, 'Fotku se nepodařilo nahrát, zkuste to prosím později.');
   }
   return res.status(200).json({ ok: true });

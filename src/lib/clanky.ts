@@ -453,6 +453,17 @@ async function nacistVsechnyZaznamy(): Promise<AirtableRecord[]> {
   return zaznamy;
 }
 
+/** Datum zveřejnění článku. DatumZdroje u pozvánek bývá datum akce (třeba
+ * v prosinci) – takový článek by se řadil jako nejnovější a ruční hlavní
+ * zpráva by nahoře vydržela až do akce (21. 10. 2026). Budoucí DatumZdroje
+ * proto nahradí čas publikování (Publikovano), jinak vznik záznamu. */
+function datumZverejneni(f: Record<string, any>, createdTime: string): string {
+  if (f.DatumPublikace) return String(f.DatumPublikace);
+  const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
+  if (f.DatumZdroje && String(f.DatumZdroje).slice(0, 10) <= dnes) return String(f.DatumZdroje);
+  return String(f.Publikovano || createdTime).slice(0, 10);
+}
+
 async function nacistZAirtable(): Promise<Clanek[]> {
   const zaznamy = await nacistVsechnyZaznamy();
 
@@ -483,7 +494,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       nadpis: String(f.Nadpis),
       perex: String(f.Perex ?? ''),
       autor: normalizujAutora(f.Autor),
-      datumPublikace: String(f.DatumPublikace || f.DatumZdroje || rec.createdTime.slice(0, 10)),
+      datumPublikace: datumZverejneni(f, rec.createdTime),
       casCteniMin: odhadniCasCteni(telo),
       obrazekAlt: undefined,
       obrazek: obrazekZPoli(f),

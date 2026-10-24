@@ -9,15 +9,28 @@
  * regionu s hodnotou u každé obce (první sloupec = název obce, druhý =
  * hodnota; barva podle čísla v hodnotě). Výčty po obcích tak nejsou dlouhá
  * věta (přání Lukáše 8. 10. 2026).
+ *
+ * Odstavec, jehož všechny řádky jsou obrázky ve tvaru Markdownu
+ * ![popisek](/cesta.jpg), je galerie fotek (jen fotky z webu, adresa
+ * začíná „/“) – např. čtenářská galerie „Podzim v obci“ (24. 10. 2026).
  */
 export type Blok =
   | { typ: 'text'; text: string }
-  | { typ: 'tabulka'; hlavicka: string[]; radky: string[][]; mapa: boolean };
+  | { typ: 'tabulka'; hlavicka: string[]; radky: string[][]; mapa: boolean }
+  | { typ: 'galerie'; fotky: { src: string; popis: string }[] };
 
 const RADEK_TABULKY = /^\|.*\|$/;
+const RADEK_FOTKY = /^!\[([^\]]*)\]\((\/[^)\s]+)\)$/;
 
 export function blokTextu(odstavec: string): Blok {
   const radky = odstavec.split('\n').map((r) => r.trim()).filter(Boolean);
+  if (radky.length > 0 && radky.every((r) => RADEK_FOTKY.test(r))) {
+    const fotky = radky.map((r) => {
+      const [, popis, src] = r.match(RADEK_FOTKY)!;
+      return { src, popis };
+    });
+    return { typ: 'galerie', fotky };
+  }
   const mapa = radky[0]?.toLowerCase() === '[mapa]';
   const tabulka = mapa ? radky.slice(1) : radky;
   if (tabulka.length < 2 || !tabulka.every((r) => RADEK_TABULKY.test(r))) {
@@ -38,5 +51,7 @@ export function cisloZHodnoty(hodnota: string): number | null {
 
 /** Text pro čas čtení, RSS apod. – tabulka jako „hlavička: hodnota“. */
 export function blokJakoText(blok: Blok): string {
-  return blok.typ === 'text' ? blok.text : blok.radky.map((r) => r.join(' ')).join(', ');
+  if (blok.typ === 'text') return blok.text;
+  if (blok.typ === 'galerie') return blok.fotky.map((f) => f.popis).join(', ');
+  return blok.radky.map((r) => r.join(' ')).join(', ');
 }

@@ -88,7 +88,16 @@ const jsonLd = {
 
       <div class="clanek__telo">
         {clanek.telo.map((odstavec: string) => blokTextu(odstavec)).map((blok) =>
-          blok.typ === 'tabulka' ? (
+          blok.typ === 'galerie' ? (
+            <div class="clanek__galerie">
+              {blok.fotky.map((f) => (
+                <figure>
+                  <a href={f.src} target="_blank" rel="noopener"><img src={f.src} alt={f.popis} loading="lazy" decoding="async" /></a>
+                  <figcaption>{f.popis}</figcaption>
+                </figure>
+              ))}
+            </div>
+          ) : blok.typ === 'tabulka' ? (
             <div class="clanek__blok">
               {blok.mapa && <MapaHodnoty radky={blok.radky} popis={blok.hlavicka.join(' – ')} />}
               <details class="clanek__tabulka" open={!blok.mapa}>
@@ -219,6 +228,10 @@ const jsonLd = {
 
   .clanek__foto { margin: 0; display: flex; flex-direction: column; gap: 22px; }
   .clanek__foto img { width: 100%; height: auto; display: block; }
+  .clanek__galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+  .clanek__galerie figure { margin: 0; }
+  .clanek__galerie img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 6px; display: block; background: var(--barva-obrazek-placeholder); }
+  .clanek__galerie figcaption { font-size: 13px; color: var(--barva-text-tlumena); margin-top: 6px; line-height: 1.4; }
   .clanek__obrazek-popisek { font-size: 13px; color: var(--barva-text-tlumena); margin-top: -12px; }
 
   .clanek__telo {

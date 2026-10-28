@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NewsletterCTA from '../components/NewsletterCTA.astro';
+import region from '../data/region.json';
+// Stránka pro odkaz z Facebooku a z webů obcí (30. 10. 2026) – co newsletter obsahuje + přihlášení.
+---
+<BaseLayout title="Newsletter – přehled týdne" description={`Každý pátek ráno přehled týdne z obcí ${region.genitiv} do vašeho e-mailu. Zdarma.`}>
+  <div class="container stranka">
+    <h1>Přehled týdne z {region.genitiv} do e-mailu</h1>
+    <p>Každý pátek ráno vám pošleme to nejdůležitější z obcí {region.genitiv} – stačí pár minut čtení u kávy.</p>
+    <ul>
+      <li><strong>Hlavní zprávy týdne</strong> – co se v obcích chystá a mění, uzavírky, úřady</li>
+      <li><strong>Sport</strong> – jak hrály místní kluby</li>
+      <li><strong>Kam vyrazit</strong> – akce na nejbližší dny</li>
+    </ul>
+    <p>Zdarma, bez reklam v e-mailu. Odhlásit se můžete kdykoliv jedním kliknutím.</p>
+  </div>
+  <div class="container">
+    <NewsletterCTA nadpis="Chci přehled týdne do e-mailu" />
+  </div>
+</BaseLayout>
+
+<style>
+  .stranka {
+    max-width: 760px;
+    padding-top: 48px;
+    padding-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stranka h1 { font-size: 34px; }
+  .stranka p, .stranka li { font-size: 17px; line-height: 1.65; margin: 0; }
+  .stranka ul { margin: 4px 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+
+  @media (max-width: 900px) {
+    .stranka { padding-top: 24px; }
+    .stranka h1 { font-size: 26px; }
+  }
+</style>

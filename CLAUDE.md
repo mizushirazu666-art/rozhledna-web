@@ -80,6 +80,15 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   Bezpečnost (nad články) a na stránce obce (jen její hlášení). Každé
   hlášení má stránku `/hlaseni/<slug>/` (`src/pages/hlaseni/[slug].astro`,
   slug z HlaseniId) s krátkým článkem z pole Text a odkazem na zdroj.
+- Nové stránky (29. 10. 2026): `/akce/` (Kam vyrazit – `src/lib/akce.ts`,
+  články Kultura podle PlatiDo/DatumZdroje na 14 dní, filtr obcí tlačítky,
+  blok `AkceVyhled` na hlavní stránce a v rubrice Kultura); `/pohotovost/`
+  (`src/lib/pohotovosti.ts` – přehled VZP pohotovosti.vzp.cz při buildu:
+  Pardubický kraj, okresy Chrudim a Pardubice, detail s hodinami, rozpis
+  zubních pohotovostí `rotace/286`); `/odstavky/` a „Ordinace mimo provoz“
+  (`SluzbyPrehled` – články s polem Sluzba, viz pipeline). Články se Sluzba
+  nejsou na hlavní stránce ani v rubrikách. Bezpečnost: seznamy hlášení jen
+  7 dní (stránky hlášení dál 30 dní).
 - `src/lib/odkazy.ts` – v poli Telo se zápis `[text](adresa)` vykreslí jako
   odkaz (jen `/…` a http(s)); použito např. v článku „Volební víkend“.
 - `src/lib/bloky.ts` + `src/components/MapaHodnoty.astro` (8. 10. 2026, přání

@@ -107,15 +107,16 @@ const obceSAkci = [...new Set(akce.map((a) => a.clanek.obec))]
   .akce-den h2 { font-size: 22px; padding-bottom: 8px; border-bottom: 2px solid var(--barva-zelena); margin-bottom: 4px; }
   .akce-den--vikend h2 { border-bottom-color: var(--barva-terakota); }
   .akce-den ul { list-style: none; margin: 0; padding: 0; }
-  .akce-den li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--barva-ramecek); }
-  .akce-den li a { font-family: var(--font-nadpisy); font-size: 18px; font-weight: 600; color: var(--barva-text); flex: 1 1 320px; }
+  .akce-den li { display: grid; grid-template-columns: 150px 1fr; align-items: baseline; gap: 4px 20px; padding: 12px 0; border-bottom: 1px solid var(--barva-ramecek); }
+  .akce-den li a { font-family: var(--font-nadpisy); font-size: 18px; font-weight: 600; color: var(--barva-text); }
   .akce-den li a:hover { color: var(--barva-terakota); }
-  .akce-obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--barva-zelena); min-width: 130px; }
-  .akce-do { font-size: 14px; color: var(--barva-text-tlumena); }
+  .akce-obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; line-height: 1.4; text-transform: uppercase; color: var(--barva-zelena); }
+  .akce-do { grid-column: 2; font-size: 14px; color: var(--barva-text-tlumena); }
   .prazdno, .akce-filtr-prazdno { color: var(--barva-text-tlumena); }
   @media (max-width: 900px) {
     .akce-hlavicka { padding-top: 24px; }
     .akce-hlavicka h1 { font-size: 28px; }
-    .akce-obec { min-width: 0; width: 100%; }
+    .akce-den li { grid-template-columns: 1fr; gap: 2px; }
+    .akce-do { grid-column: 1; }
   }
 </style>

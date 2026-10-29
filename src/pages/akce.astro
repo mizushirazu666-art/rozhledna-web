@@ -23,13 +23,10 @@ const obceSAkci = [...new Set(akce.map((a) => a.clanek.obec))]
     <h1>Akce v obcích {region.genitiv}</h1>
     <p>Co se chystá v nejbližších dvou týdnech – koncerty, divadlo, jarmarky, akce pro děti i sport v obcích.</p>
     {obceSAkci.length > 1 && (
-      <label class="akce-filtr">
-        <span>Obec:</span>
-        <select data-akce-filtr>
-          <option value="">všechny obce</option>
-          {obceSAkci.map((o) => <option value={o.slug}>{o.nazev}</option>)}
-        </select>
-      </label>
+      <div class="akce-filtr" role="group" aria-label="Akce podle obce">
+        <button type="button" class="akce-chip akce-chip--aktivni" data-obec="" aria-pressed="true">Všechny obce</button>
+        {obceSAkci.map((o) => <button type="button" class="akce-chip" data-obec={o.slug} aria-pressed="false">{o.nazev}</button>)}
+      </div>
     )}
   </div>
 
@@ -62,14 +59,20 @@ const obceSAkci = [...new Set(akce.map((a) => a.clanek.obec))]
   const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
   const dny = [...document.querySelectorAll<HTMLElement>('.akce-den')];
   for (const d of dny) if ((d.dataset.den ?? '') < dnes) d.remove();
-  const filtr = document.querySelector<HTMLSelectElement>('[data-akce-filtr]');
   const prazdno = document.querySelector<HTMLElement>('.akce-filtr-prazdno');
-  filtr?.addEventListener('change', () => {
+  const chipy = [...document.querySelectorAll<HTMLButtonElement>('.akce-chip')];
+  for (const chip of chipy) chip.addEventListener('click', () => {
+    const obec = chip.dataset.obec ?? '';
+    for (const c of chipy) {
+      const aktivni = c === chip;
+      c.classList.toggle('akce-chip--aktivni', aktivni);
+      c.setAttribute('aria-pressed', String(aktivni));
+    }
     let vidim = 0;
     for (const d of document.querySelectorAll<HTMLElement>('.akce-den')) {
       let vDni = 0;
       for (const li of d.querySelectorAll<HTMLElement>('li')) {
-        const ukaz = !filtr.value || li.dataset.obec === filtr.value;
+        const ukaz = !obec || li.dataset.obec === obec;
         li.hidden = !ukaz;
         if (ukaz) vDni++;
       }
@@ -91,8 +94,15 @@ const obceSAkci = [...new Set(akce.map((a) => a.clanek.obec))]
   }
   .akce-hlavicka h1 { font-size: 38px; }
   .akce-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 680px; margin: 0; }
-  .akce-filtr { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 15px; }
-  .akce-filtr select { font: inherit; padding: 8px 12px; border: 1px solid var(--barva-ramecek); background: #fff; border-radius: 4px; }
+  .akce-filtr { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .akce-chip {
+    font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+    padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--barva-ramecek); background: transparent; color: var(--barva-text);
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .akce-chip:hover { border-color: var(--barva-zelena); color: var(--barva-zelena); }
+  .akce-chip--aktivni, .akce-chip--aktivni:hover { background: var(--barva-zelena); border-color: var(--barva-zelena); color: #fff; }
   .akce-seznam { padding-top: 24px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 28px; max-width: 860px; }
   .akce-den h2 { font-size: 22px; padding-bottom: 8px; border-bottom: 2px solid var(--barva-zelena); margin-bottom: 4px; }
   .akce-den--vikend h2 { border-bottom-color: var(--barva-terakota); }

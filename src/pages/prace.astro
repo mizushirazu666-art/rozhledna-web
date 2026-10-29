@@ -1,0 +1,111 @@
+---
+import region from '../data/region.json';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getVolnaMista, formatMzda, UP_HLEDANI } from '../lib/prace';
+
+// Práce v okolí (29. 10. 2026) – volná místa Úřadu práce v obcích regionu,
+// filtr podle obce tlačítky (jako /akce/). Data při buildu (src/lib/prace.ts).
+const { mista, chyba } = await getVolnaMista();
+const obce = [...new Map(mista.map((m) => [m.obec, m.obecNazev])).entries()]
+  .map(([slug, nazev]) => ({ slug, nazev, pocet: mista.filter((m) => m.obec === slug).length }))
+  .sort((a, b) => b.pocet - a.pocet);
+const datum = (d: string) => {
+  const [, m, den] = d.split('-').map(Number);
+  return d ? `${den}. ${m}.` : '';
+};
+const uvazek = (h?: number) => (!h ? '' : h >= 37.5 ? 'plný úvazek' : `${h} h týdně`);
+---
+<BaseLayout title={`Práce v okolí – volná místa na ${region.lokal}`} description={`Aktuální volná pracovní místa v obcích ${region.genitiv} podle Úřadu práce – profese, mzda, zaměstnavatel a kontakt.`}>
+  <div class="container prace-hlavicka">
+    <span class="kicker kicker--zelena">Práce v okolí</span>
+    <h1>Volná místa v obcích {region.genitiv}</h1>
+    <p>{mista.length > 0 ? `${mista.length} nabídek práce` : 'Nabídky práce'} z evidence Úřadu práce ČR, nejnovější nahoře. Obnovujeme několikrát denně.</p>
+    {obce.length > 1 && (
+      <div class="prace-filtr" role="group" aria-label="Práce podle obce">
+        <button type="button" class="prace-chip prace-chip--aktivni" data-obec="" aria-pressed="true">Všechny obce</button>
+        {obce.map((o) => <button type="button" class="prace-chip" data-obec={o.slug} aria-pressed="false">{o.nazev} <span>{o.pocet}</span></button>)}
+      </div>
+    )}
+  </div>
+
+  <section class="container prace-seznam">
+    {chyba && <p class="prace-pozn">Nabídky se teď nepodařilo načíst. Najdete je na <a href={UP_HLEDANI} rel="noopener">portálu Úřadu práce</a>.</p>}
+    {!chyba && mista.length === 0 && <p class="prace-pozn">V obcích regionu teď Úřad práce žádná volná místa neeviduje.</p>}
+    <ul>
+      {mista.map((m) => (
+        <li data-obec={m.obec}>
+          <details>
+            <summary>
+              <span class="prace-obec">{m.obecNazev}</span>
+              <span class="prace-hlavni">
+                <strong>{m.profese}</strong>
+                <span class="prace-firma">{m.zamestnavatel}</span>
+              </span>
+              <span class="prace-mzda">{formatMzda(m)}</span>
+            </summary>
+            <div class="prace-detail">
+              <p class="prace-meta">
+                {[uvazek(m.hodinTydne), m.pocetMist > 1 ? `${m.pocetMist} místa` : '', m.vlozeno && `aktualizováno ${datum(m.vlozeno)}`].filter(Boolean).join(' · ')}
+              </p>
+              {m.info && <p class="prace-info">{m.info}</p>}
+              {(m.email || m.telefon) && (
+                <p class="prace-kontakt">
+                  Kontakt: {m.telefon && <a href={`tel:${m.telefon.replace(/\s/g, '')}`}>{m.telefon}</a>}
+                  {m.telefon && m.email && ' · '}
+                  {m.email && <a href={`mailto:${m.email.split(/[;,]/)[0].trim()}`}>{m.email.split(/[;,]/)[0].trim()}</a>}
+                </p>
+              )}
+            </div>
+          </details>
+        </li>
+      ))}
+    </ul>
+    <p class="prace-pozn">Zdroj: otevřená data Úřadu práce ČR. Další nabídky v celém okrese najdete na <a href={UP_HLEDANI} rel="noopener">portálu Úřadu práce</a>. Hledáte zaměstnance? Napište nám na redakci.</p>
+  </section>
+</BaseLayout>
+
+<script>
+  const chipy = [...document.querySelectorAll<HTMLButtonElement>('.prace-chip')];
+  for (const chip of chipy) chip.addEventListener('click', () => {
+    const obec = chip.dataset.obec ?? '';
+    for (const c of chipy) {
+      c.classList.toggle('prace-chip--aktivni', c === chip);
+      c.setAttribute('aria-pressed', String(c === chip));
+    }
+    for (const li of document.querySelectorAll<HTMLElement>('.prace-seznam li')) li.hidden = !!obec && li.dataset.obec !== obec;
+  });
+</script>
+
+<style>
+  .prace-hlavicka { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--barva-ramecek); }
+  .prace-hlavicka h1 { font-size: 38px; }
+  .prace-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 700px; margin: 0; }
+  .prace-filtr { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .prace-chip { font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--barva-ramecek); background: transparent; color: var(--barva-text); }
+  .prace-chip span { color: var(--barva-text-tlumena); font-size: 12px; margin-left: 2px; }
+  .prace-chip:hover { border-color: var(--barva-zelena); color: var(--barva-zelena); }
+  .prace-chip--aktivni, .prace-chip--aktivni:hover { background: var(--barva-zelena); border-color: var(--barva-zelena); color: #fff; }
+  .prace-chip--aktivni span { color: #dfe9e2; }
+  .prace-seznam { padding-top: 20px; padding-bottom: 48px; max-width: 960px; }
+  .prace-seznam ul { list-style: none; margin: 0; padding: 0; }
+  .prace-seznam li { border-bottom: 1px solid var(--barva-ramecek); }
+  .prace-seznam summary { display: grid; grid-template-columns: 150px 1fr auto; gap: 4px 20px; align-items: baseline; padding: 14px 0; cursor: pointer; list-style: none; }
+  .prace-seznam summary::-webkit-details-marker { display: none; }
+  .prace-obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; line-height: 1.4; text-transform: uppercase; color: var(--barva-zelena); }
+  .prace-hlavni { display: flex; flex-direction: column; gap: 2px; }
+  .prace-hlavni strong { font-family: var(--font-nadpisy); font-size: 18px; }
+  .prace-firma { font-size: 14px; color: var(--barva-text-tlumena); }
+  .prace-mzda { font-weight: 600; white-space: nowrap; color: var(--barva-zelena); }
+  .prace-detail { padding: 0 0 16px 170px; font-size: 15px; line-height: 1.55; }
+  .prace-detail p { margin: 0 0 8px; }
+  .prace-meta { color: var(--barva-text-tlumena); }
+  .prace-info { white-space: pre-line; }
+  .prace-pozn { font-size: 14px; color: var(--barva-text-tlumena); margin-top: 16px; }
+  @media (max-width: 700px) {
+    .prace-hlavicka { padding-top: 24px; }
+    .prace-hlavicka h1 { font-size: 28px; }
+    .prace-seznam summary { grid-template-columns: 1fr; gap: 2px; }
+    .prace-mzda { white-space: normal; }
+    .prace-detail { padding-left: 0; }
+  }
+</style>

@@ -94,7 +94,9 @@ function radkyTabulky(html: string): Radek[] {
 /** Detail: telefon a tabulka Den / Otevírací doba. */
 function detail(html: string): { telefon?: string; oteviraciDoba: OteviraciDen[]; adresa?: string } {
   const t = text(html.replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/g, ''));
-  const telefon = t.match(/Telefon\s*\n?\s*([+\d][\d\s]{7,})/)?.[1].replace(/\s+/g, ' ').trim();
+  const cislo = t.match(/Telefon\s*\n?\s*([+\d][\d\s]{7,})/)?.[1].replace(/\s+/g, '');
+  // 469653040 → 469 653 040 (bez předvolby se čte lépe po trojicích)
+  const telefon = cislo ? (/^\d{9}$/.test(cislo) ? cislo.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3') : cislo) : undefined;
   const adresa = t.match(/Adresa místa poskytování péče\s*([^\n]+?)\s*(?:Telefon|Web|Den\b|\n|$)/)?.[1].trim();
   const oteviraciDoba: OteviraciDen[] = [];
   const re = /(Pondělí|Úterý|Středa|Čtvrtek|Pátek|Sobota|Neděle|Svátek)\s+((?:\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2}(?:\s*,\s*)?)+|Zavřeno|nonstop|Nonstop)/g;

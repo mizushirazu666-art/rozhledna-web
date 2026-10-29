@@ -51,6 +51,9 @@ const zubniPodleData = [...new Set(data.zubniRozpis.map((z) => z.datum))].map((d
         <div class="poh-sekce">
           <h2>{s.nadpis}</h2>
           <p class="poh-pozn">{s.pozn}</p>
+          {s.typ === 'zubni' && region.centrum.slug === 'hlinsko' && (
+            <p class="poh-mesto">Hlinsko má vlastní rozpis zubařů o víkendech a svátcích – <a href="https://www.hlinsko.cz/mesto/zdravotnictvi/stomatologicka-pece-ve-dnech-pracovniho-klidu/" rel="noopener">Stomatologická péče ve dnech pracovního klidu (web města)</a>.</p>
+          )}
           {s.typ === 'zubni' && zubniPodleData.length > 0 && (
             <div class="poh-rozpis">
               <h3>Víkendy a svátky – kdo slouží v okrese Chrudim a Pardubice</h3>
@@ -139,6 +142,7 @@ const zubniPodleData = [...new Set(data.zubniRozpis.map((z) => z.datum))].map((d
   .poh-rozpis li:last-child { border-bottom: 0; }
   .poh-rozpis__den { font-weight: 700; }
   .poh-rozpis__sluzba { display: block; }
+  .poh-mesto { background: #eef4f5; padding: 12px 16px; margin: 0 0 14px; }
   .poh-zdroj, .poh-chyba { font-size: 14px; color: var(--barva-text-tlumena); }
   @media (max-width: 700px) {
     .poh-hlavicka { padding-top: 24px; }

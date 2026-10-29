@@ -48,6 +48,7 @@ const { rubriky, obce } = taxonomie;
     <a href="/" class="chip chip--active">Vše</a>
     <a href="/obce/" class="chip">Obce</a>
     <a href="/akce/" class="chip">Kam vyrazit</a>
+    <a href="/pohotovost/" class="chip">Pohotovost</a>
     {rubriky.map((r) => (
       <a href={`/rubrika/${r.slug}/`} class="chip">{r.nazev}</a>
     ))}

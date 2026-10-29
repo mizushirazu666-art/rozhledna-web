@@ -1,0 +1,144 @@
+---
+import region from '../data/region.json';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPohotovosti, VZP_PREHLED, type Pohotovost, type TypPohotovosti } from '../lib/pohotovosti';
+
+// Kam s nemocí nebo bolestí zubu mimo ordinační hodiny (29. 10. 2026) – data
+// z přehledu pohotovostí VZP při buildu. Centrum regionu (Hlinsko na Hlinecku)
+// jde v každé sekci první.
+const data = await getPohotovosti();
+const centrum = region.centrum.nazev;
+const serad = (a: Pohotovost, b: Pohotovost) =>
+  Number(b.adresa.includes(centrum)) - Number(a.adresa.includes(centrum)) ||
+  Number(b.okres === 'Chrudim') - Number(a.okres === 'Chrudim');
+const sekce: { typ: TypPohotovosti; nadpis: string; pozn: string }[] = [
+  { typ: 'dospeli', nadpis: 'Lékařská pohotovost pro dospělé', pozn: 'Když onemocníte mimo ordinační hodiny svého praktického lékaře.' },
+  { typ: 'deti', nadpis: 'Lékařská pohotovost pro děti', pozn: 'Pro děti a dorost mimo ordinační hodiny pediatra.' },
+  { typ: 'zubni', nadpis: 'Zubní pohotovost', pozn: 'Akutní bolest zubu, úraz zubu nebo krvácení po vytržení.' },
+  { typ: 'lekarna', nadpis: 'Pohotovostní lékárna', pozn: 'Výdej léků večer, o víkendech a svátcích.' },
+];
+const DNY = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+const formatDatum = (d: string) => {
+  const [r, m, den] = d.split('-').map(Number);
+  return `${DNY[new Date(Date.UTC(r, m - 1, den)).getUTCDay()]} ${den}. ${m}.`;
+};
+const zubniPodleData = [...new Set(data.zubniRozpis.map((z) => z.datum))].map((datum) => ({
+  datum,
+  sluzby: data.zubniRozpis.filter((z) => z.datum === datum),
+}));
+---
+<BaseLayout title="Pohotovost – lékař, zubař, lékárna" description={`Kde je lékařská, dětská a zubní pohotovost a pohotovostní lékárna pro obce ${region.genitiv} – adresy, telefony a otevírací doba.`}>
+  <div class="container poh-hlavicka">
+    <span class="kicker kicker--zelena">Zdraví</span>
+    <h1>Pohotovost pro {region.genitiv}</h1>
+    <p>Kam s nemocí, bolestí zubu nebo pro léky večer, o víkendu a ve svátek. Přehled se obnovuje několikrát denně podle údajů VZP.</p>
+    <div class="poh-tisen">
+      <strong>Jde o život nebo vážný úraz?</strong> Volejte <a href="tel:155">155</a> (záchranná služba) nebo <a href="tel:112">112</a>. Pohotovost slouží pro náhlé zhoršení zdraví, které nesnese odklad do běžné ordinační doby.
+    </div>
+  </div>
+
+  <section class="container poh-seznam">
+    {data.chyba && (
+      <p class="poh-chyba">Přehled se teď nepodařilo načíst. Aktuální pohotovosti najdete na <a href={`${VZP_PREHLED}`} rel="noopener">pohotovosti.vzp.cz</a>.</p>
+    )}
+    {sekce.map((s) => {
+      const polozky = data.stale.filter((p) => p.typ === s.typ).sort(serad);
+      return (
+        <div class="poh-sekce">
+          <h2>{s.nadpis}</h2>
+          <p class="poh-pozn">{s.pozn}</p>
+          {s.typ === 'zubni' && zubniPodleData.length > 0 && (
+            <div class="poh-rozpis">
+              <h3>Víkendy a svátky – kdo slouží v okrese Chrudim a Pardubice</h3>
+              <ul>
+                {zubniPodleData.map((z) => (
+                  <li data-den={z.datum}>
+                    <span class="poh-rozpis__den">{formatDatum(z.datum)}</span>
+                    <span>
+                      {z.sluzby.map((sl) => (
+                        <span class="poh-rozpis__sluzba">
+                          <strong>{sl.nazev}</strong>, {sl.adresa}
+                          {sl.doba && <> · {sl.doba}</>}
+                          {sl.telefon && <> · <a href={`tel:${sl.telefon.replace(/\s/g, '')}`}>{sl.telefon}</a></>}
+                        </span>
+                      ))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div class="poh-karty">
+            {polozky.map((p) => (
+              <article class="poh-karta">
+                <h3>{p.adresa.split(',').pop()?.replace(/\d{3}\s?\d{2}/, '').trim() || p.okres}</h3>
+                <p class="poh-karta__adresa">{p.nazev}<br />{p.adresa}</p>
+                {p.telefon && <p class="poh-karta__tel"><a href={`tel:${p.telefon.replace(/\s/g, '')}`}>{p.telefon}</a></p>}
+                {p.oteviraciDoba.length > 0 && (
+                  <table class="poh-doba">
+                    <tbody>
+                      {p.oteviraciDoba.map((d) => (
+                        <tr data-den={d.den}><th>{d.den}</th><td class:list={{ 'poh-zavreno': d.doba === 'Zavřeno' }}>{d.doba}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </article>
+            ))}
+            {polozky.length === 0 && !data.chyba && <p class="poh-pozn">V okolí teď VZP žádnou neuvádí – <a href={`${VZP_PREHLED}`} rel="noopener">celý přehled kraje</a>.</p>}
+          </div>
+        </div>
+      );
+    })}
+    <p class="poh-zdroj">Zdroj: <a href={`${VZP_PREHLED}`} rel="noopener">přehled pohotovostí VZP</a>. Před cestou doporučujeme zavolat – rozpisy se mohou na poslední chvíli změnit.</p>
+  </section>
+</BaseLayout>
+
+<script>
+  // Dnešní den zvýraznit, prošlé termíny rozpisu skrýt (stránka se přes noc nepřestavuje).
+  const DNY = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+  const ted = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Prague' }));
+  const dnesNazev = DNY[ted.getDay()];
+  for (const tr of document.querySelectorAll<HTMLElement>('.poh-doba tr')) {
+    if (tr.dataset.den === dnesNazev) tr.classList.add('poh-dnes');
+  }
+  const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
+  for (const li of document.querySelectorAll<HTMLElement>('.poh-rozpis li')) {
+    if ((li.dataset.den ?? '') < dnes) li.remove();
+  }
+</script>
+
+<style>
+  .poh-hlavicka { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--barva-ramecek); }
+  .poh-hlavicka h1 { font-size: 38px; }
+  .poh-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 700px; margin: 0; }
+  .poh-tisen { margin-top: 8px; padding: 14px 18px; background: #fbeee9; border-left: 4px solid #b3261e; max-width: 760px; font-size: 16px; line-height: 1.5; }
+  .poh-tisen a { color: #b3261e; font-weight: 700; font-size: 18px; }
+  .poh-seznam { padding-top: 28px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 40px; }
+  .poh-sekce h2 { font-size: 26px; padding-bottom: 6px; border-bottom: 2px solid var(--barva-zelena); }
+  .poh-pozn { color: var(--barva-text-tlumena); margin: 8px 0 14px; }
+  .poh-karty { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+  .poh-karta { border: 1px solid var(--barva-ramecek); padding: 18px 20px; background: #fff; }
+  .poh-karta h3 { font-size: 21px; margin-bottom: 4px; }
+  .poh-karta__adresa { font-size: 14px; color: var(--barva-text-tlumena); margin: 0 0 8px; line-height: 1.45; }
+  .poh-karta__tel a { font-weight: 700; font-size: 18px; color: var(--barva-zelena); }
+  .poh-doba { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  .poh-doba th { text-align: left; font-weight: 500; padding: 3px 0; width: 45%; }
+  .poh-doba td { padding: 3px 0; }
+  .poh-doba .poh-zavreno { color: var(--barva-text-tlumena); }
+  .poh-doba .poh-dnes { background: #eef4ef; font-weight: 700; }
+  .poh-doba .poh-dnes th, .poh-doba .poh-dnes td { padding-left: 6px; }
+  .poh-rozpis { background: #fff6e8; padding: 16px 20px; margin-bottom: 18px; }
+  .poh-rozpis h3 { font-size: 17px; color: #b4610a; margin-bottom: 6px; }
+  .poh-rozpis ul { list-style: none; margin: 0; padding: 0; }
+  .poh-rozpis li { display: grid; grid-template-columns: 130px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0dcc0; }
+  .poh-rozpis li:last-child { border-bottom: 0; }
+  .poh-rozpis__den { font-weight: 700; }
+  .poh-rozpis__sluzba { display: block; }
+  .poh-zdroj, .poh-chyba { font-size: 14px; color: var(--barva-text-tlumena); }
+  @media (max-width: 700px) {
+    .poh-hlavicka { padding-top: 24px; }
+    .poh-hlavicka h1 { font-size: 28px; }
+    .poh-rozpis li { grid-template-columns: 1fr; gap: 2px; }
+  }
+</style>

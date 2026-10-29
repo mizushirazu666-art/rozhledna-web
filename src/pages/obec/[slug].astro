@@ -6,6 +6,7 @@ import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import SportPrehled from '../../components/SportPrehled.astro';
 import HlaseniIzs from '../../components/HlaseniIzs.astro';
 import MapaObci from '../../components/MapaObci.astro';
+import SluzbyPrehled from '../../components/SluzbyPrehled.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -15,7 +16,7 @@ export function getStaticPaths() {
 
 const { obec } = Astro.props as { obec: (typeof taxonomie.obce)[number] };
 const articlesData = await getClanky();
-const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec === obec.slug);
+const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec === obec.slug && !c.sluzba);
 ---
 <BaseLayout title={obec.nazev} description={`Zprávy z obce ${obec.nazev} – Rozhledna, ${region.nazev}.`}>
   <div class="container obec-hlavicka">
@@ -30,6 +31,10 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
       <MapaObci vybrana={obec.slug} popisky={false} />
       <a class="obec-mapa__vse" href="/obce/">Všechny obce →</a>
     </aside>
+  </div>
+
+  <div class="container">
+    <SluzbyPrehled clanky={articlesData} obec={obec.slug} druhy={['Odstávka elektřiny', 'Odstávka vody', 'Odstávka plynu', 'Lékař mimo provoz']} nadpis={`Odstávky a ordinace – ${obec.nazev}`} />
   </div>
 
   <section class="container novinky">

@@ -2,11 +2,14 @@
 import region from '../data/region.json';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getPohotovosti, VZP_PREHLED, type Pohotovost, type TypPohotovosti } from '../lib/pohotovosti';
+import { getClanky } from '../lib/clanky';
+import SluzbyPrehled from '../components/SluzbyPrehled.astro';
 
 // Kam s nemocí nebo bolestí zubu mimo ordinační hodiny (29. 10. 2026) – data
 // z přehledu pohotovostí VZP při buildu. Centrum regionu (Hlinsko na Hlinecku)
 // jde v každé sekci první.
 const data = await getPohotovosti();
+const clanky = await getClanky();
 const centrum = region.centrum.nazev;
 const serad = (a: Pohotovost, b: Pohotovost) =>
   Number(b.adresa.includes(centrum)) - Number(a.adresa.includes(centrum)) ||
@@ -38,6 +41,7 @@ const zubniPodleData = [...new Set(data.zubniRozpis.map((z) => z.datum))].map((d
   </div>
 
   <section class="container poh-seznam">
+    <SluzbyPrehled clanky={clanky} druhy={['Lékař mimo provoz']} nadpis="🩺 Ordinace mimo provoz" prazdno="O žádné zavřené ordinaci v obcích nám teď není známo. Oznámení lékařů o dovolené sbíráme z webů a úředních desek obcí." />
     {data.chyba && (
       <p class="poh-chyba">Přehled se teď nepodařilo načíst. Aktuální pohotovosti najdete na <a href={`${VZP_PREHLED}`} rel="noopener">pohotovosti.vzp.cz</a>.</p>
     )}

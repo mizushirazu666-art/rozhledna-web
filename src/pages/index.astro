@@ -12,7 +12,8 @@ import region from '../data/region.json';
 import { getClanky, vyberHlavniZpravu, nazevObceClanku, pripnuteNahoru } from '../lib/clanky';
 
 const articlesData = await getClanky();
-const clanky = articlesData.filter((c) => c.stav === 'Publikováno');
+// Odstávky a lékaři mimo provoz (Sluzba) mají vlastní stránky, na hlavní stránku nejdou.
+const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && !c.sluzba);
 // Ze silného centrálního města (Chrudim) nejvýš limitCentraNaHlavni zpráv na
 // celé hlavní stránce (hlavní zpráva + nejnovější) – rozhodnutí redakce, ať
 // město nepřehluší malé obce.

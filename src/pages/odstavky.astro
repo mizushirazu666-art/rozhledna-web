@@ -1,0 +1,32 @@
+---
+import region from '../data/region.json';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SluzbyPrehled from '../components/SluzbyPrehled.astro';
+import { getClanky } from '../lib/clanky';
+
+// Plánované odstávky elektřiny, vody a plynu v obcích (29. 10. 2026) – z oznámení
+// na webech a úředních deskách obcí (pipeline: pole Sluzba).
+const clanky = await getClanky();
+---
+<BaseLayout title="Odstávky elektřiny a vody" description={`Plánované odstávky elektřiny, vody a plynu v obcích ${region.genitiv} – kdy a kde nepoteče voda nebo nepůjde proud.`}>
+  <div class="container ods-hlavicka">
+    <span class="kicker kicker--zelena">Praktické</span>
+    <h1>Odstávky elektřiny, vody a plynu</h1>
+    <p>Kdy a kde v obcích {region.genitiv} nepůjde proud nebo nepoteče voda – podle oznámení na webech a úředních deskách obcí.</p>
+  </div>
+  <div class="container ods-obsah">
+    <SluzbyPrehled clanky={clanky} druhy={['Odstávka elektřiny']} nadpis="⚡ Elektřina" prazdno="Žádná plánovaná odstávka elektřiny nám zatím není známá." />
+    <SluzbyPrehled clanky={clanky} druhy={['Odstávka vody']} nadpis="💧 Voda" prazdno="Žádná plánovaná odstávka vody nám zatím není známá." />
+    <SluzbyPrehled clanky={clanky} druhy={['Odstávka plynu']} nadpis="🔥 Plyn" />
+    <p class="ods-pozn">Úplný přehled plánovaných odstávek elektřiny podle adresy najdete také u <a href="https://www.cezdistribuce.cz/cs/odstavky" rel="noopener">ČEZ Distribuce</a>. Poruchy hlaste na lince 800 850 860.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .ods-hlavicka { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--barva-ramecek); }
+  .ods-hlavicka h1 { font-size: 38px; }
+  .ods-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 700px; margin: 0; }
+  .ods-obsah { padding-top: 28px; padding-bottom: 48px; max-width: 920px; }
+  .ods-pozn { font-size: 14px; color: var(--barva-text-tlumena); margin-top: 16px; }
+  @media (max-width: 700px) { .ods-hlavicka { padding-top: 24px; } .ods-hlavicka h1 { font-size: 28px; } }
+</style>

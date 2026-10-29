@@ -15,7 +15,7 @@ export function getStaticPaths() {
 
 const { rubrika } = Astro.props as { rubrika: (typeof taxonomie.rubriky)[number] };
 const articlesData = await getClanky();
-const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika === rubrika.slug);
+const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika === rubrika.slug && !c.sluzba);
 ---
 <BaseLayout title={rubrika.nazev} description={`Zprávy z rubriky ${rubrika.nazev} – Rozhledna, ${region.nazev}.`}>
   <div class="container rubrika-hlavicka">

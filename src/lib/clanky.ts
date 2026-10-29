@@ -51,6 +51,11 @@ export interface Clanek {
   platiDo?: string;
   /** DatumZdroje (YYYY-MM-DD) – u pozvánek často začátek akce. */
   datumZdroje?: string;
+  /** Praktické oznámení (pole Sluzba – odstávka elektřiny/vody/plynu, lékař mimo
+   * provoz). Takové články jsou na /odstavky/ a /pohotovost/, ne v Nejnovějších. */
+  sluzba?: string;
+  /** SluzbaOd (YYYY-MM-DD) – první den odstávky / nepřítomnosti lékaře. */
+  sluzbaOd?: string;
   souvisejiciClanky: string[];
   ukazkovyObsah?: boolean;
 }
@@ -514,6 +519,8 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       ilustrace: f.Ilustrace ? String(f.Ilustrace).trim() : '',
       platiDo: f.PlatiDo ? String(f.PlatiDo).slice(0, 10) : undefined,
       datumZdroje: f.DatumZdroje ? String(f.DatumZdroje).slice(0, 10) : undefined,
+      sluzba: f.Sluzba ? String(f.Sluzba) : undefined,
+      sluzbaOd: f.SluzbaOd ? String(f.SluzbaOd).slice(0, 10) : undefined,
       souvisejiciClanky: [],
       ukazkovyObsah: false,
     });

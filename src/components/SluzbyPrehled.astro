@@ -1,0 +1,77 @@
+---
+import taxonomie from '../data/taxonomie.json';
+import type { Clanek } from '../lib/clanky';
+import { dnesPraha, kratkeDatum } from '../lib/akce';
+
+// Praktická oznámení (pole Sluzba, 29. 10. 2026): odstávky elektřiny/vody/plynu
+// a lékaři mimo provoz – /odstavky/, /pohotovost/ a stránka obce.
+export interface Props {
+  clanky: Clanek[];
+  druhy: string[];
+  nadpis?: string;
+  obec?: string;
+  prazdno?: string;
+}
+const { clanky, druhy, nadpis, obec, prazdno } = Astro.props;
+const dnes = dnesPraha();
+const polozky = clanky
+  .filter((c) => c.stav === 'Publikováno' && c.sluzba && druhy.includes(c.sluzba))
+  .filter((c) => !obec || c.obec === obec)
+  .filter((c) => !c.platiDo || c.platiDo >= dnes)
+  .sort((a, b) => ((a.sluzbaOd ?? a.platiDo ?? '') < (b.sluzbaOd ?? b.platiDo ?? '') ? -1 : 1));
+const nazevObce = new Map(taxonomie.obce.map((o) => [o.slug, o.nazev]));
+const IKONA: Record<string, string> = {
+  'Odstávka elektřiny': '⚡',
+  'Odstávka vody': '💧',
+  'Odstávka plynu': '🔥',
+  'Lékař mimo provoz': '🩺',
+};
+function kdy(c: Clanek): string {
+  const od = c.sluzbaOd, d = c.platiDo;
+  if (od && d && od !== d) return `${kratkeDatum(od)}–${kratkeDatum(d)}`;
+  return od || d ? kratkeDatum((od || d)!) : '';
+}
+---
+{(polozky.length > 0 || prazdno) && (
+  <section class="sluzby">
+    {nadpis && <h2>{nadpis}</h2>}
+    {polozky.length > 0 ? (
+      <ul>
+        {polozky.map((c) => (
+          <li data-do={c.platiDo ?? ''}>
+            <span class="sluzby__kdy">{IKONA[c.sluzba!] ?? ''} {kdy(c)}</span>
+            <span class="sluzby__obec">{nazevObce.get(c.obec) ?? c.obec}</span>
+            <span class="sluzby__text">
+              <a href={`/clanek/${c.slug}/`}>{c.nadpis}</a>
+              {c.perex && <span class="sluzby__perex">{c.perex}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="sluzby__prazdno">{prazdno}</p>
+    )}
+  </section>
+)}
+
+<script>
+  const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
+  for (const li of document.querySelectorAll<HTMLElement>('.sluzby li')) {
+    if (li.dataset.do && li.dataset.do < dnes) li.remove();
+  }
+</script>
+
+<style>
+  .sluzby { margin: 8px 0 24px; }
+  .sluzby h2 { font-size: 24px; padding-bottom: 6px; border-bottom: 2px solid var(--barva-zelena); margin-bottom: 4px; }
+  .sluzby ul { list-style: none; margin: 0; padding: 0; }
+  .sluzby li { display: grid; grid-template-columns: 130px 150px 1fr; gap: 4px 20px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid var(--barva-ramecek); }
+  .sluzby__kdy { font-weight: 700; white-space: nowrap; }
+  .sluzby__obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; line-height: 1.4; text-transform: uppercase; color: var(--barva-zelena); }
+  .sluzby__text { display: flex; flex-direction: column; gap: 2px; }
+  .sluzby__text a { font-family: var(--font-nadpisy); font-weight: 600; font-size: 18px; color: var(--barva-text); }
+  .sluzby__text a:hover { color: var(--barva-terakota); }
+  .sluzby__perex { font-size: 15px; color: var(--barva-text-tlumena); }
+  .sluzby__prazdno { color: var(--barva-text-tlumena); }
+  @media (max-width: 700px) { .sluzby li { grid-template-columns: 1fr; gap: 2px; } }
+</style>

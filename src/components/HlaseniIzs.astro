@@ -18,8 +18,11 @@ export interface Props {
 
 const { kompakt = false, obec, nadpis = 'Bezpečnost v okolí' } = Astro.props;
 const vsechna = (await getHlaseni()).filter((h) => !obec || h.obec === obec);
+// Seznamy ukazují jen poslední týden (Lukáš 29. 10. 2026 – 30 dní bylo moc
+// dlouhé); stránky jednotlivých hlášení zůstávají 30 dní (DNI_ZPET).
 const tyden = Date.now() - 7 * 86_400_000;
-const hlaseni = kompakt ? vsechna.filter((h) => new Date(h.cas).getTime() >= tyden).slice(0, 7) : vsechna;
+const zaTyden = vsechna.filter((h) => new Date(h.cas).getTime() >= tyden);
+const hlaseni = kompakt ? zaTyden.slice(0, 7) : zaTyden;
 
 function stitek(h: Hlaseni): string {
   if (h.typ === 'vyjezd') return 'Hasiči · výjezd';

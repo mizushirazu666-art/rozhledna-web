@@ -46,6 +46,11 @@ export interface Clanek {
   /** AI výběr ilustrační fotky v pipeline (ilustrace_vyber.py, pole
    * Ilustrace): ID záznamu Fotobanky, '-' = bez fotky, '' = výběr podle témat. */
   ilustrace?: string;
+  /** PlatiDo (YYYY-MM-DD) – poslední den, kdy je článek aktuální; u pozvánek
+   * poslední den akce. Pro kalendář akcí (/akce/). */
+  platiDo?: string;
+  /** DatumZdroje (YYYY-MM-DD) – u pozvánek často začátek akce. */
+  datumZdroje?: string;
   souvisejiciClanky: string[];
   ukazkovyObsah?: boolean;
 }
@@ -507,6 +512,8 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       hlavniZprava: Boolean(f.HlavniZprava),
       pripnout: Boolean(f.Pripnout),
       ilustrace: f.Ilustrace ? String(f.Ilustrace).trim() : '',
+      platiDo: f.PlatiDo ? String(f.PlatiDo).slice(0, 10) : undefined,
+      datumZdroje: f.DatumZdroje ? String(f.DatumZdroje).slice(0, 10) : undefined,
       souvisejiciClanky: [],
       ukazkovyObsah: false,
     });

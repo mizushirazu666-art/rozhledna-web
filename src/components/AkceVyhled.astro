@@ -1,0 +1,57 @@
+---
+import taxonomie from '../data/taxonomie.json';
+import type { Clanek } from '../lib/clanky';
+import { akceNaDny, nazevDne } from '../lib/akce';
+
+// Krátký výhled akcí (hlavní stránka, rubrika Kultura) s odkazem na /akce/.
+export interface Props {
+  clanky: Clanek[];
+  pocet?: number;
+  nadpis?: string;
+}
+const { clanky, pocet = 5, nadpis = 'Kam vyrazit' } = Astro.props;
+const akce = akceNaDny(clanky, 14).slice(0, pocet);
+const nazevObce = new Map(taxonomie.obce.map((o) => [o.slug, o.nazev]));
+---
+{akce.length > 0 && (
+  <section class="akce-vyhled">
+    <div class="akce-vyhled__hlava">
+      <h2>{nadpis}</h2>
+      <a href="/akce/">Celý kalendář akcí →</a>
+    </div>
+    <ul>
+      {akce.map((a) => (
+        <li data-den={a.den}>
+          <span class="akce-vyhled__den">{nazevDne(a.den)}</span>
+          <span class="akce-vyhled__obec">{nazevObce.get(a.clanek.obec) ?? a.clanek.obec}</span>
+          <a href={`/clanek/${a.clanek.slug}/`}>{a.clanek.nadpis}</a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<script>
+  const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
+  for (const li of document.querySelectorAll<HTMLElement>('.akce-vyhled li')) {
+    if ((li.dataset.den ?? '') < dnes) li.remove();
+  }
+</script>
+
+<style>
+  .akce-vyhled { background: #fff6e8; padding: 28px 32px; margin: 32px 0; }
+  .akce-vyhled__hlava { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .akce-vyhled__hlava h2 { font-size: 26px; color: #b4610a; }
+  .akce-vyhled__hlava a { font-weight: 600; color: #b4610a; }
+  .akce-vyhled ul { list-style: none; margin: 0; padding: 0; }
+  .akce-vyhled li { display: grid; grid-template-columns: 130px 140px 1fr; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #f0dcc0; }
+  .akce-vyhled li:last-child { border-bottom: 0; }
+  .akce-vyhled__den { font-weight: 600; }
+  .akce-vyhled__obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--barva-zelena); }
+  .akce-vyhled li a { font-family: var(--font-nadpisy); font-weight: 600; font-size: 17px; color: var(--barva-text); }
+  .akce-vyhled li a:hover { color: var(--barva-terakota); }
+  @media (max-width: 700px) {
+    .akce-vyhled { padding: 20px 16px; }
+    .akce-vyhled li { grid-template-columns: 1fr; gap: 2px; }
+  }
+</style>

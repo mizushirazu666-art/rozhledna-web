@@ -1,0 +1,111 @@
+---
+import region from '../data/region.json';
+import taxonomie from '../data/taxonomie.json';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NewsletterCTA from '../components/NewsletterCTA.astro';
+import { getClanky } from '../lib/clanky';
+import { akceNaDny, nazevDne, jeVikend, kratkeDatum } from '../lib/akce';
+
+// Kalendář akcí na 14 dní (29. 10. 2026) – pozvánky z rubriky Kultura podle
+// PlatiDo / DatumZdroje, filtr podle obce v prohlížeči. Web se přestavuje
+// 3× denně; prošlé dny skryje i skript níž (statická stránka v noci nestárne).
+const clanky = (await getClanky()).filter((c) => c.stav === 'Publikováno');
+const akce = akceNaDny(clanky, 14);
+const nazevObce = new Map(taxonomie.obce.map((o) => [o.slug, o.nazev]));
+const dny = [...new Set(akce.map((a) => a.den))];
+const obceSAkci = [...new Set(akce.map((a) => a.clanek.obec))]
+  .map((slug) => ({ slug, nazev: nazevObce.get(slug) ?? slug }))
+  .sort((a, b) => a.nazev.localeCompare(b.nazev, 'cs'));
+---
+<BaseLayout title={`Kam vyrazit – akce na ${region.genitiv}`} description={`Kalendář akcí v obcích ${region.genitiv} na nejbližší dva týdny – koncerty, divadlo, jarmarky, akce pro děti.`}>
+  <div class="container akce-hlavicka">
+    <span class="kicker kicker--zelena">Kam vyrazit</span>
+    <h1>Akce v obcích {region.genitiv}</h1>
+    <p>Co se chystá v nejbližších dvou týdnech – koncerty, divadlo, jarmarky, akce pro děti i sport v obcích.</p>
+    {obceSAkci.length > 1 && (
+      <label class="akce-filtr">
+        <span>Obec:</span>
+        <select data-akce-filtr>
+          <option value="">všechny obce</option>
+          {obceSAkci.map((o) => <option value={o.slug}>{o.nazev}</option>)}
+        </select>
+      </label>
+    )}
+  </div>
+
+  <section class="container akce-seznam">
+    {dny.length === 0 && <p class="prazdno">V nejbližších dvou týdnech zatím nemáme žádné pozvánky. Pořádáte akci? Napište nám na redakci.</p>}
+    {dny.map((den) => (
+      <div class:list={['akce-den', { 'akce-den--vikend': jeVikend(den) }]} data-den={den}>
+        <h2>{nazevDne(den)}</h2>
+        <ul>
+          {akce.filter((a) => a.den === den).map((a) => (
+            <li data-obec={a.clanek.obec}>
+              <span class="akce-obec">{nazevObce.get(a.clanek.obec) ?? a.clanek.obec}</span>
+              <a href={`/clanek/${a.clanek.slug}/`}>{a.clanek.nadpis}</a>
+              {a.do !== a.den && <span class="akce-do">až do {kratkeDatum(a.do)}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+    <p class="akce-filtr-prazdno" hidden>V této obci teď nic nechystáme – zkuste jinou obec.</p>
+  </section>
+
+  <div class="container">
+    <NewsletterCTA nadpis="Každý pátek přehled akcí na víkend do e-mailu" />
+  </div>
+</BaseLayout>
+
+<script>
+  // Prošlé dny skrýt (stránka se v noci nepřestavuje) a filtr podle obce.
+  const dnes = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Prague' }).format(new Date());
+  const dny = [...document.querySelectorAll<HTMLElement>('.akce-den')];
+  for (const d of dny) if ((d.dataset.den ?? '') < dnes) d.remove();
+  const filtr = document.querySelector<HTMLSelectElement>('[data-akce-filtr]');
+  const prazdno = document.querySelector<HTMLElement>('.akce-filtr-prazdno');
+  filtr?.addEventListener('change', () => {
+    let vidim = 0;
+    for (const d of document.querySelectorAll<HTMLElement>('.akce-den')) {
+      let vDni = 0;
+      for (const li of d.querySelectorAll<HTMLElement>('li')) {
+        const ukaz = !filtr.value || li.dataset.obec === filtr.value;
+        li.hidden = !ukaz;
+        if (ukaz) vDni++;
+      }
+      d.hidden = vDni === 0;
+      vidim += vDni;
+    }
+    if (prazdno) prazdno.hidden = vidim > 0;
+  });
+</script>
+
+<style>
+  .akce-hlavicka {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 40px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--barva-ramecek);
+  }
+  .akce-hlavicka h1 { font-size: 38px; }
+  .akce-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 680px; margin: 0; }
+  .akce-filtr { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 15px; }
+  .akce-filtr select { font: inherit; padding: 8px 12px; border: 1px solid var(--barva-ramecek); background: #fff; border-radius: 4px; }
+  .akce-seznam { padding-top: 24px; padding-bottom: 40px; display: flex; flex-direction: column; gap: 28px; max-width: 860px; }
+  .akce-den h2 { font-size: 22px; padding-bottom: 8px; border-bottom: 2px solid var(--barva-zelena); margin-bottom: 4px; }
+  .akce-den--vikend h2 { border-bottom-color: var(--barva-terakota); }
+  .akce-den ul { list-style: none; margin: 0; padding: 0; }
+  .akce-den li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--barva-ramecek); }
+  .akce-den li a { font-family: var(--font-nadpisy); font-size: 18px; font-weight: 600; color: var(--barva-text); flex: 1 1 320px; }
+  .akce-den li a:hover { color: var(--barva-terakota); }
+  .akce-obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--barva-zelena); min-width: 130px; }
+  .akce-do { font-size: 14px; color: var(--barva-text-tlumena); }
+  .prazdno, .akce-filtr-prazdno { color: var(--barva-text-tlumena); }
+  @media (max-width: 900px) {
+    .akce-hlavicka { padding-top: 24px; }
+    .akce-hlavicka h1 { font-size: 28px; }
+    .akce-obec { min-width: 0; width: 100%; }
+  }
+</style>

@@ -41,12 +41,13 @@ const { rubriky, obce } = taxonomie;
       ))}
     </nav>
 
-    <a href="/#newsletter" class="header__cta">Odebírat newsletter</a>
+    <a href="/newsletter/" class="header__cta">Odebírat newsletter</a>
   </div>
 
   <nav class="header__mobile-nav" aria-label="Mobilní navigace">
     <a href="/" class="chip chip--active">Vše</a>
     <a href="/obce/" class="chip">Obce</a>
+    <a href="/akce/" class="chip">Kam vyrazit</a>
     {rubriky.map((r) => (
       <a href={`/rubrika/${r.slug}/`} class="chip">{r.nazev}</a>
     ))}

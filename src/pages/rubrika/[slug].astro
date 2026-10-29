@@ -5,6 +5,7 @@ import StoryCard from '../../components/StoryCard.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import SportPrehled from '../../components/SportPrehled.astro';
 import HlaseniIzs from '../../components/HlaseniIzs.astro';
+import AkceVyhled from '../../components/AkceVyhled.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky } from '../../lib/clanky';
 
@@ -25,6 +26,12 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
   {rubrika.slug === 'sport' && (
     <div class="container">
       <SportPrehled nadpis="Zápasy, výsledky a tabulky" cara={false} />
+    </div>
+  )}
+
+  {rubrika.slug === 'kultura' && (
+    <div class="container">
+      <AkceVyhled clanky={articlesData.filter((c) => c.stav === 'Publikováno')} pocet={8} nadpis="Nejbližší akce" />
     </div>
   )}
 

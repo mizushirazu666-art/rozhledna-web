@@ -1,0 +1,45 @@
+---
+// Rozcestník praktických stránek na hlavní stránce (30. 10. 2026, přání
+// Lukáše – Práce v okolí a spol. byly jen v patičce a v mobilní navigaci).
+import { getVolnaMista } from '../lib/prace';
+
+const { mista } = await getVolnaMista();
+const dlazdice = [
+  { href: '/akce/', ikona: '🎭', nazev: 'Kam vyrazit', text: 'Akce v obcích na 14 dní dopředu' },
+  { href: '/pohotovost/', ikona: '🩺', nazev: 'Pohotovost', text: 'Lékař, zubař a lékárna mimo ordinační hodiny' },
+  { href: '/odstavky/', ikona: '⚡', nazev: 'Odstávky', text: 'Elektřina, voda a plyn v obcích' },
+  {
+    href: '/prace/',
+    ikona: '💼',
+    nazev: 'Práce v okolí',
+    text: mista.length ? `${mista.length.toLocaleString('cs-CZ')} volných míst z Úřadu práce` : 'Volná místa z Úřadu práce',
+  },
+];
+---
+<nav class="rozcestnik" aria-label="Užitečné">
+  {dlazdice.map((d) => (
+    <a href={d.href} class="rozcestnik__dlazdice">
+      <span class="rozcestnik__ikona" aria-hidden="true">{d.ikona}</span>
+      <span>
+        <strong>{d.nazev}</strong>
+        <span class="rozcestnik__text">{d.text}</span>
+      </span>
+    </a>
+  ))}
+</nav>
+
+<style>
+  .rozcestnik { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 32px 0 0; }
+  .rozcestnik__dlazdice { display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; background: #fff; border: 1px solid var(--barva-ramecek); border-top: 3px solid var(--barva-zelena); color: var(--barva-text); text-decoration: none; }
+  .rozcestnik__dlazdice:hover { border-color: var(--barva-zelena); }
+  .rozcestnik__dlazdice:hover strong { color: var(--barva-zelena); }
+  .rozcestnik__ikona { font-size: 26px; line-height: 1; }
+  .rozcestnik strong { display: block; font-family: var(--font-nadpisy); font-size: 18px; margin-bottom: 2px; }
+  .rozcestnik__text { font-size: 14px; color: var(--barva-text-tlumena); line-height: 1.4; }
+  @media (max-width: 900px) { .rozcestnik { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) {
+    .rozcestnik { gap: 8px; }
+    .rozcestnik__dlazdice { padding: 12px; gap: 8px; }
+    .rozcestnik__text { display: none; }
+  }
+</style>

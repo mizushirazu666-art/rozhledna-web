@@ -6,6 +6,7 @@ import FacebookOdkaz from '../components/FacebookOdkaz.astro';
 import SportPrehled from '../components/SportPrehled.astro';
 import HlaseniIzs from '../components/HlaseniIzs.astro';
 import AkceVyhled from '../components/AkceVyhled.astro';
+import Rozcestnik from '../components/Rozcestnik.astro';
 import taxonomie from '../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import region from '../data/region.json';
@@ -81,6 +82,7 @@ const obecHlavni = hlavniZprava ? nazevObceClanku(hlavniZprava.obec) : undefined
       </div>
 
       <div class="container">
+        <Rozcestnik />
         <AkceVyhled clanky={clanky} />
         <SportPrehled kompakt nadpis="Sport tento týden" />
       </div>

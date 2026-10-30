@@ -32,25 +32,31 @@ export interface VolneMisto {
 
 type ObecRegionu = { slug: string; nazev: string; kod: number };
 
-/** Projde pole "polozky" a každý objekt (jako text) předá zpětnému volání. */
-async function prochazejPolozky(stream: Readable, naObjekt: (text: string) => void): Promise<void> {
+/** Projde pole "polozky" a každý objekt (jako text) předá zpětnému volání.
+ * Rozpracovaný objekt se skládá po kusech bloků (ne po znacích – soubor má
+ * ~150 MB textu). */
+async function prochazejPolozky(stream: AsyncIterable<string>, naObjekt: (text: string) => void): Promise<void> {
   let vPoli = false;
   let hloubka = 0;
   let vRetezci = false;
   let escape = false;
   let buf = '';
   let hledani = '';
-  for await (const chunk of stream) {
-    const s: string = typeof chunk === 'string' ? chunk : chunk.toString('utf8');
-    for (let i = 0; i < s.length; i++) {
-      const ch = s[i];
-      if (!vPoli) {
-        hledani = (hledani + ch).slice(-12);
-        if (hledani.endsWith('"polozky"')) hledani = 'POLOZKY';
-        else if (hledani.startsWith('POLOZKY') && ch === '[') vPoli = true;
+  for await (let s of stream) {
+    let i = 0;
+    if (!vPoli) {
+      hledani += s;
+      const k = hledani.search(/"polozky"\s*:\s*\[/);
+      if (k < 0) {
+        hledani = hledani.slice(-40);
         continue;
       }
-      if (hloubka > 0) buf += ch;
+      s = hledani.slice(hledani.indexOf('[', k) + 1);
+      vPoli = true;
+    }
+    let zacatek = hloubka > 0 ? 0 : -1;
+    for (; i < s.length; i++) {
+      const ch = s[i];
       if (vRetezci) {
         if (escape) escape = false;
         else if (ch === '\\') escape = true;
@@ -59,13 +65,18 @@ async function prochazejPolozky(stream: Readable, naObjekt: (text: string) => vo
       }
       if (ch === '"') vRetezci = true;
       else if (ch === '{') {
-        if (hloubka === 0) buf = '{';
+        if (hloubka === 0) zacatek = i;
         hloubka++;
       } else if (ch === '}') {
         hloubka--;
-        if (hloubka === 0) naObjekt(buf);
+        if (hloubka === 0) {
+          naObjekt(buf + s.slice(zacatek, i + 1));
+          buf = '';
+          zacatek = -1;
+        }
       } else if (ch === ']' && hloubka === 0) return;
     }
+    if (hloubka > 0) buf += s.slice(zacatek);
   }
 }
 
@@ -79,10 +90,22 @@ async function nacist(): Promise<VolneMisto[]> {
   const region = process.env.ROZHLEDNA_REGION || 'chrudimsko';
   const obce: ObecRegionu[] = (OBCE as Record<string, ObecRegionu[]>)[region] ?? [];
   const podleKodu = new Map(obce.map((o) => [String(o.kod), o]));
-  const resp = await fetch(ZDROJ, { signal: AbortSignal.timeout(90000) });
+  const resp = await fetch(ZDROJ, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (Rozhledna; zpravodajský web obcí)' },
+    signal: AbortSignal.timeout(240000),
+  });
   if (!resp.ok || !resp.body) throw new Error(`HTTP ${resp.status}`);
-  const stream = Readable.fromWeb(resp.body as any).pipe(createGunzip());
+  // Server může poslat soubor s Content-Encoding: gzip – fetch ho pak rozbalí
+  // sám a druhé rozbalení by selhalo. Rozhoduje hlavička gzipu (1f 8b).
+  const surovy = Readable.fromWeb(resp.body as any);
+  const prvni: Buffer = await new Promise((ok, chyba) => {
+    surovy.once('readable', () => ok(surovy.read() ?? Buffer.alloc(0)));
+    surovy.once('error', chyba);
+  });
+  surovy.unshift(prvni);
+  const stream = prvni[0] === 0x1f && prvni[1] === 0x8b ? surovy.pipe(createGunzip()) : surovy;
   stream.setEncoding('utf8'); // vícebajtové znaky na hranici bloků
+  const t0 = Date.now();
   const vysledek: VolneMisto[] = [];
   const kody = [...podleKodu.keys()].map((k) => `"Obec/${k}"`);
   await prochazejPolozky(stream, (text) => {
@@ -115,6 +138,7 @@ async function nacist(): Promise<VolneMisto[]> {
     });
   });
   vysledek.sort((a, b) => (a.vlozeno < b.vlozeno ? 1 : -1));
+  console.log(`[prace] Volná místa v obcích regionu: ${vysledek.length} (${Math.round((Date.now() - t0) / 1000)} s)`);
   return vysledek;
 }
 
@@ -125,7 +149,7 @@ export function getVolnaMista(): Promise<{ mista: VolneMisto[]; chyba: boolean }
     cache = nacist()
       .then((mista) => ({ mista, chyba: false }))
       .catch((err) => {
-        console.warn('[prace] Volná místa z data.mpsv.cz se nepodařilo načíst:', err);
+        console.warn('[prace] Volná místa z data.mpsv.cz se nepodařilo načíst:', err?.message ?? err, err?.cause ?? '');
         return { mista: [], chyba: true };
       });
   }

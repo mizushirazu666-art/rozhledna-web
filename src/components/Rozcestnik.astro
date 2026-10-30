@@ -1,11 +1,11 @@
 ---
 // Rozcestník praktických stránek na hlavní stránce (30. 10. 2026, přání
 // Lukáše – Práce v okolí a spol. byly jen v patičce a v mobilní navigaci).
+// Kam vyrazit tu není – hned pod rozcestníkem je blok s akcemi (AkceVyhled).
 import { getVolnaMista } from '../lib/prace';
 
 const { mista } = await getVolnaMista();
 const dlazdice = [
-  { href: '/akce/', ikona: '📅', nazev: 'Kam vyrazit', text: 'Akce v obcích na 14 dní dopředu' },
   { href: '/pohotovost/', ikona: '🩺', nazev: 'Pohotovost', text: 'Lékař, zubař a lékárna mimo ordinační hodiny' },
   { href: '/odstavky/', ikona: '⚡', nazev: 'Odstávky', text: 'Elektřina, voda a plyn v obcích' },
   {
@@ -14,6 +14,7 @@ const dlazdice = [
     nazev: 'Práce v okolí',
     text: mista.length ? `${mista.length.toLocaleString('cs-CZ')} volných míst z Úřadu práce` : 'Volná místa z Úřadu práce',
   },
+  { href: '/poslete-fotku/', ikona: '📷', nazev: 'Pošlete fotku', text: 'Z vaší obce – rádi ji zveřejníme' },
 ];
 ---
 <nav class="rozcestnik" aria-label="Užitečné">

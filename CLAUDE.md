@@ -90,8 +90,8 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   nejsou na hlavní stránce ani v rubrikách. Bezpečnost: seznamy hlášení jen
   7 dní (stránky hlášení dál 30 dní).
 - `src/components/Rozcestnik.astro` (30. 10. 2026) – na hlavní stránce nad
-  „Kam vyrazit“ 4 dlaždice: Kam vyrazit, Pohotovost, Odstávky, Práce v okolí
-  (s počtem volných míst).
+  „Kam vyrazit“ 4 dlaždice: Pohotovost, Odstávky, Práce v okolí (s počtem volných
+  míst), Pošlete fotku (Kam vyrazit je hned pod nimi jako blok akcí).
 - `src/lib/odkazy.ts` – v poli Telo se zápis `[text](adresa)` vykreslí jako
   odkaz (jen `/…` a http(s)); použito např. v článku „Volební víkend“.
 - `src/lib/bloky.ts` + `src/components/MapaHodnoty.astro` (8. 10. 2026, přání

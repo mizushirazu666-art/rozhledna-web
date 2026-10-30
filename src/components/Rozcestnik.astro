@@ -5,7 +5,7 @@ import { getVolnaMista } from '../lib/prace';
 
 const { mista } = await getVolnaMista();
 const dlazdice = [
-  { href: '/akce/', ikona: '🎭', nazev: 'Kam vyrazit', text: 'Akce v obcích na 14 dní dopředu' },
+  { href: '/akce/', ikona: '📅', nazev: 'Kam vyrazit', text: 'Akce v obcích na 14 dní dopředu' },
   { href: '/pohotovost/', ikona: '🩺', nazev: 'Pohotovost', text: 'Lékař, zubař a lékárna mimo ordinační hodiny' },
   { href: '/odstavky/', ikona: '⚡', nazev: 'Odstávky', text: 'Elektřina, voda a plyn v obcích' },
   {
@@ -20,26 +20,39 @@ const dlazdice = [
   {dlazdice.map((d) => (
     <a href={d.href} class="rozcestnik__dlazdice">
       <span class="rozcestnik__ikona" aria-hidden="true">{d.ikona}</span>
-      <span>
+      <span class="rozcestnik__obsah">
         <strong>{d.nazev}</strong>
         <span class="rozcestnik__text">{d.text}</span>
       </span>
+      <span class="rozcestnik__sipka" aria-hidden="true">→</span>
     </a>
   ))}
 </nav>
 
 <style>
-  .rozcestnik { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 32px 0 0; }
-  .rozcestnik__dlazdice { display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; background: #fff; border: 1px solid var(--barva-ramecek); border-top: 3px solid var(--barva-zelena); color: var(--barva-text); text-decoration: none; }
-  .rozcestnik__dlazdice:hover { border-color: var(--barva-zelena); }
-  .rozcestnik__dlazdice:hover strong { color: var(--barva-zelena); }
-  .rozcestnik__ikona { font-size: 26px; line-height: 1; }
+  .rozcestnik { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 32px 0 0; }
+  .rozcestnik__dlazdice {
+    display: flex; gap: 14px; align-items: center; padding: 18px 18px 18px 16px;
+    background: #fff; border-radius: 10px; border-left: 4px solid var(--barva-zelena);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.07);
+    color: var(--barva-text); text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .rozcestnik__dlazdice:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 10px 24px rgba(0, 0, 0, 0.12); }
+  .rozcestnik__dlazdice:hover strong, .rozcestnik__dlazdice:hover .rozcestnik__sipka { color: var(--barva-zelena); }
+  .rozcestnik__ikona {
+    flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
+    background: color-mix(in srgb, var(--barva-zelena) 10%, #fff); font-size: 22px; line-height: 1;
+  }
+  .rozcestnik__obsah { flex: 1; min-width: 0; }
   .rozcestnik strong { display: block; font-family: var(--font-nadpisy); font-size: 18px; margin-bottom: 2px; }
-  .rozcestnik__text { font-size: 14px; color: var(--barva-text-tlumena); line-height: 1.4; }
+  .rozcestnik__text { display: block; font-size: 14px; color: var(--barva-text-tlumena); line-height: 1.4; }
+  .rozcestnik__sipka { flex: none; font-size: 18px; color: var(--barva-ramecek); transition: color 0.15s ease; }
   @media (max-width: 900px) { .rozcestnik { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 480px) {
-    .rozcestnik { gap: 8px; }
-    .rozcestnik__dlazdice { padding: 12px; gap: 8px; }
-    .rozcestnik__text { display: none; }
+    .rozcestnik { gap: 10px; }
+    .rozcestnik__dlazdice { padding: 12px; gap: 10px; }
+    .rozcestnik__ikona { width: 36px; height: 36px; font-size: 18px; }
+    .rozcestnik__text, .rozcestnik__sipka { display: none; }
   }
 </style>

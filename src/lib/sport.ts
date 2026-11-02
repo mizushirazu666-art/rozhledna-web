@@ -200,7 +200,7 @@ export function klubSlug(obec: string, sport: string): string {
 }
 
 export function kluby(zapasy: Zapas[], tabulky: Tabulka[]): Klub[] {
-  const mapa = new Map<string, Klub & { nazvy: Map<string, number> }>();
+  const mapa = new Map<string, Klub & { nazvy: Map<string, number>; pohar?: boolean }>();
   const pridej = (obec: string, sport: string) => {
     const slug = klubSlug(obec, sport);
     if (!mapa.has(slug)) mapa.set(slug, { slug, obec, sport, nazev: '', soutez: '', nazvy: new Map() });
@@ -219,9 +219,11 @@ export function kluby(zapasy: Zapas[], tabulky: Tabulka[]): Klub[] {
     if (!t.sport) continue;
     const k = pridej(t.obec, t.sport);
     if (t.tym) k.nazvy.set(t.tym, (k.nazvy.get(t.tym) ?? 0) + 5);
-    if (!k.poradi && t.poradi) { k.poradi = t.poradi; k.soutez = t.soutez; }
+    // Pohárová „tabulka“ nesmí přebít mistrovskou soutěž (Orel 2. 11. 2026).
+    const pohar = /poh[aá]r/i.test(t.soutez);
+    if (t.poradi && (!k.poradi || (k.pohar && !pohar))) { k.poradi = t.poradi; k.soutez = t.soutez; k.pohar = pohar; }
   }
   return [...mapa.values()]
-    .map(({ nazvy, ...k }) => ({ ...k, nazev: [...nazvy.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || `${k.sport} ${nazevObce(k.obec)}` }))
+    .map(({ nazvy, pohar: _p, ...k }) => ({ ...k, nazev: [...nazvy.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || `${k.sport} ${nazevObce(k.obec)}` }))
     .sort((a, b) => nazevObce(a.obec).localeCompare(nazevObce(b.obec), 'cs') || a.sport.localeCompare(b.sport, 'cs'));
 }

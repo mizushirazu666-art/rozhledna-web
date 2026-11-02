@@ -8,7 +8,7 @@ import HlaseniIzs from '../../components/HlaseniIzs.astro';
 import MapaObci from '../../components/MapaObci.astro';
 import SluzbyPrehled from '../../components/SluzbyPrehled.astro';
 import taxonomie from '../../data/taxonomie.json';
-import { getClanky } from '../../lib/clanky';
+import { getClanky, jeSvozOdpadu } from '../../lib/clanky';
 
 export function getStaticPaths() {
   return taxonomie.obce.map((o) => ({ params: { slug: o.slug }, props: { obec: o } }));
@@ -34,7 +34,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
   </div>
 
   <div class="container">
-    <SluzbyPrehled clanky={articlesData} obec={obec.slug} druhy={['Odstávka elektřiny', 'Odstávka vody', 'Odstávka plynu', 'Lékař mimo provoz']} nadpis={`Odstávky a ordinace – ${obec.nazev}`} />
+    <SluzbyPrehled clanky={articlesData.map((c) => (jeSvozOdpadu(c) ? { ...c, sluzba: 'Svoz odpadu' } : c))} obec={obec.slug} druhy={['Odstávka elektřiny', 'Odstávka vody', 'Odstávka plynu', 'Lékař mimo provoz', 'Svoz odpadu']} nadpis={`Odstávky, svoz odpadu a ordinace – ${obec.nazev}`} />
   </div>
 
   <section class="container novinky">

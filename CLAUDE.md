@@ -89,6 +89,10 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   (`SluzbyPrehled` – články s polem Sluzba, viz pipeline). Články se Sluzba
   nejsou na hlavní stránce ani v rubrikách. Bezpečnost: seznamy hlášení jen
   7 dní (stránky hlášení dál 30 dní).
+- `/svoz-odpadu/` (2. 11. 2026, Search Console: „svoz bioodpadu Kladno 2026“)
+  – články se Sluzba „Svoz odpadu“ + starší podle nadpisu (`jeSvozOdpadu`
+  v clanky.ts); i na stránce obce v bloku „Odstávky, svoz odpadu a ordinace“.
+  Hlášení mají titulek pro Google s místem a datem (`seoTitulekHlaseni`).
 - `src/components/Rozcestnik.astro` (30. 10. 2026) – na hlavní stránce nad
   „Kam vyrazit“ 4 dlaždice: Pohotovost, Odstávky, Práce v okolí (s počtem volných
   míst), Pošlete fotku (Kam vyrazit je hned pod nimi jako blok akcí).

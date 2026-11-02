@@ -1,0 +1,34 @@
+---
+import region from '../data/region.json';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SluzbyPrehled from '../components/SluzbyPrehled.astro';
+import { getClanky, jeSvozOdpadu } from '../lib/clanky';
+
+// Svoz odpadu (2. 11. 2026, data ze Search Console: lidé hledají „svoz
+// bioodpadu Kladno 2026“) – oznámení obcí o svozu bioodpadu, velkoobjemového
+// a nebezpečného odpadu, změnách termínů. Pipeline je značí polem Sluzba
+// „Svoz odpadu“; starší články bez pole se poznají podle nadpisu.
+const clanky = (await getClanky())
+  .filter((c) => c.stav === 'Publikováno' && jeSvozOdpadu(c))
+  .map((c) => ({ ...c, sluzba: 'Svoz odpadu' }));
+---
+<BaseLayout title={`Svoz odpadu ${new Date().getFullYear()} – ${region.nazev}`} description={`Termíny svozu bioodpadu, velkoobjemového a nebezpečného odpadu a změny svozu v obcích ${region.genitiv}.`}>
+  <div class="container svoz-hlavicka">
+    <span class="kicker kicker--zelena">Praktické</span>
+    <h1>Svoz odpadu v obcích</h1>
+    <p>Kdy se v obcích {region.genitiv} sváží bioodpad, velkoobjemový a nebezpečný odpad a kdy se mění termíny svozu – podle oznámení na webech a úředních deskách obcí.</p>
+  </div>
+  <div class="container svoz-obsah">
+    <SluzbyPrehled clanky={clanky} druhy={['Svoz odpadu']} prazdno="Žádný mimořádný svoz nám teď není známý. Oznámení obcí sbíráme každé ráno." />
+    <p class="svoz-pozn">Pravidelný svoz popelnic a tříděného odpadu se v každé obci liší – rozpis najdete na webu své obce. Jakmile obec vyvěsí termín mimořádného svozu, objeví se tady i na stránce obce.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .svoz-hlavicka { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--barva-ramecek); }
+  .svoz-hlavicka h1 { font-size: 38px; }
+  .svoz-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 700px; margin: 0; }
+  .svoz-obsah { padding-top: 28px; padding-bottom: 48px; max-width: 920px; }
+  .svoz-pozn { font-size: 14px; color: var(--barva-text-tlumena); margin-top: 16px; }
+  @media (max-width: 700px) { .svoz-hlavicka { padding-top: 24px; } .svoz-hlavicka h1 { font-size: 28px; } }
+</style>

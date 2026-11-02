@@ -97,6 +97,14 @@ function obecSlugZNazvu(nazev: string | undefined): string | null {
 }
 
 /** Název obce článku pro štítky a drobečkovou navigaci (i pro celý mikroregion). */
+/** Oznámení o svozu odpadu (bioodpad, velkoobjemový a nebezpečný odpad,
+ * změna termínu svozu…) – i starší články bez pole Sluzba (2. 11. 2026). */
+const SVOZ_RE = /bioodpad|velkoobjemov|nebezpečn\S* odpad|elektroodpad|sběrn\S* dv[ůo]r|\bsvoz\S*\b[^.]{0,60}(odpad|popelnic|kontejner|komunál|tříděn|plast|papír|skl[ao]|větv|listí)|(odpad|popelnic|kontejner)\S*\b[^.]{0,40}\bsvoz/i;
+
+export function jeSvozOdpadu(c: Pick<Clanek, 'sluzba' | 'nadpis' | 'perex'>): boolean {
+  return c.sluzba === 'Svoz odpadu' || (!c.sluzba && SVOZ_RE.test(`${c.nadpis} ${c.perex ?? ''}`));
+}
+
 export function nazevObceClanku(slug: string): string | undefined {
   if (slug === MIKROREGION_SLUG) return region.mikroregion;
   return taxonomie.obce.find((o) => o.slug === slug)?.nazev;

@@ -4,7 +4,8 @@ import type { Clanek } from '../lib/clanky';
 import { dnesPraha, kratkeDatum } from '../lib/akce';
 
 // Praktická oznámení (pole Sluzba, 29. 10. 2026): odstávky elektřiny/vody/plynu
-// a lékaři mimo provoz – /odstavky/, /pohotovost/ a stránka obce.
+// a lékaři mimo provoz – /odstavky/, /pohotovost/ a stránka obce; svoz odpadu
+// (2. 11. 2026) – /svoz-odpadu/.
 export interface Props {
   clanky: Clanek[];
   druhy: string[];
@@ -25,6 +26,7 @@ const IKONA: Record<string, string> = {
   'Odstávka vody': '💧',
   'Odstávka plynu': '🔥',
   'Lékař mimo provoz': '🩺',
+  'Svoz odpadu': '♻️',
 };
 function kdy(c: Clanek): string {
   const od = c.sluzbaOd, d = c.platiDo;

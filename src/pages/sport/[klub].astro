@@ -1,0 +1,53 @@
+---
+import region from '../../data/region.json';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SportPrehled from '../../components/SportPrehled.astro';
+import { getSport, kluby, nazevObce, type Klub } from '../../lib/sport';
+import { getClanky } from '../../lib/clanky';
+
+// Stránka klubu (2. 11. 2026): program na měsíc dopředu, výsledky za 14 dní
+// (déle Zapasy v Airtable nedržíme), tabulka a sportovní články z obce.
+export async function getStaticPaths() {
+  const { zapasy, tabulky } = await getSport();
+  return kluby(zapasy, tabulky).map((k) => ({ params: { klub: k.slug }, props: { k } }));
+}
+
+const { k } = Astro.props as { k: Klub };
+const obec = nazevObce(k.obec);
+const clanky = (await getClanky())
+  .filter((c) => c.stav === 'Publikováno' && c.rubrika === 'sport' && c.obec === k.obec)
+  .slice(0, 6);
+---
+<BaseLayout title={`${k.nazev} – ${k.sport.toLowerCase()}: program, výsledky, tabulka`} description={`${k.nazev} (${obec}): program zápasů, výsledky se střelci a tabulka${k.soutez ? ` – ${k.soutez}` : ''}.`}>
+  <div class="container klub-hlavicka">
+    <a class="klub-zpet" href="/sport/">← Všechny kluby</a>
+    <span class="kicker kicker--zelena">{k.sport} · {obec}</span>
+    <h1>{k.nazev}</h1>
+    {k.soutez && <p>{k.soutez}{k.poradi ? ` – aktuálně ${k.poradi}. místo` : ''}</p>}
+  </div>
+  <div class="container">
+    <SportPrehled obec={k.obec} sport={k.sport} nadpis="Program, výsledky a tabulka" dniDopredu={31} dniZpet={14} cara={false} />
+    {clanky.length > 0 && (
+      <section class="klub-clanky">
+        <h2>Články o sportu z obce {obec}</h2>
+        <ul>
+          {clanky.map((c) => <li><a href={`/clanek/${c.slug}/`}>{c.nadpis}</a></li>)}
+        </ul>
+      </section>
+    )}
+    <p class="klub-pozn"><a href={`/obec/${k.obec}/`}>Další zprávy z obce {obec} →</a></p>
+  </div>
+</BaseLayout>
+
+<style>
+  .klub-hlavicka { display: flex; flex-direction: column; gap: 8px; padding-top: 32px; padding-bottom: 20px; }
+  .klub-hlavicka h1 { font-size: 36px; }
+  .klub-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); margin: 0; }
+  .klub-zpet { font-size: 14px; color: var(--barva-text-tlumena); }
+  .klub-clanky { margin: 32px 0 0; }
+  .klub-clanky h2 { font-size: 22px; margin-bottom: 8px; }
+  .klub-clanky ul { margin: 0; padding-left: 18px; }
+  .klub-clanky li { margin: 6px 0; }
+  .klub-pozn { margin: 24px 0 48px; }
+  @media (max-width: 700px) { .klub-hlavicka h1 { font-size: 28px; } }
+</style>

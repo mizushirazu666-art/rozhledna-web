@@ -136,8 +136,8 @@ const PORADI_KATEGORII = ['Muži', 'Ženy', 'Dorost', 'Žáci', 'Přípravka'];
 
 /** Zápasy pro přehled: nadcházející do `dniDopredu`, odehrané za `dniZpet`
  * (výsledky jen dospělých – u mládeže zdroje výsledky nemají). */
-export function vyberZapasy(zapasy: Zapas[], obec?: string, dniDopredu = 9, dniZpet = 8, ted = new Date()) {
-  const zObce = zapasy.filter((z) => !obec || z.obec === obec);
+export function vyberZapasy(zapasy: Zapas[], obec?: string, dniDopredu = 9, dniZpet = 8, ted = new Date(), sport?: string) {
+  const zObce = zapasy.filter((z) => (!obec || z.obec === obec) && (!sport || z.sport === sport));
   const od = ted.getTime() - dniZpet * 86_400_000;
   const do_ = ted.getTime() + dniDopredu * 86_400_000;
   const program = zObce.filter((z) => !z.odehrano && new Date(z.zacatek).getTime() >= ted.getTime() - 3 * 3_600_000 && new Date(z.zacatek).getTime() <= do_);
@@ -147,9 +147,9 @@ export function vyberZapasy(zapasy: Zapas[], obec?: string, dniDopredu = 9, dniZ
   return { program, vysledky };
 }
 
-export function seraditTabulky(tabulky: Tabulka[], obec?: string): Tabulka[] {
+export function seraditTabulky(tabulky: Tabulka[], obec?: string, sport?: string): Tabulka[] {
   return tabulky
-    .filter((t) => !obec || t.obec === obec)
+    .filter((t) => (!obec || t.obec === obec) && (!sport || t.sport === sport))
     .sort((a, b) => a.obec.localeCompare(b.obec) || a.soutez.localeCompare(b.soutez));
 }
 
@@ -178,4 +178,50 @@ export function formatZacatek(iso: string): string {
   const cast = (typ: string) => casti.find((p) => p.type === typ)?.value ?? '';
   const den = DNY[new Date(d.toLocaleString('en-US', { timeZone: 'Europe/Prague' })).getDay()];
   return `${den} ${cast('day')}. ${cast('month')}. ${cast('hour')}:${cast('minute')}`;
+}
+
+/** Klub = obec + sport (2. 11. 2026, stránky /sport/<obec>-<sport>/ – lidé
+ * hledají „FK Kameničky tabulka“, „Kočí fotbal výsledky“). */
+export interface Klub {
+  slug: string;
+  obec: string;
+  sport: string;
+  nazev: string; // nejčastější název týmu dospělých
+  soutez: string;
+  poradi?: number;
+}
+
+function bezDiakritiky(t: string): string {
+  return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+export function klubSlug(obec: string, sport: string): string {
+  return `${obec}-${bezDiakritiky(sport)}`;
+}
+
+export function kluby(zapasy: Zapas[], tabulky: Tabulka[]): Klub[] {
+  const mapa = new Map<string, Klub & { nazvy: Map<string, number> }>();
+  const pridej = (obec: string, sport: string) => {
+    const slug = klubSlug(obec, sport);
+    if (!mapa.has(slug)) mapa.set(slug, { slug, obec, sport, nazev: '', soutez: '', nazvy: new Map() });
+    return mapa.get(slug)!;
+  };
+  for (const z of zapasy) {
+    if (!z.sport) continue;
+    const k = pridej(z.obec, z.sport);
+    if (kategorieIndex(z.kategorie) <= 1 || !z.kategorie) {
+      const nazev = z.domaNas ? z.domaci : z.hoste;
+      if (nazev) k.nazvy.set(nazev, (k.nazvy.get(nazev) ?? 0) + 1);
+      if (!k.soutez) k.soutez = z.soutez;
+    }
+  }
+  for (const t of tabulky) {
+    if (!t.sport) continue;
+    const k = pridej(t.obec, t.sport);
+    if (t.tym) k.nazvy.set(t.tym, (k.nazvy.get(t.tym) ?? 0) + 5);
+    if (!k.poradi && t.poradi) { k.poradi = t.poradi; k.soutez = t.soutez; }
+  }
+  return [...mapa.values()]
+    .map(({ nazvy, ...k }) => ({ ...k, nazev: [...nazvy.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || `${k.sport} ${nazevObce(k.obec)}` }))
+    .sort((a, b) => nazevObce(a.obec).localeCompare(nazevObce(b.obec), 'cs') || a.sport.localeCompare(b.sport, 'cs'));
 }

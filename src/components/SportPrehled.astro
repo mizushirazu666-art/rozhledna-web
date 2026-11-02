@@ -13,18 +13,22 @@ export interface Props {
   nadpis?: string;
   /** Čára nad blokem – na stránce rubriky ji už kreslí hlavička. */
   cara?: boolean;
+  /** Jen jeden sport (stránka klubu) a delší okno programu/výsledků. */
+  sport?: string;
+  dniDopredu?: number;
+  dniZpet?: number;
 }
 
-const { obec, kompakt = false, nadpis = 'Sport v okolí', cara = true } = Astro.props;
+const { obec, kompakt = false, nadpis = 'Sport v okolí', cara = true, sport, dniDopredu = 9, dniZpet = 8 } = Astro.props;
 const { zapasy, tabulky } = await getSport();
-const { program, vysledky } = vyberZapasy(zapasy, obec);
+const { program, vysledky } = vyberZapasy(zapasy, obec, dniDopredu, dniZpet, new Date(), sport);
 const limit = kompakt ? 6 : 40;
 // V programu dospělí napřed, v rámci kategorie podle času.
 const programVyber = [...program]
   .sort((a, b) => a.zacatek.localeCompare(b.zacatek) || kategorieIndex(a.kategorie) - kategorieIndex(b.kategorie))
   .slice(0, limit);
 const vysledkyVyber = vysledky.slice(0, kompakt ? 4 : 20);
-const tabulkyVyber = kompakt ? [] : seraditTabulky(tabulky, obec);
+const tabulkyVyber = kompakt ? [] : seraditTabulky(tabulky, obec, sport);
 const nicNeni = programVyber.length === 0 && vysledkyVyber.length === 0 && tabulkyVyber.length === 0;
 const zobrazObec = !obec;
 

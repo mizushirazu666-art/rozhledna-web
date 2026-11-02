@@ -93,6 +93,10 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   – články se Sluzba „Svoz odpadu“ + starší podle nadpisu (`jeSvozOdpadu`
   v clanky.ts); i na stránce obce v bloku „Odstávky, svoz odpadu a ordinace“.
   Hlášení mají titulek pro Google s místem a datem (`seoTitulekHlaseni`).
+- Sport na jednom místě (2. 11. 2026): `/sport/` (rozcestník klubů) a
+  `/sport/<obec>-<sport>/` (`kluby()` v sport.ts – klub = obec + sport, název
+  nejčastější tým dospělých; program 31 dní, výsledky 14 dní, tabulka, sportovní
+  články obce); odkazy z rubriky Sport, stránky obce, patičky a v sitemapě.
 - `src/components/Rozcestnik.astro` (30. 10. 2026) – na hlavní stránce nad
   „Kam vyrazit“ 4 dlaždice: Pohotovost, Odstávky, Práce v okolí (s počtem volných
   míst), Pošlete fotku (Kam vyrazit je hned pod nimi jako blok akcí).

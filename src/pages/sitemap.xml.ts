@@ -6,6 +6,7 @@ import type { APIRoute } from 'astro';
 import taxonomie from '../data/taxonomie.json';
 import { getClanky } from '../lib/clanky';
 import { getHlaseni } from '../lib/hlaseni';
+import { getSport, kluby } from '../lib/sport';
 import { OBCE } from '../../api/volby.js';
 
 function polozka(adresa: string, zmena?: string): string {
@@ -20,6 +21,7 @@ export const GET: APIRoute = async ({ site }) => {
   const url = (cesta: string) => new URL(cesta, site).href;
   const clanky = (await getClanky()).filter((c) => c.stav === 'Publikováno' && !c.ukazkovyObsah);
   const hlaseni = await getHlaseni();
+  const { zapasy, tabulky } = await getSport();
   const nejnovejsi = clanky[0]?.datumPublikace;
   const radky = [
     polozka(url('/'), nejnovejsi),
@@ -32,6 +34,8 @@ export const GET: APIRoute = async ({ site }) => {
     ),
     ...clanky.map((c) => polozka(url(`/clanek/${c.slug}/`), c.datumPublikace)),
     ...hlaseni.map((h) => polozka(url(`/hlaseni/${h.slug}/`), h.cas)),
+    polozka(url('/sport/'), new Date().toISOString()),
+    ...kluby(zapasy, tabulky).map((k) => polozka(url(`/sport/${k.slug}/`), new Date().toISOString())),
     ...['/o-nas/', '/kontakt/', '/poslete-fotku/', '/newsletter/', '/akce/', '/pohotovost/', '/odstavky/', '/svoz-odpadu/', '/prace/', '/ochrana-udaju/'].map((c) => polozka(url(c))),
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${radky.join('\n')}\n</urlset>\n`;

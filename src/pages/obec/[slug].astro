@@ -9,6 +9,7 @@ import MapaObci from '../../components/MapaObci.astro';
 import SluzbyPrehled from '../../components/SluzbyPrehled.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { getClanky, jeSvozOdpadu } from '../../lib/clanky';
+import { getSport, kluby } from '../../lib/sport';
 
 export function getStaticPaths() {
   return taxonomie.obce.map((o) => ({ params: { slug: o.slug }, props: { obec: o } }));
@@ -17,6 +18,8 @@ export function getStaticPaths() {
 const { obec } = Astro.props as { obec: (typeof taxonomie.obce)[number] };
 const articlesData = await getClanky();
 const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec === obec.slug && !c.sluzba);
+const { zapasy, tabulky } = await getSport();
+const klubyObce = kluby(zapasy, tabulky).filter((k) => k.obec === obec.slug);
 ---
 <BaseLayout title={obec.nazev} description={`Zprávy z obce ${obec.nazev} – Rozhledna, ${region.nazev}.`}>
   <div class="container obec-hlavicka">
@@ -48,6 +51,9 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
   </section>
 
   <div class="container">
+    {klubyObce.length > 0 && (
+      <p class="obec-kluby">Kluby: {klubyObce.map((k, i) => <>{i > 0 && ' · '}<a href={`/sport/${k.slug}/`}>{k.nazev} ({k.sport.toLowerCase()})</a></>)}</p>
+    )}
     <SportPrehled obec={obec.slug} nadpis={`Sport – ${obec.nazev}`} />
   </div>
 
@@ -61,6 +67,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.obec ==
 </BaseLayout>
 
 <style>
+  .obec-kluby { margin: 24px 0 0; font-weight: 600; }
   .obec-volby { margin-top: 10px; font-weight: 700; color: var(--barva-terakota); font-size: 15px; }
   .obec-hlavicka {
     display: flex;

@@ -1,0 +1,40 @@
+---
+import region from '../../data/region.json';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getSport, kluby, nazevObce } from '../../lib/sport';
+
+// Sport na jednom místě (2. 11. 2026): rozcestník klubů z obcí regionu –
+// každý má stránku s programem, výsledky, střelci a tabulkou.
+const { zapasy, tabulky } = await getSport();
+const seznam = kluby(zapasy, tabulky);
+---
+<BaseLayout title={`Sport – kluby z obcí ${region.genitiv}`} description={`Program, výsledky a tabulky klubů z obcí ${region.genitiv} na jednom místě.`}>
+  <div class="container sport-hlavicka">
+    <span class="kicker kicker--zelena">Sport</span>
+    <h1>Kluby z obcí {region.genitiv}</h1>
+    <p>Program zápasů, výsledky se střelci a aktuální tabulky – každý klub na jedné stránce. Obnovuje se každé ráno.</p>
+  </div>
+  <div class="container kluby">
+    {seznam.length === 0 && <p>Data o zápasech se teď nepodařilo načíst.</p>}
+    {seznam.map((k) => (
+      <a class="klub" href={`/sport/${k.slug}/`}>
+        <span class="klub__obec">{nazevObce(k.obec)} · {k.sport}</span>
+        <strong>{k.nazev}</strong>
+        <span class="klub__soutez">{k.soutez}{k.poradi ? ` · ${k.poradi}. místo` : ''}</span>
+      </a>
+    ))}
+  </div>
+</BaseLayout>
+
+<style>
+  .sport-hlavicka { display: flex; flex-direction: column; gap: 10px; padding-top: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--barva-ramecek); }
+  .sport-hlavicka h1 { font-size: 38px; }
+  .sport-hlavicka p { font-size: 17px; color: var(--barva-text-tlumena); max-width: 700px; margin: 0; }
+  .kluby { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; padding-top: 28px; padding-bottom: 48px; }
+  .klub { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; background: #fff; border-radius: 10px; border-left: 4px solid var(--barva-zelena); box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.07); color: var(--barva-text); text-decoration: none; transition: transform .15s ease; }
+  .klub:hover { transform: translateY(-2px); }
+  .klub strong { font-family: var(--font-nadpisy); font-size: 18px; }
+  .klub__obec { font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--barva-zelena); }
+  .klub__soutez { font-size: 14px; color: var(--barva-text-tlumena); }
+  @media (max-width: 700px) { .sport-hlavicka { padding-top: 24px; } .sport-hlavicka h1 { font-size: 28px; } }
+</style>

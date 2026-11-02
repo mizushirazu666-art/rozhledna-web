@@ -25,6 +25,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
 
   {rubrika.slug === 'sport' && (
     <div class="container">
+      <p class="sport-kluby-odkaz"><a href="/sport/">Stránky jednotlivých klubů – program, výsledky a tabulka →</a></p>
       <SportPrehled nadpis="Zápasy, výsledky a tabulky" cara={false} />
     </div>
   )}
@@ -58,6 +59,7 @@ const clanky = articlesData.filter((c) => c.stav === 'Publikováno' && c.rubrika
 </BaseLayout>
 
 <style>
+  .sport-kluby-odkaz { margin: 16px 0 0; font-weight: 600; }
   .rubrika-hlavicka {
     display: flex;
     flex-direction: column;

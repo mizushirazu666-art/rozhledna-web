@@ -7,7 +7,7 @@ import region from '../../data/region.json';
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import NewsletterCTA from '../../components/NewsletterCTA.astro';
-import { getHlaseni, formatCas, titulekHlaseni, type Hlaseni } from '../../lib/hlaseni';
+import { getHlaseni, formatCas, titulekHlaseni, seoTitulekHlaseni, datumHlaseni, type Hlaseni } from '../../lib/hlaseni';
 
 export async function getStaticPaths() {
   const vsechna = await getHlaseni();
@@ -20,9 +20,9 @@ const zdrojNazev = h.typ === 'vyjezd' ? 'HZS Pardubického kraje – výjezdy' :
 const jeDenik = /deník/i.test(h.zdroj);
 const stitek = h.typ === 'vyjezd' ? 'Hasiči · výjezd' : /policie/i.test(h.zdroj) ? 'Policie' : jeDenik ? 'Chrudimský deník' : 'Hasiči';
 const dalsi = vsechna.filter((x) => x.slug !== h.slug).slice(0, 5);
-const popis = h.text[0] ?? `${stitek}: ${titulek}`;
+const popis = `${datumHlaseni(h.cas)}: ${h.text[0] ?? `${stitek} – ${titulek}`}`;
 ---
-<BaseLayout title={titulek} description={popis.slice(0, 160)} typ="article" publikovano={h.cas}>
+<BaseLayout title={seoTitulekHlaseni(h)} description={popis.slice(0, 160)} typ="article" publikovano={h.cas}>
   <div class="container drobeckova">
     <a href="/">Domů</a>
     <span>/</span>

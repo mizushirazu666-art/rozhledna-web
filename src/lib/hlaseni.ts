@@ -27,7 +27,26 @@ export interface Hlaseni {
 
 /** Titulek hlášení – u zpráv nadpis, u výjezdů "Požár – Chrudim IV". */
 export function titulekHlaseni(h: Hlaseni): string {
-  return h.typ === 'zprava' ? h.nadpis : `${h.druh} – ${h.misto}`;
+  return h.typ === 'zprava' ? h.nadpis : `${h.druh} – ${mistoBezOpakovani(h.misto)}`;
+}
+
+/** Datum hlášení „2. 11. 2026“ (čas Praha). */
+export function datumHlaseni(iso: string): string {
+  return new Date(iso).toLocaleDateString('cs-CZ', { timeZone: 'Europe/Prague', day: 'numeric', month: 'numeric', year: 'numeric' });
+}
+
+/** Titulek stránky pro vyhledávače (2. 11. 2026): typ, místo a datum – lidé
+ * hledají „nehoda Krouna dnes“, „požár Hlinsko“. U výjezdů místo bez
+ * opakování („Krouna - Krouna“ → „Krouna“). */
+export function seoTitulekHlaseni(h: Hlaseni): string {
+  const datum = datumHlaseni(h.cas);
+  if (h.typ === 'zprava') return `${h.nadpis} – ${datum}`;
+  return `${h.druh} ${mistoBezOpakovani(h.misto)} – ${datum}`;
+}
+
+/** „Krouna - Krouna“ → „Krouna“, „Chrudim - Chrudim IV“ → „Chrudim, Chrudim IV“. */
+function mistoBezOpakovani(misto: string): string {
+  return [...new Set(hezkeMisto(misto).split(', ').map((x) => x.trim()).filter(Boolean))].join(', ');
 }
 
 /** "Chrudim - Chrudim IV" → "Chrudim, Chrudim IV" (zápis hasičů). */

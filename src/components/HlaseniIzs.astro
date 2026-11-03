@@ -8,7 +8,7 @@ import region from '../data/region.json';
  *   obec    – jen hlášení dané obce (slug), jinak celé Chrudimsko
  * Bez kompakt a bez hlášení se blok nevykreslí.
  */
-import { getHlaseni, formatCas, type Hlaseni } from '../lib/hlaseni';
+import { getHlaseni, formatCas, druhVyjezdu, type Hlaseni } from '../lib/hlaseni';
 
 export interface Props {
   kompakt?: boolean;
@@ -44,7 +44,7 @@ function stitek(h: Hlaseni): string {
                 <span>{formatCas(h.cas, h.typ === 'zprava')}</span>
                 {h.probiha && <span class="izs__probiha">probíhá</span>}
               </span>
-              <a class="izs__hlavni" href={`/hlaseni/${h.slug}/`}>{h.typ === 'zprava' ? h.nadpis : h.druh}</a>
+              <a class="izs__hlavni" href={`/hlaseni/${h.slug}/`}>{h.typ === 'zprava' ? h.nadpis : druhVyjezdu(h)}</a>
               {(h.typ === 'vyjezd' ? h.misto : h.lokalita) && (
                 <span class="izs__misto">{h.typ === 'vyjezd' ? h.misto : h.lokalita}</span>
               )}

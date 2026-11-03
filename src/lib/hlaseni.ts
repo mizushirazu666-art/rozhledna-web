@@ -25,9 +25,26 @@ export interface Hlaseni {
   slug: string; // /hlaseni/<slug>/
 }
 
-/** Titulek hlášení – u zpráv nadpis, u výjezdů "Požár – Chrudim IV". */
+/** Podtyp výjezdu z textu („…k technické pomoci – otevření uzavřených
+ * prostor.“, scrapers/izs.py) – hasiči ho uvádějí v detailu události. */
+export function podtypVyjezdu(h: Hlaseni): string {
+  const m = h.text[0]?.match(/vyjížděli\b[^–]*?\bk [^–.]+ – ([^.]+)\./);
+  if (!m) return '';
+  // „odpad, ostatní“ → „odpad“; samotné „ostatní“/„jiné“ nic neříká.
+  const podtyp = m[1].trim().replace(/,\s*(ostatní|jiné)$/i, '');
+  return /^(ostatní|jiné|nezadán)$/i.test(podtyp) ? '' : podtyp;
+}
+
+/** Druh výjezdu i s podtypem: „Technická pomoc – otevření uzavřených prostor“
+ * (3. 11. 2026, přání Lukáše – konkrétnější nadpisy v Bezpečnosti). */
+export function druhVyjezdu(h: Hlaseni): string {
+  const podtyp = podtypVyjezdu(h);
+  return podtyp ? `${h.druh} – ${podtyp}` : h.druh;
+}
+
+/** Titulek hlášení – u zpráv nadpis, u výjezdů "Požár – odpad (Chrudim IV)". */
 export function titulekHlaseni(h: Hlaseni): string {
-  return h.typ === 'zprava' ? h.nadpis : `${h.druh} – ${mistoBezOpakovani(h.misto)}`;
+  return h.typ === 'zprava' ? h.nadpis : `${druhVyjezdu(h)}, ${mistoBezOpakovani(h.misto)}`;
 }
 
 /** Datum hlášení „2. 11. 2026“ (čas Praha). */
@@ -41,7 +58,7 @@ export function datumHlaseni(iso: string): string {
 export function seoTitulekHlaseni(h: Hlaseni): string {
   const datum = datumHlaseni(h.cas);
   if (h.typ === 'zprava') return `${h.nadpis} – ${datum}`;
-  return `${h.druh} ${mistoBezOpakovani(h.misto)} – ${datum}`;
+  return `${druhVyjezdu(h)}, ${mistoBezOpakovani(h.misto)} – ${datum}`;
 }
 
 /** „Krouna - Krouna“ → „Krouna“, „Chrudim - Chrudim IV“ → „Chrudim, Chrudim IV“. */

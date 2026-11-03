@@ -12,7 +12,7 @@ import svatky from '../data/svatky.json';
 import mapa from '../data/mapa-regionu.json';
 import region from '../data/region.json';
 import { getPocasi } from '../lib/pocasi';
-import { getHlaseni } from '../lib/hlaseni';
+import { getHlaseni, druhVyjezdu } from '../lib/hlaseni';
 
 const PRAHA = 'Europe/Prague';
 const ted = new Date();
@@ -44,7 +44,7 @@ const dnesnich = hlaseni.filter((h) => klic(new Date(h.cas)) === dnes).length;
     </span>
     {zasah ? (
       <a class="dnes__zasah" href={`/hlaseni/${zasah.slug}/`} data-cas={zasah.cas}>
-        <span class="dnes__probiha">probíhá</span> Zásah hasičů: {zasah.druh}, {zasah.lokalita || zasah.misto} →
+        <span class="dnes__probiha">probíhá</span> Zásah hasičů: {druhVyjezdu(zasah)}, {zasah.lokalita || zasah.misto} →
       </a>
     ) : dnesnich > 0 ? (
       <a class="dnes__zasah" href="/rubrika/bezpecnost/">Dnes v okolí {dnesnich} hlášení →</a>

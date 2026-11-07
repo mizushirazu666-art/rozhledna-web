@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StoryCard from '../../components/StoryCard.astro';
-import NewsletterCTA from '../../components/NewsletterCTA.astro';
 import taxonomie from '../../data/taxonomie.json';
 import { Image } from 'astro:assets';
 import region from '../../data/region.json';
@@ -157,9 +156,6 @@ const jsonLd = {
     </aside>
   </div>
 
-  <div class="container">
-    <NewsletterCTA />
-  </div>
 </BaseLayout>
 
 <style>

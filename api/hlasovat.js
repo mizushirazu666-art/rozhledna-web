@@ -13,9 +13,9 @@
  * KV_REST_API_TOKEN (nebo UPSTASH_REDIS_REST_URL / _TOKEN); ROZHLEDNA_REGION.
  */
 import { createHash } from 'node:crypto';
-import { createRequire } from 'node:module';
-
-const soutez = createRequire(import.meta.url)('../src/data/vanocni-strom-2026.json');
+// Statický import – createRequire Vercel do balíčku funkce nezahrnul
+// (FUNCTION_INVOCATION_FAILED, 17. 11. 2026).
+import soutez from '../src/data/vanocni-strom-2026.json' with { type: 'json' };
 
 const MAX_Z_IP = 10;
 const PREFIX = 'strom2026';

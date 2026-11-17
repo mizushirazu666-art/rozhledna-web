@@ -100,6 +100,15 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
 - `src/components/Rozcestnik.astro` (30. 10. 2026) – na hlavní stránce nad
   „Kam vyrazit“ 4 dlaždice: Pohotovost, Odstávky, Práce v okolí (s počtem volných
   míst), Pošlete fotku (Kam vyrazit je hned pod nimi jako blok akcí).
+- Soutěž „Nejhezčí vánoční strom 2026“ (17. 11. 2026): `/vanocni-strom/`
+  (fáze podle `src/data/vanocni-strom-2026.json`: fotky do 13. 12. přes
+  `/poslete-fotku/?soutez=vanocni-strom` → Fotobanka s Poznamkou
+  „soutez:vanocni-strom-2026“; redakce dá za obec jednu fotku do
+  `public/vanocni-strom/2026/` a obec do JSONu; hlasování 14.–20. 12., výsledky
+  21. 12.). `api/hlasovat.js` – hlasy v Upstash Redis (Vercel Marketplace,
+  env KV_REST_API_URL/TOKEN; bez nich 503), 1 hlas/den/zařízení, max. 10/den
+  z IP; GET = průběžné výsledky. Dlaždice v Rozcestníku místo „Pošlete fotku“
+  do 21. 12. Mezititulek v Telo: odstavec „## Text“.
 - `src/lib/odkazy.ts` – v poli Telo se zápis `[text](adresa)` vykreslí jako
   odkaz (jen `/…` a http(s)); použito např. v článku „Volební víkend“.
 - `src/lib/bloky.ts` + `src/components/MapaHodnoty.astro` (8. 10. 2026, přání

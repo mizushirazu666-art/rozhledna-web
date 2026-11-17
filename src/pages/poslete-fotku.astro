@@ -18,6 +18,11 @@ import taxonomie from '../data/taxonomie.json';
       prohlédne redakce.
     </p>
 
+    <div id="soutez-info" class="soutez" hidden>
+      🎄 <strong>Soutěž Nejhezčí vánoční strom 2026.</strong> Vyfoťte vánoční strom ve své obci a pošlete ho do
+      13. prosince. Od 14. do 20. prosince se o vítězi hlasuje na <a href="/vanocni-strom/">stránce soutěže</a>.
+    </div>
+
     <form id="foto-form" class="formular" novalidate>
       <label class="pole">
         <span>Fotka <em>*</em></span>
@@ -82,6 +87,11 @@ import taxonomie from '../data/taxonomie.json';
   const nahled = document.getElementById('nahled') as HTMLImageElement;
   const nacteno = Date.now();
   let fotka: { data: string; typ: string; nazev: string } | null = null;
+  const soutez = new URLSearchParams(location.search).get('soutez') === 'vanocni-strom' ? 'vanocni-strom' : '';
+  if (soutez) {
+    (document.getElementById('soutez-info') as HTMLDivElement).hidden = false;
+    form.popis.placeholder = 'Např. Vánoční strom na návsi';
+  }
 
   async function zmensi(soubor: File) {
     const bitmapa = await createImageBitmap(soubor);
@@ -133,6 +143,7 @@ import taxonomie from '../data/taxonomie.json';
           souhlas: Boolean(f.get('souhlas')),
           web: f.get('web'),
           nacteno,
+          soutez,
         }),
       });
       const v = await resp.json().catch(() => ({ ok: false, chyba: 'Neočekávaná odpověď serveru.' }));
@@ -160,6 +171,11 @@ import taxonomie from '../data/taxonomie.json';
   }
   .stranka h1 { font-size: 34px; }
   .uvod { font-size: 17px; line-height: 1.6; color: var(--barva-text-tlumena-tmavsi); margin: 0; }
+  .soutez {
+    background: #fff; border-left: 4px solid var(--barva-terakota); padding: 14px 16px;
+    font-size: 15px; line-height: 1.5;
+  }
+  .soutez a { color: var(--barva-terakota); font-weight: 700; }
   .formular {
     display: flex;
     flex-direction: column;

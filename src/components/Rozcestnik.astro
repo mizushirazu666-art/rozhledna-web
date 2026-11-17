@@ -3,6 +3,7 @@
 // Lukáše – Práce v okolí a spol. byly jen v patičce a v mobilní navigaci).
 // Kam vyrazit tu není – hned pod rozcestníkem je blok s akcemi (AkceVyhled).
 import { getVolnaMista } from '../lib/prace';
+import soutez from '../data/vanocni-strom-2026.json';
 
 const { mista } = await getVolnaMista();
 const dlazdice = [
@@ -16,6 +17,17 @@ const dlazdice = [
   },
   { href: '/poslete-fotku/', ikona: '📷', nazev: 'Pošlete fotku', text: 'Z vaší obce – rádi ji zveřejníme' },
 ];
+// Soutěž Nejhezčí vánoční strom (17. 11. – 21. 12. 2026) místo dlaždice
+// „Pošlete fotku“ – fotky do soutěže jdou přes stejný formulář.
+const dnes = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Prague' });
+if (dnes <= soutez.vyhlaseni) {
+  dlazdice[3] = {
+    href: '/vanocni-strom/',
+    ikona: '🎄',
+    nazev: 'Nejhezčí vánoční strom',
+    text: dnes <= soutez.prijem_do ? 'Pošlete fotku stromu z vaší obce' : dnes < soutez.hlasovani_od ? 'Hlasování začíná 14. 12.' : dnes <= soutez.hlasovani_do ? 'Hlasujte pro svou obec!' : 'Výsledky soutěže',
+  };
+}
 ---
 <nav class="rozcestnik" aria-label="Užitečné">
   {dlazdice.map((d) => (

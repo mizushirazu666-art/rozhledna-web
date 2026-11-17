@@ -49,6 +49,9 @@ export default async function handler(req, res) {
   const bajtu = Math.floor((data.length * 3) / 4);
   if (!data || bajtu > MAX_BAJTU) return chyba(res, 400, 'Fotka je příliš velká.');
 
+  // Soutěž (17. 11. 2026): /poslete-fotku/?soutez=vanocni-strom → štítek do
+  // Poznamky, podle něj redakce fotky do soutěže najde.
+  const soutez = d.soutez === 'vanocni-strom' ? 'soutez:vanocni-strom-2026 – ' : '';
   const hlavicky = { Authorization: `Bearer ${klic}`, 'Content-Type': 'application/json' };
   const dnes = new Date().toLocaleDateString('cs-CZ', { timeZone: 'Europe/Prague' });
   const zalozeni = await fetch(`https://api.airtable.com/v0/${baze}/${encodeURIComponent(TABULKA)}`, {
@@ -62,7 +65,7 @@ export default async function handler(req, res) {
         Autor: `Foto: ${autor}, čtenář Rozhledny`,
         Licence: 'se svolením autora (čtenář)',
         Email: email || undefined,
-        Poznamka: `Poslal čtenář přes formulář na webu ${dnes}. Souhlas: je autorem, souhlasí s bezplatným zveřejněním se jménem; rozpoznatelné osoby jen se svolením. Doplň Temata a zkontroluj fotku.`,
+        Poznamka: `${soutez}Poslal čtenář přes formulář na webu ${dnes}. Souhlas: je autorem, souhlasí s bezplatným zveřejněním se jménem; rozpoznatelné osoby jen se svolením. Doplň Temata a zkontroluj fotku.`,
       },
     }),
   });

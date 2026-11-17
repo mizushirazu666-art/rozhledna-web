@@ -1,0 +1,9 @@
+{
+  "_comment": "Soutěž Nejhezčí vánoční strom 2026 (17. 11. 2026, schválil Lukáš). Fotky posílají čtenáři přes /poslete-fotku/?soutez=vanocni-strom (Fotobanka, Poznamka „soutez:vanocni-strom-2026“) do 13. 12.; redakce vybere za každou obec jednu fotku, uloží ji do public/vanocni-strom/2026/<region>-<slug>.jpg a přidá obec sem. Hlasuje se 14.–20. 12. přes api/hlasovat.js (Upstash Redis z Vercel Marketplace), vyhlášení 21. 12. id = slug obce, nemění se (hlasy jsou pod ním).",
+  "prijem_do": "2026-12-13",
+  "hlasovani_od": "2026-12-14",
+  "hlasovani_do": "2026-12-20",
+  "vyhlaseni": "2026-12-21",
+  "chrudimsko": [],
+  "hlinecko": []
+}

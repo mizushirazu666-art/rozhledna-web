@@ -1,0 +1,244 @@
+---
+/**
+ * Soutěž „Nejhezčí vánoční strom 2026“ (17. 11. 2026, přání Lukáše – obsah,
+ * kvůli kterému lidé přijdou na web; hlasuje se jen tady, ne lajky na FB).
+ * Fáze podle data (src/data/vanocni-strom-2026.json): příjem fotek do 13. 12.
+ * (formulář /poslete-fotku/?soutez=vanocni-strom), hlasování 14.–20. 12.
+ * (api/hlasovat.js, Upstash Redis), od 21. 12. výsledky. Fázi určí build
+ * i prohlížeč (web se přes noc nepřestavuje).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import region from '../data/region.json';
+import soutez from '../data/vanocni-strom-2026.json';
+
+const regionKlic = (process.env.ROZHLEDNA_REGION || 'chrudimsko').trim().toLowerCase() as 'chrudimsko' | 'hlinecko';
+const kandidati = ((soutez as Record<string, unknown>)[regionKlic] as { id: string; obec: string; foto: string; autor: string; popis?: string }[]) || [];
+const datum = (iso: string) => {
+  const [, m, d] = iso.split('-').map(Number);
+  return `${d}. ${m}.`;
+};
+const nadpis = `Nejhezčí vánoční strom ${region.genitiv} 2026`;
+---
+<BaseLayout title={nadpis} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)}–${datum(soutez.hlasovani_do)} na Rozhledně.`}>
+  <div class="container strom" data-prijem-do={soutez.prijem_do} data-od={soutez.hlasovani_od} data-do={soutez.hlasovani_do}>
+    <span class="kicker kicker--zelena">Soutěž pro obce</span>
+    <h1>🎄 {nadpis}</h1>
+    <p class="uvod">
+      V každé obci se o adventu rozsvítí vánoční strom a každý je jiný: velký smrk na návsi, jedle u kostela
+      nebo strom, který zdobí děti ze školky. Pojďme zjistit, který je nejhezčí! Pošlete fotku stromu ze své
+      obce a pak pro něj sežeňte co nejvíc hlasů.
+    </p>
+
+    <ol class="kroky">
+      <li data-faze="prijem">
+        <strong>Do {datum(soutez.prijem_do)}</strong>
+        <span>Vyfoťte vánoční strom ve své obci a pošlete nám fotku.</span>
+      </li>
+      <li data-faze="hlasovani">
+        <strong>{datum(soutez.hlasovani_od)}–{datum(soutez.hlasovani_do)}</strong>
+        <span>Hlasování tady na webu. Hlasovat můžete každý den znovu.</span>
+      </li>
+      <li data-faze="vysledky">
+        <strong>{datum(soutez.vyhlaseni)}</strong>
+        <span>Vyhlášení vítězné obce s článkem na Rozhledně.</span>
+      </li>
+    </ol>
+
+    <div class="cta" data-ukaz="prijem">
+      <a class="tlacitko" href="/poslete-fotku/?soutez=vanocni-strom">📷 Poslat fotku stromu</a>
+      <p>
+        Fotku posílejte jen vlastní. Za každou obec postoupí do hlasování jedna fotka – když jich přijde víc,
+        vybereme tu nejpovedenější a uvedeme jméno autora.
+      </p>
+    </div>
+
+    {kandidati.length > 0 ? (
+      <section class="kandidati" aria-label="Soutěžní stromy">
+        <h2 data-ukaz="prijem">Už soutěží</h2>
+        <h2 data-ukaz="hlasovani">Hlasujte pro nejhezčí strom</h2>
+        <h2 data-ukaz="vysledky">Výsledky</h2>
+        <p class="stav" id="stav" role="status" aria-live="polite"></p>
+        <div class="mrizka" id="mrizka">
+          {kandidati.map((k) => (
+            <article class="karta" data-id={k.id}>
+              <a href={k.foto} target="_blank" rel="noopener"><img src={k.foto} alt={`Vánoční strom – ${k.obec}`} loading="lazy" /></a>
+              <div class="karta__telo">
+                <h3>{k.obec}</h3>
+                {k.popis && <p class="karta__popis">{k.popis}</p>}
+                <p class="karta__autor">Foto: {k.autor}</p>
+                <div class="karta__hlasy" hidden>
+                  <div class="pruh"><span></span></div>
+                  <span class="pocet"></span>
+                </div>
+                <button type="button" class="hlasovat" data-ukaz="hlasovani" data-id={k.id}>Hlasovat pro {k.obec}</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <p class="prazdne">První fotky stromů tu přibudou hned po rozsvícení na začátku adventu.</p>
+    )}
+
+    <div class="sdilet">
+      <p><strong>Pomozte své obci vyhrát:</strong> pošlete odkaz na soutěž sousedům a známým.</p>
+      <button type="button" id="sdilet">Sdílet soutěž</button>
+    </div>
+
+    <p class="pravidla">
+      Pravidla: hlasuje se jen tady na webu – „to se mi líbí“ na Facebooku se nepočítá. Z jednoho zařízení
+      lze hlasovat jednou denně. Hlasy z jedné sítě jsou omezené, aby soutěž byla férová; zjevně podvodné
+      hlasy (roboti, hromadné hlasování) nezapočítáme. Fotky posílají čtenáři se svým souhlasem, za obec
+      soutěží jedna fotka. Výsledky jsou orientační a za vítězství není žádná cena kromě slávy a článku.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  const koren = document.querySelector('.strom') as HTMLElement;
+  const dnes = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Prague' });
+  const faze = dnes <= koren.dataset.prijemDo! ? 'prijem' : dnes < koren.dataset.od! ? 'cekani' : dnes <= koren.dataset.do! ? 'hlasovani' : 'vysledky';
+  document.querySelectorAll<HTMLElement>('[data-ukaz]').forEach((el) => {
+    el.hidden = el.dataset.ukaz !== faze;
+  });
+  document.querySelectorAll<HTMLElement>('.kroky li').forEach((li) => {
+    li.classList.toggle('aktivni', li.dataset.faze === faze);
+  });
+
+  const stav = document.getElementById('stav');
+  const mrizka = document.getElementById('mrizka');
+  const klicDne = `strom2026-hlas-${dnes}`;
+
+  function zarizeni(): string {
+    try {
+      let id = localStorage.getItem('strom2026-zarizeni');
+      if (!id) {
+        id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-x`;
+        localStorage.setItem('strom2026-zarizeni', id);
+      }
+      return id;
+    } catch {
+      return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-docasne`;
+    }
+  }
+  function uzHlasoval(): string | null {
+    try { return localStorage.getItem(klicDne); } catch { return null; }
+  }
+
+  async function nactiVysledky() {
+    if (!mrizka || (faze !== 'hlasovani' && faze !== 'vysledky')) return;
+    try {
+      const r = await fetch('/api/hlasovat');
+      const v = await r.json();
+      if (!v.ok) return;
+      const hlasy: Record<string, number> = v.vysledky || {};
+      const celkem = Object.values(hlasy).reduce((a, b) => a + b, 0);
+      const karty = [...mrizka.querySelectorAll<HTMLElement>('.karta')];
+      for (const k of karty) {
+        const n = hlasy[k.dataset.id!] || 0;
+        const podil = celkem ? Math.round((n / celkem) * 100) : 0;
+        const box = k.querySelector<HTMLElement>('.karta__hlasy')!;
+        box.hidden = false;
+        box.querySelector<HTMLElement>('.pruh span')!.style.width = `${podil}%`;
+        box.querySelector<HTMLElement>('.pocet')!.textContent = `${n.toLocaleString('cs-CZ')} ${n === 1 ? 'hlas' : n >= 2 && n <= 4 ? 'hlasy' : 'hlasů'} · ${podil} %`;
+      }
+      if (faze === 'vysledky' || celkem > 0) {
+        karty.sort((a, b) => (hlasy[b.dataset.id!] || 0) - (hlasy[a.dataset.id!] || 0)).forEach((k) => mrizka.appendChild(k));
+        if (faze === 'vysledky' && karty[0]) karty[0].classList.add('vitez');
+      }
+    } catch {
+      /* výsledky nejsou kritické */
+    }
+  }
+
+  function zamkni(obec?: string) {
+    document.querySelectorAll<HTMLButtonElement>('.hlasovat').forEach((b) => (b.disabled = true));
+    if (stav) stav.textContent = `Dnes už jste hlasovali${obec ? ` (${obec})` : ''}. Děkujeme! Zítra můžete hlasovat znovu.`;
+  }
+
+  if (faze === 'hlasovani') {
+    const drive = uzHlasoval();
+    if (drive) zamkni(drive);
+    document.querySelectorAll<HTMLButtonElement>('.hlasovat').forEach((b) =>
+      b.addEventListener('click', async () => {
+        const obec = b.closest('.karta')?.querySelector('h3')?.textContent || '';
+        b.disabled = true;
+        if (stav) stav.textContent = 'Ukládám hlas…';
+        try {
+          const r = await fetch('/api/hlasovat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kandidat: b.dataset.id, zarizeni: zarizeni() }),
+          });
+          const v = await r.json().catch(() => ({ ok: false, chyba: 'Hlas se nepodařilo uložit.' }));
+          if (!v.ok && r.status !== 429) throw new Error(v.chyba);
+          try { localStorage.setItem(klicDne, obec); } catch { /* nic */ }
+          zamkni(obec);
+          if (v.ok && stav) stav.textContent = `Děkujeme za hlas pro ${obec}! Zítra můžete hlasovat znovu – a pošlete soutěž dál.`;
+          nactiVysledky();
+        } catch (e) {
+          b.disabled = false;
+          if (stav) stav.textContent = (e as Error).message || 'Hlas se nepodařilo uložit, zkuste to prosím znovu.';
+        }
+      }),
+    );
+  }
+  nactiVysledky();
+
+  document.getElementById('sdilet')?.addEventListener('click', async () => {
+    const data = { title: document.title, url: location.origin + location.pathname };
+    try {
+      if (navigator.share) return await navigator.share(data);
+      await navigator.clipboard.writeText(data.url);
+      if (stav) stav.textContent = 'Odkaz je zkopírovaný.';
+    } catch {
+      /* sdílení zrušeno */
+    }
+  });
+</script>
+
+<style>
+  .strom { max-width: 1000px; padding-top: 48px; padding-bottom: 64px; display: flex; flex-direction: column; gap: 22px; }
+  .strom h1 { font-size: 36px; line-height: 1.2; }
+  .uvod { font-size: 18px; line-height: 1.6; margin: 0; max-width: 720px; color: var(--barva-text-tlumena-tmavsi); }
+  .kroky { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .kroky li {
+    background: #fff; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px;
+    border-top: 4px solid var(--barva-ramecek); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  .kroky li.aktivni { border-top-color: var(--barva-terakota); }
+  .kroky strong { font-size: 20px; color: var(--barva-zelena); }
+  .cta { background: #F1E7D8; border-left: 4px solid var(--barva-zelena); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .cta p { margin: 0; font-size: 15px; line-height: 1.5; }
+  .tlacitko, .sdilet button, .hlasovat {
+    align-self: flex-start; font: inherit; font-weight: 700; color: #fff; background: var(--barva-zelena);
+    border: 0; padding: 12px 22px; cursor: pointer; text-decoration: none; border-radius: 6px;
+  }
+  .hlasovat { background: var(--barva-terakota); width: 100%; }
+  .hlasovat:disabled { opacity: 0.5; cursor: default; }
+  .kandidati h2 { font-size: 26px; margin: 0 0 6px; }
+  .stav { font-weight: 700; color: var(--barva-zelena); min-height: 1.2em; margin: 0 0 12px; }
+  .mrizka { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+  .karta { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.07); display: flex; flex-direction: column; }
+  .karta.vitez { outline: 4px solid #C9A227; }
+  .karta.vitez h3::before { content: '🏆 '; }
+  .karta img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
+  .karta__telo { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .karta__telo h3 { font-size: 20px; margin: 0; }
+  .karta__popis, .karta__autor { margin: 0; font-size: 14px; color: var(--barva-text-tlumena); }
+  .karta__hlasy { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+  .pruh { height: 8px; background: #EEE6D8; border-radius: 4px; overflow: hidden; }
+  .pruh span { display: block; height: 100%; background: var(--barva-zelena); width: 0; transition: width 0.4s ease; }
+  .pocet { font-size: 14px; font-weight: 700; }
+  .prazdne { font-size: 16px; margin: 0; color: var(--barva-text-tlumena); }
+  .sdilet { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .sdilet p { margin: 0; }
+  .pravidla { font-size: 13px; line-height: 1.5; color: var(--barva-text-tlumena); margin: 0; }
+  [hidden] { display: none !important; }
+
+  @media (max-width: 900px) {
+    .strom { padding-top: 24px; }
+    .strom h1 { font-size: 27px; }
+    .kroky { grid-template-columns: 1fr; }
+  }
+</style>

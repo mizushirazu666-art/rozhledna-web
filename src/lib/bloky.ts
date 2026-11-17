@@ -13,9 +13,13 @@
  * Odstavec, jehož všechny řádky jsou obrázky ve tvaru Markdownu
  * ![popisek](/cesta.jpg), je galerie fotek (jen fotky z webu, adresa
  * začíná „/“) – např. čtenářská galerie „Podzim v obci“ (24. 10. 2026).
+ *
+ * Odstavec „## Text“ je mezititulek (delší články, seriál Z historie obce –
+ * 17. 11. 2026).
  */
 export type Blok =
   | { typ: 'text'; text: string }
+  | { typ: 'mezititulek'; text: string }
   | { typ: 'tabulka'; hlavicka: string[]; radky: string[][]; mapa: boolean }
   | { typ: 'galerie'; fotky: { src: string; popis: string }[] };
 
@@ -24,6 +28,9 @@ const RADEK_FOTKY = /^!\[([^\]]*)\]\((\/[^)\s]+)\)$/;
 
 export function blokTextu(odstavec: string): Blok {
   const radky = odstavec.split('\n').map((r) => r.trim()).filter(Boolean);
+  if (radky.length === 1 && /^#{2,3}\s+\S/.test(radky[0])) {
+    return { typ: 'mezititulek', text: radky[0].replace(/^#+\s+/, '') };
+  }
   if (radky.length > 0 && radky.every((r) => RADEK_FOTKY.test(r))) {
     const fotky = radky.map((r) => {
       const [, popis, src] = r.match(RADEK_FOTKY)!;
@@ -52,6 +59,7 @@ export function cisloZHodnoty(hodnota: string): number | null {
 /** Text pro čas čtení, RSS apod. – tabulka jako „hlavička: hodnota“. */
 export function blokJakoText(blok: Blok): string {
   if (blok.typ === 'text') return blok.text;
+  if (blok.typ === 'mezititulek') return blok.text;
   if (blok.typ === 'galerie') return blok.fotky.map((f) => f.popis).join(', ');
   return blok.radky.map((r) => r.join(' ')).join(', ');
 }

@@ -87,7 +87,9 @@ const jsonLd = {
 
       <div class="clanek__telo">
         {clanek.telo.map((odstavec: string) => blokTextu(odstavec)).map((blok) =>
-          blok.typ === 'galerie' ? (
+          blok.typ === 'mezititulek' ? (
+            <h2 class="clanek__mezititulek">{blok.text}</h2>
+          ) : blok.typ === 'galerie' ? (
             <div class="clanek__galerie">
               {blok.fotky.map((f) => (
                 <figure>
@@ -239,6 +241,7 @@ const jsonLd = {
     max-width: 760px;
   }
   .clanek__telo p { margin: 0; }
+  .clanek__mezititulek { font-size: 1.25em; line-height: 1.3; margin: 0.6em 0 -0.2em; color: var(--barva-zelena); }
   .clanek__telo a { color: var(--barva-terakota); text-decoration: underline; font-weight: 600; }
   .clanek__blok { display: flex; flex-direction: column; gap: 12px; }
   .clanek__tabulka summary { cursor: pointer; font-weight: 600; font-size: 15px; }

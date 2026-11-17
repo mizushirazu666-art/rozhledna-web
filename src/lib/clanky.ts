@@ -18,6 +18,7 @@
  * teprve Publikováno se objeví na webu).
  */
 import taxonomie from '../data/taxonomie.json';
+import { pevneMezery } from './typografie';
 import region from '../data/region.json';
 import articlesJsonFallback from '../data/articles.json';
 
@@ -500,7 +501,7 @@ async function nacistZAirtable(): Promise<Clanek[]> {
 
     const telo = String(f.Telo || '')
       .split(/\n\s*\n/)
-      .map((s: string) => s.trim())
+      .map((s: string) => pevneMezery(s.trim()))
       .filter(Boolean);
 
     clanky.push({
@@ -509,8 +510,8 @@ async function nacistZAirtable(): Promise<Clanek[]> {
       stav: String(f.Stav ?? ''),
       rubrika: rubrikaSlug,
       obec: obecSlug,
-      nadpis: String(f.Nadpis),
-      perex: String(f.Perex ?? ''),
+      nadpis: pevneMezery(String(f.Nadpis)),
+      perex: pevneMezery(String(f.Perex ?? '')),
       autor: normalizujAutora(f.Autor),
       datumPublikace: datumZverejneni(f, rec.createdTime),
       casCteniMin: odhadniCasCteni(telo),

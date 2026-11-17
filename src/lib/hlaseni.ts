@@ -8,6 +8,7 @@
  * s hlášeními se na webu nezobrazí.
  */
 import taxonomie from '../data/taxonomie.json';
+import { pevneMezery } from './typografie';
 
 export interface Hlaseni {
   id: string;
@@ -105,13 +106,13 @@ export function getHlaseni(): Promise<Hlaseni[]> {
           cas: String(f.Cas),
           obec,
           lokalita: String(f.Lokalita || f.Obec || ''),
-          nadpis: String(f.Nadpis ?? ''),
+          nadpis: pevneMezery(String(f.Nadpis ?? '')),
           misto: hezkeMisto(String(f.Misto ?? '')),
           druh: String(f.Druh ?? ''),
           probiha: f.Stav === 'Probíhá',
           zdroj: String(f.Zdroj ?? ''),
           zdrojUrl: String(f.ZdrojURL ?? ''),
-          text: String(f.Text ?? '').split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean),
+          text: String(f.Text ?? '').split(/\n\s*\n/).map((t) => pevneMezery(t.trim())).filter(Boolean),
           slug: String(f.HlaseniId ?? id).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
         });
       }

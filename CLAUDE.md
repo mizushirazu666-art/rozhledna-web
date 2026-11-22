@@ -20,7 +20,9 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
 - Deployment Storage (free 10 GB na tým): 12. 10. 2026 na 75 % – každý build
   nese všechny fotky a vzniká jich ~6–8 denně na web. Deployment Retention
   Policy v obou projektech (Settings → Security) nastavena na 1 týden;
-  ruční přestavby dělat jen když je potřeba.
+  ruční přestavby dělat jen když je potřeba. 22. 11. 2026 dosaženo 100 % – Vercel
+  starší deployments sám maže (živý web to neohrozí, Pro netřeba); fotky do
+  `public/` ukládat zmenšené (max. 1600 px, JPEG q80, do ~300 kB).
 - Env (jen na Vercelu, nedešifrovat): AIRTABLE_API_KEY (jen čtení),
   AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME, AIRTABLE_FOTKY_API_KEY (zápis, jen
   formulář fotek). Bez nich build použije ukázková data v `src/data`.

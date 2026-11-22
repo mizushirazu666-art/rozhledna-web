@@ -8,6 +8,9 @@
  *   z jedné IP adresy (domácnost, škola, firma za jednou adresou). IP se
  *   neukládá, jen její otisk (SHA-256 se solí) a jen na 2 dny.
  * GET – průběžné výsledky {kandidat: hlasu}; web je ukazuje během hlasování.
+ * GET ?prehled=1 – hlídání podezřelých skoků (22. 11. 2026, Lukáš): hlasy po
+ *   hodinách {hodina: {kandidat: hlasu}} a počet odmítnutých hlasů po dnech
+ *   (limit zařízení / IP). Data po hodinách se drží 30 dní.
  *
  * Env (Vercel, přidá je integrace Upstash): KV_REST_API_URL a
  * KV_REST_API_TOKEN (nebo UPSTASH_REDIS_REST_URL / _TOKEN); ROZHLEDNA_REGION.
@@ -38,6 +41,11 @@ async function redis(prikazy) {
   return (await r.json()).map((x) => x.result);
 }
 
+function hodinaPraha() {
+  const t = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Prague' }); // RRRR-MM-DD HH:MM:SS
+  return t.slice(0, 13).replace(' ', 'T');
+}
+
 function dnesPraha() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Prague' }); // RRRR-MM-DD
 }
@@ -49,6 +57,24 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!redisUrl() || !redisToken()) {
     return res.status(503).json({ ok: false, chyba: 'Hlasování zatím není spuštěné.' });
+  }
+
+  if (req.method === 'GET' && req.query?.prehled) {
+    const dny = [];
+    for (let d = new Date(soutez.hlasovani_od); d <= new Date(soutez.hlasovani_do); d.setDate(d.getDate() + 1)) {
+      dny.push(d.toISOString().slice(0, 10));
+    }
+    const hodiny = dny.flatMap((den) => Array.from({ length: 24 }, (_, h) => `${den}T${String(h).padStart(2, '0')}`));
+    const vysl = await redis([
+      ...hodiny.map((h) => ['HGETALL', `${PREFIX}:${region}:hod:${h}`]),
+      ...dny.map((den) => ['HGETALL', `${PREFIX}:${region}:odmitnuto:${den}`]),
+    ]);
+    const naObjekt = (a) => { const o = {}; for (let i = 0; i + 1 < (a || []).length; i += 2) o[a[i]] = Number(a[i + 1]); return o; };
+    const poHodinach = {};
+    hodiny.forEach((h, i) => { const o = naObjekt(vysl[i]); if (Object.keys(o).length) poHodinach[h] = o; });
+    const odmitnuto = {};
+    dny.forEach((den, i) => { const o = naObjekt(vysl[hodiny.length + i]); if (Object.keys(o).length) odmitnuto[den] = o; });
+    return res.status(200).json({ ok: true, poHodinach, odmitnuto });
   }
 
   if (req.method === 'GET') {
@@ -79,10 +105,23 @@ export default async function handler(req, res) {
     ['INCR', kIp],
     ['EXPIRE', kIp, '172800'],
   ]);
-  if (nove !== 'OK') return res.status(429).json({ ok: false, chyba: 'Dnes už jste hlasovali. Zítra můžete znovu!' });
-  if (Number(zIp) > MAX_Z_IP) {
-    return res.status(429).json({ ok: false, chyba: 'Z této sítě už dnes přišlo moc hlasů. Zkuste to prosím zítra.' });
+  const kOdmitnuto = `${PREFIX}:${region}:odmitnuto:${dnes}`;
+  if (nove !== 'OK') {
+    await redis([['HINCRBY', kOdmitnuto, 'zarizeni', '1'], ['EXPIRE', kOdmitnuto, '2592000']]);
+    return res.status(429).json({ ok: false, chyba: 'Dnes už jste hlasovali. Zítra můžete znovu!' });
   }
-  await redis([['HINCRBY', klicHlasu, kandidat, '1']]);
+  if (Number(zIp) > MAX_Z_IP) {
+    await redis([['HINCRBY', kOdmitnuto, 'ip', '1'], ['EXPIRE', kOdmitnuto, '2592000']]);
+    return res.status(429).json({
+      ok: false,
+      chyba: 'Z této internetové sítě už dnes přišlo moc hlasů. Zkuste to prosím zítra, případně nám napište na e-mail redakce.',
+    });
+  }
+  const kHodina = `${PREFIX}:${region}:hod:${hodinaPraha()}`;
+  await redis([
+    ['HINCRBY', klicHlasu, kandidat, '1'],
+    ['HINCRBY', kHodina, kandidat, '1'],
+    ['EXPIRE', kHodina, '2592000'],
+  ]);
   return res.status(200).json({ ok: true });
 }

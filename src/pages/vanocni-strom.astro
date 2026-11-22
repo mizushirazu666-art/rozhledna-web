@@ -19,10 +19,11 @@ const datum = (iso: string) => {
 };
 const nadpis = `Nejhezčí vánoční strom ${region.genitiv} 2026`;
 ---
-<BaseLayout title={nadpis} obrazek={`/vanocni-strom/og-${regionKlic}.jpg`} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)}–${datum(soutez.hlasovani_do)} na Rozhledně.`}>
+<BaseLayout title={nadpis} obrazek={`/vanocni-strom/strom-${regionKlic}.jpg`} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)}–${datum(soutez.hlasovani_do)} na Rozhledně.`}>
   <div class="container strom" data-prijem-do={soutez.prijem_do} data-od={soutez.hlasovani_od} data-do={soutez.hlasovani_do}>
     <span class="kicker kicker--zelena">Soutěž pro obce</span>
     <h1>🎄 {nadpis}</h1>
+    <img class="banner" src={`/vanocni-strom/strom-${regionKlic}.jpg`} alt={`Rozsvícený vánoční strom – soutěž ${nadpis}`} width="1200" height="630" />
     <p class="uvod">
       V každé obci se o adventu rozsvítí vánoční strom a každý je jiný: velký smrk na návsi, jedle u kostela
       nebo strom, který zdobí děti ze školky. Pojďme zjistit, který je nejhezčí! Pošlete fotku stromu ze své
@@ -200,6 +201,7 @@ const nadpis = `Nejhezčí vánoční strom ${region.genitiv} 2026`;
 <style>
   .strom { max-width: 1000px; padding-top: 48px; padding-bottom: 64px; display: flex; flex-direction: column; gap: 22px; }
   .strom h1 { font-size: 36px; line-height: 1.2; }
+  .banner { width: 100%; height: auto; border-radius: 12px; display: block; }
   .uvod { font-size: 18px; line-height: 1.6; margin: 0; max-width: 720px; color: var(--barva-text-tlumena-tmavsi); }
   .kroky { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .kroky li {

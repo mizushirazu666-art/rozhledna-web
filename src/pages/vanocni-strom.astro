@@ -19,7 +19,7 @@ const datum = (iso: string) => {
 };
 const nadpis = `Nejhezčí vánoční strom ${region.genitiv} 2026`;
 ---
-<BaseLayout title={nadpis} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)}–${datum(soutez.hlasovani_do)} na Rozhledně.`}>
+<BaseLayout title={nadpis} obrazek={`/vanocni-strom/og-${regionKlic}.jpg`} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)}–${datum(soutez.hlasovani_do)} na Rozhledně.`}>
   <div class="container strom" data-prijem-do={soutez.prijem_do} data-od={soutez.hlasovani_od} data-do={soutez.hlasovani_do}>
     <span class="kicker kicker--zelena">Soutěž pro obce</span>
     <h1>🎄 {nadpis}</h1>

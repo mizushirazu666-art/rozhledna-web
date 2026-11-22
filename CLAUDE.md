@@ -109,7 +109,11 @@ Komunikace s Lukášem (redaktor/majitel) česky; kód, komentáře a commity
   `public/vanocni-strom/2026/` a obec do JSONu; hlasování 14.–20. 12., výsledky
   21. 12.). `api/hlasovat.js` – hlasy v Upstash Redis (Vercel Marketplace,
   env KV_REST_API_URL/TOKEN; bez nich 503), 1 hlas/den/zařízení, max. 10/den
-  z IP; GET = průběžné výsledky. Dlaždice v Rozcestníku místo „Pošlete fotku“
+  z IP (Lukáš 22. 11.: limit 10 nechat); GET = průběžné výsledky, `?prehled=1` =
+  hlasy po hodinách a odmítnuté hlasy (hlídání skoků – naplánovaná kontrola
+  denně 21:12 14.–20. 12.). Grafika `public/vanocni-strom/strom2-<region>.jpg`
+  (návrhy v pipeline `docs/propagace/vanocni-strom-navrhy/`); rozsahy dat
+  psát „14. 12. - 20. 12.“ (pomlčka s mezerami – přání Lukáše). Dlaždice v Rozcestníku místo „Pošlete fotku“
   do 21. 12. Mezititulek v Telo: odstavec „## Text“.
 - `src/lib/odkazy.ts` – v poli Telo se zápis `[text](adresa)` vykreslí jako
   odkaz (jen `/…` a http(s)); použito např. v článku „Volební víkend“.

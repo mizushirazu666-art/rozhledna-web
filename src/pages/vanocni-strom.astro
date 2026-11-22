@@ -3,7 +3,7 @@
  * Soutěž „Nejhezčí vánoční strom 2026“ (17. 11. 2026, přání Lukáše – obsah,
  * kvůli kterému lidé přijdou na web; hlasuje se jen tady, ne lajky na FB).
  * Fáze podle data (src/data/vanocni-strom-2026.json): příjem fotek do 13. 12.
- * (formulář /poslete-fotku/?soutez=vanocni-strom), hlasování 14.–20. 12.
+ * (formulář /poslete-fotku/?soutez=vanocni-strom), hlasování 14. 12. - 20. 12.
  * (api/hlasovat.js, Upstash Redis), od 21. 12. výsledky. Fázi určí build
  * i prohlížeč (web se přes noc nepřestavuje).
  */
@@ -19,11 +19,11 @@ const datum = (iso: string) => {
 };
 const nadpis = `Nejhezčí vánoční strom ${region.genitiv} 2026`;
 ---
-<BaseLayout title={nadpis} obrazek={`/vanocni-strom/strom-${regionKlic}.jpg`} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)}–${datum(soutez.hlasovani_do)} na Rozhledně.`}>
+<BaseLayout title={nadpis} obrazek={`/vanocni-strom/strom2-${regionKlic}.jpg`} description={`Který vánoční strom v obcích ${region.genitiv} je nejhezčí? Pošlete fotku stromu ze své obce a hlasujte ${datum(soutez.hlasovani_od)} - ${datum(soutez.hlasovani_do)} na Rozhledně.`}>
   <div class="container strom" data-prijem-do={soutez.prijem_do} data-od={soutez.hlasovani_od} data-do={soutez.hlasovani_do}>
     <span class="kicker kicker--zelena">Soutěž pro obce</span>
     <h1>🎄 {nadpis}</h1>
-    <img class="banner" src={`/vanocni-strom/strom-${regionKlic}.jpg`} alt={`Rozsvícený vánoční strom – soutěž ${nadpis}`} width="1200" height="630" />
+    <img class="banner" src={`/vanocni-strom/strom2-${regionKlic}.jpg`} alt={`Rozsvícený vánoční strom – soutěž ${nadpis}`} width="1200" height="630" />
     <p class="uvod">
       V každé obci se o adventu rozsvítí vánoční strom a každý je jiný: velký smrk na návsi, jedle u kostela
       nebo strom, který zdobí děti ze školky. Pojďme zjistit, který je nejhezčí! Pošlete fotku stromu ze své
@@ -36,7 +36,7 @@ const nadpis = `Nejhezčí vánoční strom ${region.genitiv} 2026`;
         <span>Vyfoťte vánoční strom ve své obci a pošlete nám fotku.</span>
       </li>
       <li data-faze="hlasovani">
-        <strong>{datum(soutez.hlasovani_od)}–{datum(soutez.hlasovani_do)}</strong>
+        <strong>{datum(soutez.hlasovani_od)} - {datum(soutez.hlasovani_do)}</strong>
         <span>Hlasování tady na webu. Hlasovat můžete každý den znovu.</span>
       </li>
       <li data-faze="vysledky">

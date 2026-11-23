@@ -604,12 +604,12 @@ export function getClanky(): Promise<Clanek[]> {
     return cache;
   }
 
+  // Když Airtable neodpoví (např. vyčerpaný měsíční limit API volání), build
+  // musí spadnout – Vercel pak nechá živý web beze změny. Dřív se nasadila
+  // ukázková data a z webu by zmizely všechny články (23. 11. 2026).
   cache = nacistZAirtable().catch((err) => {
-    console.error(
-      '[clanky] Nepodařilo se načíst články z Airtable, build pokračuje s ukázkovými daty jako záchrannou variantou:',
-      err,
-    );
-    return articlesJsonFallback as Clanek[];
+    console.error('[clanky] Nepodařilo se načíst články z Airtable – build končí, živý web zůstává:', err);
+    throw err;
   });
   return cache;
 }

@@ -99,7 +99,18 @@ const vyzvaStrom =
           ) : blok.typ === 'vycet' ? (
             <div class="clanek__vycet">
               {blok.uvod && <p>{blok.uvod}</p>}
-              <ul>{blok.polozky.map((t) => <li>{castiTextu(t).map((c) => c.href ? <a href={c.href}>{c.text}</a> : c.text)}</li>)}</ul>
+              <ul>{blok.polozky.map((t) => {
+                // „út 1. 12., 18:00 – Název akce…“: část před pomlčkou tučně (datum/název)
+                const i = t.indexOf(' – ');
+                const hlava = i > 0 && i < 60 ? t.slice(0, i) : '';
+                const zbytek = hlava ? t.slice(i + 3) : t;
+                return (
+                  <li>
+                    {hlava && <strong class="clanek__vycet-hlava">{hlava}</strong>}
+                    <span>{castiTextu(zbytek).map((c) => c.href ? <a href={c.href}>{c.text}</a> : c.text)}</span>
+                  </li>
+                );
+              })}</ul>
             </div>
           ) : blok.typ === 'galerie' ? (
             <div class="clanek__galerie">
@@ -270,8 +281,9 @@ const vyzvaStrom =
   }
   .clanek__soutez > span:first-child { font-size: 26px; line-height: 1; }
   .clanek__soutez strong { display: block; color: var(--barva-zelena); }
-  .clanek__vycet ul { margin: 0.4em 0 1em; padding-left: 1.3em; }
-  .clanek__vycet li { margin: 0.35em 0; }
+  .clanek__vycet ul { list-style: none; margin: 0.5em 0 1.2em; padding: 0; }
+  .clanek__vycet li { margin: 0 0 0.5em; padding: 0.55em 0.8em; background: color-mix(in srgb, var(--barva-zelena) 7%, transparent); border-left: 3px solid var(--barva-zelena); border-radius: 0 6px 6px 0; line-height: 1.45; }
+  .clanek__vycet-hlava { display: block; color: var(--barva-zelena); }
   .clanek__mezititulek { font-size: 1.25em; line-height: 1.3; margin: 0.6em 0 -0.2em; color: var(--barva-zelena); }
   .clanek__telo a { color: var(--barva-terakota); text-decoration: underline; font-weight: 600; }
   .clanek__blok { display: flex; flex-direction: column; gap: 12px; }

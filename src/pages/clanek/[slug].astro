@@ -96,6 +96,11 @@ const vyzvaStrom =
         {clanek.telo.map((odstavec: string) => blokTextu(odstavec)).map((blok) =>
           blok.typ === 'mezititulek' ? (
             <h2 class="clanek__mezititulek">{blok.text}</h2>
+          ) : blok.typ === 'vycet' ? (
+            <div class="clanek__vycet">
+              {blok.uvod && <p>{blok.uvod}</p>}
+              <ul>{blok.polozky.map((t) => <li>{castiTextu(t).map((c) => c.href ? <a href={c.href}>{c.text}</a> : c.text)}</li>)}</ul>
+            </div>
           ) : blok.typ === 'galerie' ? (
             <div class="clanek__galerie">
               {blok.fotky.map((f) => (
@@ -265,6 +270,8 @@ const vyzvaStrom =
   }
   .clanek__soutez > span:first-child { font-size: 26px; line-height: 1; }
   .clanek__soutez strong { display: block; color: var(--barva-zelena); }
+  .clanek__vycet ul { margin: 0.4em 0 1em; padding-left: 1.3em; }
+  .clanek__vycet li { margin: 0.35em 0; }
   .clanek__mezititulek { font-size: 1.25em; line-height: 1.3; margin: 0.6em 0 -0.2em; color: var(--barva-zelena); }
   .clanek__telo a { color: var(--barva-terakota); text-decoration: underline; font-weight: 600; }
   .clanek__blok { display: flex; flex-direction: column; gap: 12px; }

@@ -16,10 +16,14 @@
  *
  * Odstavec „## Text“ je mezititulek (delší články, seriál Z historie obce –
  * 17. 11. 2026).
+ *
+ * Odstavec, jehož řádky začínají „- “, je výčet (odrážky); první řádek bez
+ * pomlčky může být úvod („Program:“) – přehledy akcí (26. 11. 2026).
  */
 export type Blok =
   | { typ: 'text'; text: string }
   | { typ: 'mezititulek'; text: string }
+  | { typ: 'vycet'; uvod: string; polozky: string[] }
   | { typ: 'tabulka'; hlavicka: string[]; radky: string[][]; mapa: boolean }
   | { typ: 'galerie'; fotky: { src: string; popis: string }[] };
 
@@ -37,6 +41,15 @@ export function blokTextu(odstavec: string): Blok {
       return { src, popis };
     });
     return { typ: 'galerie', fotky };
+  }
+  const RADEK_VYCTU = /^[-–•]\s+\S/;
+  const odrazky = RADEK_VYCTU.test(radky[0] ?? '') ? radky : radky.slice(1);
+  if (odrazky.length >= 2 && odrazky.every((r) => RADEK_VYCTU.test(r))) {
+    return {
+      typ: 'vycet',
+      uvod: odrazky === radky ? '' : radky[0],
+      polozky: odrazky.map((r) => r.replace(/^[-–•]\s+/, '')),
+    };
   }
   const mapa = radky[0]?.toLowerCase() === '[mapa]';
   const tabulka = mapa ? radky.slice(1) : radky;
@@ -60,6 +73,7 @@ export function cisloZHodnoty(hodnota: string): number | null {
 export function blokJakoText(blok: Blok): string {
   if (blok.typ === 'text') return blok.text;
   if (blok.typ === 'mezititulek') return blok.text;
+  if (blok.typ === 'vycet') return [blok.uvod, ...blok.polozky].filter(Boolean).join(' ');
   if (blok.typ === 'galerie') return blok.fotky.map((f) => f.popis).join(', ');
   return blok.radky.map((r) => r.join(' ')).join(', ');
 }
